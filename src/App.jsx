@@ -5,8 +5,9 @@ import "./App.css";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LogIn } from "lucide-react";
-import Login from "./components/Login";
-import FrontWeb from "./components/FrontWeb";
+import Login from "./components/frontweb/Login";
+import FrontWeb from "./components/frontweb/FrontWeb";
+import Dashboard from "./components/crm/Dashboard";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -16,6 +17,7 @@ function App() {
         <Routes>
           <Route path="/" element={<FrontWeb />} />
           <Route path="/Login" element={<Login />} />
+          <Route path="/Dashboard" element={<Dashboard />} />
         </Routes>
       </BrowserRouter>
     </>

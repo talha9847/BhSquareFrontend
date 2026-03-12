@@ -1,13 +1,13 @@
 import React from "react";
-import Navbar from "./Navbar";
-import Hero from "./Hero";
-import Process from "./Process";
-import Services from "./Services";
-import About from "./About";
-import Projects from "./Projects";
-import Testimonials from "./Testimonials";
-import Contact from "./Contact";
-import Footer from "./Footer";
+import Navbar from "../frontweb/Navbar";
+import Hero from "../frontweb/Hero";
+import Services from "../frontweb/Services";
+import About from "../frontweb/About";
+import Process from "../frontweb/Process";
+import Projects from "../frontweb/Projects";
+import Testimonials from "../frontweb/Testimonials";
+import Footer from "../frontweb/Footer";
+import Contact from "../frontweb/Contact";
 
 const FrontWeb = () => {
   return (
@@ -26,6 +26,7 @@ const FrontWeb = () => {
       <section id="projects">
         <Projects />
       </section>
+      
       <Testimonials />
       <section id="contact">
         <Contact />
