@@ -13,13 +13,23 @@ const FrontWeb = () => {
   return (
     <div>
       <Navbar />
-      <Hero />
-      <Services />
-      <About />
+      <section id="home">
+        <Hero />
+      </section>
+      <section id="services">
+        <Services />
+      </section>
+      <section id="about">
+        <About />
+      </section>
       <Process />
-      <Projects />
+      <section id="projects">
+        <Projects />
+      </section>
       <Testimonials />
-      <Contact />
+      <section id="contact">
+        <Contact />
+      </section>
       <Footer />
     </div>
   );
