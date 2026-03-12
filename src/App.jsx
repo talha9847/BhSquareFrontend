@@ -4,9 +4,9 @@ import viteLogo from "/vite.svg";
 import "./App.css";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import FrontWeb from "./components/frontweb";
 import { LogIn } from "lucide-react";
 import Login from "./components/Login";
+import FrontWeb from "./components/FrontWeb";
 function App() {
   const [count, setCount] = useState(0);
 
