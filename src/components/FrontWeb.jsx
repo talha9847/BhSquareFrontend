@@ -7,6 +7,7 @@ import About from "./About";
 import Projects from "./Projects";
 import Testimonials from "./Testimonials";
 import Contact from "./Contact";
+import Footer from "./Footer";
 
 const FrontWeb = () => {
   return (
@@ -19,6 +20,7 @@ const FrontWeb = () => {
       <Projects />
       <Testimonials />
       <Contact />
+      <Footer />
     </div>
   );
 };
