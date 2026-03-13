@@ -35,10 +35,10 @@ const Navbar = ({ toggleSidebar }) => {
           <span className="absolute top-2 right-2.5 w-2 h-2 bg-[#f39200] rounded-full border-2 border-white" />
         </button>
 
-        <button className="hidden sm:flex items-center gap-2 bg-[#1a5695] text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-[#0f3d6e] transition-all">
+        {/* <button className="hidden sm:flex items-center gap-2 bg-[#1a5695] text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-[#0f3d6e] transition-all">
           <Plus size={16} />
           <span>New Lead</span>
-        </button>
+        </button> */}
       </div>
     </header>
   );

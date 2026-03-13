@@ -16,17 +16,26 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
-  const [active, setActive] = useState("Dashboard");
-
+  const [active, setActive] = useState("dashboard");
+  const navigate = useNavigate();
+  const location = useLocation();
   const menuItems = [
     {
       name: "Dashboard",
       icon: <LayoutDashboard size={18} />,
       type: "Operations",
+      path: "dashboard",
     },
-    { name: "Leads", icon: <Users size={18} />, count: 24, type: "Operations" },
+    {
+      name: "Leads",
+      icon: <Users size={18} />,
+      count: 24,
+      type: "Operations",
+      path: "leads",
+    },
     {
       name: "Site Survey",
       icon: <Compass size={18} />,
@@ -92,22 +101,26 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 .map((item) => (
                   <button
                     key={item.name}
-                    onClick={() => setActive(item.name)}
+                    onClick={() => {
+                      setActive(item.path);
+                      setActive(item.path);
+                      navigate(`/${item.path}`);
+                    }}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all mb-1 ${
-                      active === item.name
+                      location.pathname === `/${item.path}`
                         ? "bg-[#1a5695] text-white shadow-md shadow-blue-900/20"
                         : "text-slate-600 hover:bg-slate-100 hover:text-[#1a5695]"
                     }`}
                   >
                     <span
-                      className={`p-1.5 rounded-lg ${active === item.name ? "bg-white/20" : "bg-slate-100"}`}
+                      className={`p-1.5 rounded-lg ${location.pathname === `/${item.path}` ? "bg-white/20" : "bg-slate-100"}`}
                     >
                       {item.icon}
                     </span>
                     <span className="text-sm font-semibold">{item.name}</span>
                     {item.count && (
                       <span
-                        className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${item.name === "Leads" ? "bg-[#f39200] text-white" : "bg-slate-200 text-slate-600"}`}
+                        className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${item.path === "Leads" ? "bg-[#f39200] text-white" : "bg-slate-200 text-slate-600"}`}
                       >
                         {item.count}
                       </span>
