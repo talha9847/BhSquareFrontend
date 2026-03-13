@@ -15,6 +15,11 @@ import {
   Ban,
   MessageSquare,
   Calendar,
+  Edit,
+  Delete,
+  DeleteIcon,
+  Recycle,
+  Trash2,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -73,6 +78,7 @@ const Leads = () => {
       address: "Vaskui, Mahuva",
       source: "Reference",
       capacity: "8.32 kW",
+      date: "01-01-2026", // Fetched from DB
     },
     {
       id: 2,
@@ -81,6 +87,7 @@ const Leads = () => {
       address: "Adajan, Surat",
       source: "Google",
       capacity: "5.50 kW",
+      date: "01-01-2026", // Fetched from DB
     },
     {
       id: 3,
@@ -89,6 +96,7 @@ const Leads = () => {
       address: "Bardoli, GJ",
       source: "Social Media",
       capacity: "12.00 kW",
+      date: "01-01-2026", // Fetched from DB
     },
   ]);
 
@@ -166,9 +174,9 @@ const Leads = () => {
 
           <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full text-left border-separate border-spacing-0">
                 <thead className="bg-slate-50/50">
-                  <tr>
+                  <tr className="whitespace-nowrap">
                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                       Client
                     </th>
@@ -176,7 +184,7 @@ const Leads = () => {
                       Location
                     </th>
                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                      Source
+                      Date
                     </th>
                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                       Capacity
@@ -184,60 +192,91 @@ const Leads = () => {
                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">
                       Conversion
                     </th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">
+                      Action
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {filteredLeads.map((lead) => (
                     <tr
                       key={lead.id}
-                      className="hover:bg-slate-50/80 transition-colors group"
+                      className="hover:bg-slate-50/80 transition-colors"
                     >
-                      <td className="px-6 py-4">
+                      {/* CLIENT DATA */}
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <p className="font-bold text-slate-800 text-sm">
                           {lead.name}
                         </p>
-                        <div className="flex items-center gap-1.5 text-slate-400 text-[11px] mt-0.5">
-                          <Phone size={10} /> {lead.number}
+                        <p className="text-slate-400 text-[11px] font-medium">
+                          {lead.number}
+                        </p>
+                      </td>
+
+                      {/* LOCATION DATA */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5 text-slate-500 text-xs font-medium">
+                          <MapPin size={12} className="text-slate-300" />
+                          <span className="max-w-[100px] truncate">
+                            {lead.address}
+                          </span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-500 font-medium">
-                        <span className="flex items-center gap-1">
-                          <MapPin size={12} /> {lead.address}
-                        </span>
-                      </td>
+
                       <td className="px-6 py-4">
-                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md uppercase tracking-tight">
-                          {lead.source}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <Calendar size={12} className="text-[#1a5695]/50" />
+                          <span className="text-xs font-bold text-slate-600">
+                            {lead.date}
+                          </span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4">
+
+                      {/* CAPACITY DATA */}
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-black text-[#1a5695]">
                           {lead.capacity}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          {/* THE ACTION BUTTONS */}
+
+                      {/* CONVERSION BUTTONS (Success/Delay/Cancel) */}
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
                             onClick={() => handleAction(lead, "convert")}
-                            className="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
-                            title="Convert to Customer"
+                            className="p-2 bg-emerald-50 text-emerald-600 rounded-xl active:bg-emerald-600 active:text-white transition-all border border-emerald-100"
                           >
                             <ArrowRightLeft size={16} />
                           </button>
                           <button
                             onClick={() => handleAction(lead, "delay")}
-                            className="p-2 bg-amber-50 text-amber-600 rounded-lg hover:bg-amber-600 hover:text-white transition-all shadow-sm"
-                            title="Delay / Follow-up"
+                            className="p-2 bg-amber-50 text-amber-600 rounded-xl active:bg-amber-600 active:text-white transition-all border border-amber-100"
                           >
                             <Clock size={16} />
                           </button>
                           <button
                             onClick={() => handleAction(lead, "cancel")}
-                            className="p-2 bg-rose-50 text-rose-600 rounded-lg hover:bg-rose-600 hover:text-white transition-all shadow-sm"
-                            title="Cancel Lead"
+                            className="p-2 bg-rose-50 text-rose-600 rounded-xl active:bg-rose-600 active:text-white transition-all border border-rose-100"
                           >
                             <Ban size={16} />
+                          </button>
+                        </div>
+                      </td>
+
+                      {/* SYSTEM ACTIONS (Edit/Delete) */}
+                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            className="p-2 bg-blue-50 text-[#1a5695] rounded-xl active:bg-[#1a5695] active:text-white transition-all border border-blue-100"
+                            title="Edit Lead"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            className="p-2 bg-rose-50 text-slate-400 rounded-xl active:bg-rose-600 active:text-white transition-all border border-slate-200"
+                            title="Delete"
+                          >
+                            <Trash2 className="text-red-600" size={16} />
                           </button>
                         </div>
                       </td>
