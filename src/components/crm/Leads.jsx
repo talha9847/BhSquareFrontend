@@ -124,6 +124,28 @@ const Leads = () => {
     fetchData();
   }, []);
 
+  const getDateStyle = (dateString) => {
+    if (!dateString) return "text-slate-400";
+
+    const [day, month, year] = dateString.split("-").map(Number);
+    const visitDate = new Date(year, month - 1, day);
+    const today = new Date();
+
+    today.setHours(0, 0, 0, 0);
+    visitDate.setHours(0, 0, 0, 0);
+
+    const diffTime = visitDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays < 0) {
+      return "text-red-700 font-black animate-blink";
+    } else if (diffDays <= 2) {
+      return "text-amber-600 font-bold";
+    } else {
+      return "text-emerald-600 font-medium";
+    }
+  };
+
   const onSubmit = async (data) => {
     try {
       setLoadSaveLead(true);
@@ -293,6 +315,9 @@ const Leads = () => {
                       Address
                     </th>
                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                      Visit Date
+                    </th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                       Source
                     </th>
                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
@@ -322,6 +347,18 @@ const Leads = () => {
                           <MapPin size={12} className="text-slate-300" />
                           <span className="truncate max-w-[150px]">
                             {lead.address}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span
+                            className={`text-xs uppercase tracking-tight ${getDateStyle(lead.site_visit_date)}`}
+                          >
+                            {lead.site_visit_date}
+                          </span>
+                          <span className="text-[9px] text-slate-400 font-semibold mt-0.5">
+                            Scheduled Visit
                           </span>
                         </div>
                       </td>
