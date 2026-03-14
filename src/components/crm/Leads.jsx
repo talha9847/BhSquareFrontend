@@ -127,8 +127,7 @@ const Leads = () => {
   const getDateStyle = (dateString) => {
     if (!dateString) return "text-slate-400";
 
-    const [day, month, year] = dateString.split("-").map(Number);
-    const visitDate = new Date(year, month - 1, day);
+    const visitDate = new Date(dateString);
     const today = new Date();
 
     today.setHours(0, 0, 0, 0);
