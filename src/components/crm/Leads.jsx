@@ -240,6 +240,7 @@ const Leads = () => {
           note: remark,
         });
         if (res.status == 201) {
+          getLeadsByStatus(activeTab);
           toast.success("Lead dealyed successfully");
           setRemark("");
           setFollowUpDate("");
@@ -253,8 +254,62 @@ const Leads = () => {
         setFollowUpDate("");
         setDispositionModal({ open: false, lead: null, type: null });
       }
+    } else if (dispositionModal.type == "convert") {
+      if (disPositionId == 0) {
+        toast.error("Please select lead for disposition");
+        setDispositionModal({ open: false, lead: null, type: null });
+        return;
+      }
 
-      console.log(followUpDate, remark);
+      try {
+        const res = await axios.post(`${apiUrl}/api/leads/convertToCustomer`, {
+          lead_id: disPositionId,
+        });
+
+        if (res.status == 200) {
+          toast.success("Lead converted to customer successfully");
+          setRemark("");
+          setFollowUpDate("");
+          setDispositionModal({ open: false, lead: null, type: null });
+          setDisPosLoader(false);
+        }
+      } catch (error) {
+        toast.error("Internal server error");
+        setDisPosLoader(false);
+        setRemark("");
+        setFollowUpDate("");
+        setDispositionModal({ open: false, lead: null, type: null });
+      }
+    } else if (dispositionModal.type == "cancel") {
+      if (disPositionId == 0) {
+        toast.error("Please select lead for disposition");
+        setDispositionModal({ open: false, lead: null, type: null });
+        return;
+      }
+      if (!remark) {
+        setDisPosLoader(false);
+        return;
+      }
+      try {
+        const res = await axios.post(`${apiUrl}/api/leads/cancelLead`, {
+          lead_id: disPositionId,
+        });
+
+        if (res.status == 200) {
+          getLeadsByStatus(activeTab);
+          toast.success("Lead cancelled successfully");
+          setRemark("");
+          setFollowUpDate("");
+          setDispositionModal({ open: false, lead: null, type: null });
+          setDisPosLoader(false);
+        }
+      } catch (error) {
+        toast.error("Internal server error");
+        setDisPosLoader(false);
+        setRemark("");
+        setFollowUpDate("");
+        setDispositionModal({ open: false, lead: null, type: null });
+      }
     }
   };
 
@@ -439,7 +494,10 @@ const Leads = () => {
                           {activeTab === "pending" && (
                             <>
                               <button
-                                onClick={() => handleAction(lead, "convert")}
+                                onClick={() => {
+                                  handleAction(lead, "convert");
+                                  setDispositionId(lead.id);
+                                }}
                                 className="p-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all"
                                 title="Convert to Customer"
                               >
@@ -766,21 +824,23 @@ const Leads = () => {
                 </div>
               )}
 
-              <div className="mb-8 space-y-2">
-                <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-2">
-                  <MessageSquare size={12} /> Remarks / Reason
-                </label>
-                <textarea
-                  rows="3"
-                  placeholder="Provide details..."
-                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 outline-none resize-none"
-                  value={remark}
-                  onChange={(e) => setRemark(e.target.value)}
-                />
-                <div className="text-red-500 text-xs">
-                  {!remark ? "remark is required" : ""}
+              {dispositionModal.type != "convert" && (
+                <div className="mb-8 space-y-2">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-2">
+                    <MessageSquare size={12} /> Remarks / Reason
+                  </label>
+                  <textarea
+                    rows="3"
+                    placeholder="Provide details..."
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 bg-slate-50 outline-none resize-none"
+                    value={remark}
+                    onChange={(e) => setRemark(e.target.value)}
+                  />
+                  <div className="text-red-500 text-xs">
+                    {!remark ? "remark is required" : ""}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <button
                 onClick={submitDisposition}
