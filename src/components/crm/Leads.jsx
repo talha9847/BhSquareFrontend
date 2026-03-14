@@ -74,6 +74,28 @@ const Leads = () => {
     });
   };
 
+  const addSource = async () => {
+    try {
+      setLoadSaveLead(true);
+      const res = await axios.post(`${apiUrl}/api/sources/addSource`, {
+        source_name: sourceName,
+      });
+
+      if (res.status == 201) {
+        getSources();
+        toast.success("Source added successfully");
+        setLoadSaveLead(false);
+        setIsSourceModalOpen(false);
+        setSourceName("");
+      }
+    } catch (error) {
+      toast.error("internal server error");
+      setLoadSaveLead(false);
+      setIsSourceModalOpen(false);
+      setSourceName("");
+    }
+  };
+
   const {
     register,
     handleSubmit,
@@ -643,10 +665,18 @@ const Leads = () => {
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-slate-800"
               />
               <button
-                onClick={() => setIsSourceModalOpen(false)}
-                className="w-full mt-4 py-3 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-all"
+                onClick={addSource}
+                disabled={loadSaveLead}
+                className="w-full mt-4 py-3 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-all flex items-center justify-center gap-2 disabled:opacity-60"
               >
-                Save Source
+                {loadSaveLead ? (
+                  <>
+                    <Loader2 className="animate-spin h-4 w-4" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Source"
+                )}
               </button>
             </div>
           </div>
