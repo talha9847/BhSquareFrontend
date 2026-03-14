@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -17,11 +17,16 @@ import {
   X,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [active, setActive] = useState("dashboard");
   const navigate = useNavigate();
   const location = useLocation();
+  const [leadCount, setLeadCount] = useState(0);
+
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const menuItems = [
     {
       name: "Dashboard",
@@ -32,7 +37,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     {
       name: "Leads",
       icon: <Users size={18} />,
-      count: 24,
+      count: leadCount,
       type: "Operations",
       path: "leads",
     },
@@ -59,6 +64,21 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { name: "Field Teams", icon: <HardHat size={18} />, type: "Installation" },
     { name: "AMC & Service", icon: <Wrench size={18} />, type: "After Sales" },
   ];
+
+  const fetchPendingLeadsCount = async () => {
+    try {
+      const result = await axios.get(
+        `${apiUrl}/api/leads/fetchPendingLeadsCount`,
+      );
+      setLeadCount(result.data.count);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPendingLeadsCount();
+  }, []);
 
   const categories = [...new Set(menuItems.map((item) => item.type))];
 
@@ -120,9 +140,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                       {item.icon}
                     </span>
                     <span className="text-sm font-semibold">{item.name}</span>
-                    {item.count && (
+                    {item.count >= 0 && (
                       <span
-                        className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${item.path === "Leads" ? "bg-[#f39200] text-white" : "bg-slate-200 text-slate-600"}`}
+                        className={`ml-auto  text-[10px] font-bold px-2 py-0.5 rounded-full ${item.path === "Leads" ? "bg-[#f39200] text-white" : "bg-slate-200 text-slate-600"}`}
                       >
                         {item.count}
                       </span>

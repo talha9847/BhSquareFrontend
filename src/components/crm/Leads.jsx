@@ -24,6 +24,7 @@ import Sidebar from "./Sidebar";
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import { resume } from "react-dom/server";
 
 const Leads = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -35,6 +36,14 @@ const Leads = () => {
   const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
   const [loadSaveLead, setLoadSaveLead] = useState(false);
   const [activeTab, setActiveTab] = useState("pending"); // active, delayed, cancelled
+  const [disPositionId, setDispositionId] = useState(0);
+  const [disPosLoader, setDisPosLoader] = useState(false);
+
+  const [convertPendingModal, setConvertPendingModal] = useState({
+    open: false,
+    lead: null,
+  });
+  const [convertPendingLoader, setConvertPendingLoader] = useState(false);
 
   // Disposition State
   const [dispositionModal, setDispositionModal] = useState({
@@ -124,6 +133,10 @@ const Leads = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    getLeadsByStatus(activeTab);
+  }, [activeTab]);
+
   const getDateStyle = (dateString) => {
     if (!dateString) return "text-slate-400";
 
@@ -189,23 +202,60 @@ const Leads = () => {
     setDispositionModal({ open: true, lead, type });
   };
 
-  const submitDisposition = () => {
-    setLeads(
-      leads.map((l) =>
-        l.id === dispositionModal.lead.id
-          ? {
-              ...l,
-              status:
-                dispositionModal.type === "convert"
-                  ? "converted"
-                  : dispositionModal.type,
-            }
-          : l,
-      ),
-    );
-    setRemark("");
-    setFollowUpDate("");
-    setDispositionModal({ open: false, lead: null, type: null });
+  const convertToPending = async () => {
+    try {
+      setConvertPendingLoader(true);
+      console.log("convert to pending");
+      const res = await axios.post(`${apiUrl}/api/leads/delayToPending`, {
+        lead_id: convertPendingModal.lead.id,
+      });
+
+      if (res.status == 200) {
+        getLeadsByStatus(activeTab);
+        toast.success("converted successfully");
+        setConvertPendingModal({ lead: null, open: false });
+        setConvertPendingLoader(false);
+      }
+    } catch (error) {
+      toast.error("Internal server error");
+      setConvertPendingModal({ lead: null, open: false });
+      setConvertPendingLoader(false);
+    }
+  };
+
+  const submitDisposition = async () => {
+    setDisPosLoader(true);
+    if (dispositionModal.type == "delay") {
+      if (disPositionId == 0) {
+        toast.error("Please select lead for disposition");
+        setDispositionModal({ open: false, lead: null, type: null });
+        return;
+      }
+      if (!followUpDate || !remark) return;
+
+      try {
+        const res = await axios.post(`${apiUrl}/api/leads/delayLead`, {
+          lead_id: disPositionId,
+          next_visit_date: followUpDate,
+          note: remark,
+        });
+        if (res.status == 201) {
+          toast.success("Lead dealyed successfully");
+          setRemark("");
+          setFollowUpDate("");
+          setDispositionModal({ open: false, lead: null, type: null });
+          setDisPosLoader(false);
+        }
+      } catch (error) {
+        toast.error("Internal server error");
+        setDisPosLoader(false);
+        setRemark("");
+        setFollowUpDate("");
+        setDispositionModal({ open: false, lead: null, type: null });
+      }
+
+      console.log(followUpDate, remark);
+    }
   };
 
   // Filter leads based on Tab + Search
@@ -374,24 +424,41 @@ const Leads = () => {
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           {/* CONVERT IS NOW IN ALL TABS */}
-                          <button
-                            onClick={() => handleAction(lead, "convert")}
-                            className="p-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all"
-                            title="Convert to Customer"
-                          >
-                            <ArrowRightLeft size={16} />
-                          </button>
-
+                          {(activeTab === "delayed" ||
+                            activeTab == "cancelled") && (
+                            <button
+                              onClick={() => {
+                                setConvertPendingModal({ open: true, lead });
+                              }}
+                              className="p-2 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 hover:bg-amber-600 hover:text-white transition-all"
+                              title="Convert to Pending"
+                            >
+                              <ArrowRightLeft size={16} />
+                            </button>
+                          )}
                           {activeTab === "pending" && (
                             <>
                               <button
-                                onClick={() => handleAction(lead, "delay")}
+                                onClick={() => handleAction(lead, "convert")}
+                                className="p-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all"
+                                title="Convert to Customer"
+                              >
+                                <ArrowRightLeft size={16} />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  handleAction(lead, "delay");
+                                  setDispositionId(lead.id);
+                                }}
                                 className="p-2 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 hover:bg-amber-600 hover:text-white transition-all"
                               >
                                 <Clock size={16} />
                               </button>
                               <button
-                                onClick={() => handleAction(lead, "cancel")}
+                                onClick={() => {
+                                  handleAction(lead, "cancel");
+                                  setDispositionId(lead.id);
+                                }}
                                 className="p-2 bg-rose-50 text-rose-600 rounded-xl border border-rose-100 hover:bg-rose-600 hover:text-white transition-all"
                               >
                                 <Ban size={16} />
@@ -653,9 +720,25 @@ const Leads = () => {
       {/* --- DISPOSITION MODAL (Handles Convert/Delay/Cancel) --- */}
       {dispositionModal.open && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-200">
+          <div className="relative bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-200">
+            {/* Close Button */}
+            <button
+              onClick={() =>
+                setDispositionModal({ ...dispositionModal, open: false })
+              }
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100"
+            >
+              <X size={18} className="text-slate-600" />
+            </button>
+
             <div
-              className={`p-6 text-white text-center ${dispositionModal.type === "convert" ? "bg-emerald-600" : dispositionModal.type === "delay" ? "bg-amber-500" : "bg-rose-600"}`}
+              className={`p-6 text-white text-center ${
+                dispositionModal.type === "convert"
+                  ? "bg-emerald-600"
+                  : dispositionModal.type === "delay"
+                    ? "bg-amber-500"
+                    : "bg-rose-600"
+              }`}
             >
               <h2 className="text-xl font-black font-syne uppercase tracking-tight">
                 {dispositionModal.type} Lead
@@ -664,6 +747,7 @@ const Leads = () => {
                 {dispositionModal.lead.customer_name}
               </p>
             </div>
+
             <div className="p-8">
               {dispositionModal.type === "delay" && (
                 <div className="mb-6 space-y-2">
@@ -676,8 +760,12 @@ const Leads = () => {
                     value={followUpDate}
                     onChange={(e) => setFollowUpDate(e.target.value)}
                   />
+                  <div className="text-red-500 text-xs">
+                    {!followUpDate ? "Date is required" : ""}
+                  </div>
                 </div>
               )}
+
               <div className="mb-8 space-y-2">
                 <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-2">
                   <MessageSquare size={12} /> Remarks / Reason
@@ -689,12 +777,85 @@ const Leads = () => {
                   value={remark}
                   onChange={(e) => setRemark(e.target.value)}
                 />
+                <div className="text-red-500 text-xs">
+                  {!remark ? "remark is required" : ""}
+                </div>
               </div>
+
               <button
                 onClick={submitDisposition}
-                className={`w-full py-4 text-white rounded-2xl font-bold shadow-lg ${dispositionModal.type === "convert" ? "bg-emerald-600" : dispositionModal.type === "delay" ? "bg-amber-500" : "bg-rose-600"}`}
+                className={`w-full py-4 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 ${
+                  dispositionModal.type === "convert"
+                    ? "bg-emerald-600"
+                    : dispositionModal.type === "delay"
+                      ? "bg-amber-500"
+                      : "bg-rose-600"
+                }`}
+                disabled={disPosLoader}
               >
-                Confirm {dispositionModal.type}
+                {disPosLoader ? (
+                  <>
+                    <Loader2 className="animate-spin h-4 w-4" />
+                    Confirming...
+                  </>
+                ) : (
+                  <>Confirm {dispositionModal.type}</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {convertPendingModal.open && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in duration-200">
+            <button
+              onClick={() =>
+                setConvertPendingModal({ ...convertPendingModal, open: false })
+              }
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100"
+            >
+              <X size={18} className="text-slate-600" />
+            </button>
+
+            <div className="p-6 text-center bg-amber-500">
+              <h2 className="text-lg font-bold text-white uppercase">
+                Convert to Pending
+              </h2>
+              <p className="text-white/80 text-sm mt-2">
+                Are you sure you want to convert{" "}
+                <strong>{convertPendingModal.lead.customer_name}</strong> back
+                to pending status?
+              </p>
+            </div>
+
+            <div className="p-6 flex justify-center gap-4">
+              <button
+                onClick={() => convertToPending()}
+                className="px-6 py-3 bg-emerald-600 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
+                disabled={convertPendingLoader}
+              >
+                {convertPendingLoader ? (
+                  <>
+                    <Loader2 className="animate-spin h-4 w-4" />
+                    Converting...
+                  </>
+                ) : (
+                  <>Yes</>
+                )}
+              </button>
+
+              <button
+                onClick={() =>
+                  setConvertPendingModal({
+                    ...convertPendingModal,
+                    open: false,
+                  })
+                }
+                className="px-6 py-3 bg-rose-600 text-white rounded-2xl font-bold shadow-lg"
+              >
+                No
               </button>
             </div>
           </div>
