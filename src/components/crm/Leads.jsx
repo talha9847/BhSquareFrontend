@@ -54,6 +54,26 @@ const Leads = () => {
   const [remark, setRemark] = useState("");
   const [followUpDate, setFollowUpDate] = useState("");
 
+  const [edit, setEdit] = useState(false);
+  const [editId, setEditId] = useState(0);
+
+  const editClick = async (lead) => {
+    setEdit(true);
+    setEditId(lead.id);
+    setIsModalOpen(true);
+    reset({
+      customer_name: lead.customer_name,
+      contact_number: lead.contact_number,
+      source_id: lead.source_id,
+      address: lead.address,
+      notes: lead.notes,
+      site_visit_date: lead.site_visit_date,
+      installation_type: lead.installation_type,
+      panel_wattage: lead.panel_wattage,
+      number_of_panels: lead.number_of_panels,
+    });
+  };
+
   const {
     register,
     handleSubmit,
@@ -159,38 +179,90 @@ const Leads = () => {
   };
 
   const onSubmit = async (data) => {
-    try {
-      setLoadSaveLead(true);
-      const res = await axios.post(`${apiUrl}/api/leads/addLead`, {
-        customer_name: data.customer_name,
-        contact_number: data.contact_number,
-        site_visit_date: data.site_visit_date,
-        source_id: data.source_id,
-        address: data.address,
-        notes: data.notes,
-        panel_wattage: data.panel_wattage,
-        number_of_panels: data.number_of_panels,
-        status: "pending",
-        installation_type: data.installation_type,
-      });
-
-      if (res.status == 201) {
-        toast.success("Lead save successfully");
-        getLeadsByStatus(activeTab);
-        setLoadSaveLead(false);
-        setIsModalOpen(false);
-        reset({
-          customer_name: "",
-          contact_number: "",
-          source_id: 1,
-          address: "",
-          notes: "",
-          site_visit_date: "",
-          installation_type: "",
+    if (edit) {
+      try {
+        if (editId == 0) {
+          toast.error("plase select lead to edit");
+          setLoadSaveLead(false);
+          setIsModalOpen(false);
+          return;
+        }
+        setLoadSaveLead(true);
+        const res = await axios.post(`${apiUrl}/api/leads/updateLead`, {
+          id: editId,
+          customer_name: data.customer_name,
+          contact_number: data.contact_number,
+          site_visit_date: data.site_visit_date,
+          source_id: data.source_id,
+          address: data.address,
+          notes: data.notes,
+          panel_wattage: data.panel_wattage,
+          number_of_panels: data.number_of_panels,
+          installation_type: data.installation_type,
         });
+
+        if (res.status == 200) {
+          toast.success("Lead edited successfully");
+          getLeadsByStatus(activeTab);
+          setLoadSaveLead(false);
+          setEdit(false);
+          setEditId(0);
+          setIsModalOpen(false);
+          reset({
+            customer_name: "",
+            contact_number: "",
+            source_id: 1,
+            address: "",
+            notes: "",
+            site_visit_date: "",
+            installation_type: "",
+            panel_wattage: "",
+            number_of_panels: "",
+          });
+        }
+      } catch (error) {
+        setLoadSaveLead(false);
+        setLoadSaveLead(false);
+        setEdit(false);
+        setEditId(0);
+        setIsModalOpen(false);
       }
-    } catch (error) {
-      setLoadSaveLead(false);
+    } else {
+      try {
+        setLoadSaveLead(true);
+        const res = await axios.post(`${apiUrl}/api/leads/addLead`, {
+          customer_name: data.customer_name,
+          contact_number: data.contact_number,
+          site_visit_date: data.site_visit_date,
+          source_id: data.source_id,
+          address: data.address,
+          notes: data.notes,
+          panel_wattage: data.panel_wattage,
+          number_of_panels: data.number_of_panels,
+          status: "pending",
+          installation_type: data.installation_type,
+        });
+
+        if (res.status == 201) {
+          toast.success("Lead save successfully");
+          getLeadsByStatus(activeTab);
+          setLoadSaveLead(false);
+          setIsModalOpen(false);
+          reset({
+            customer_name: "",
+            contact_number: "",
+            source_id: 1,
+            address: "",
+            notes: "",
+            site_visit_date: "",
+            installation_type: "",
+            panel_wattage: "",
+            number_of_panels: "",
+          });
+        }
+      } catch (error) {
+        setLoadSaveLead(false);
+      }
     }
   };
   // Capacity Estimator Logic
@@ -523,7 +595,12 @@ const Leads = () => {
                               </button>
                             </>
                           )}
-                          <button className="p-2 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100">
+                          <button
+                            onClick={() => {
+                              editClick(lead);
+                            }}
+                            className="p-2 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100"
+                          >
                             <Edit size={16} />
                           </button>
                         </div>
@@ -588,11 +665,25 @@ const Leads = () => {
                   <Users size={20} />
                 </div>
                 <h2 className="text-xl font-bold font-syne uppercase tracking-tight">
-                  Create New Lead
+                  {edit ? "Edit Lead" : " Create New Lead"}
                 </h2>
               </div>
               <button
-                onClick={() => setIsModalOpen(false)}
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setEdit(false);
+                  reset({
+                    customer_name: "",
+                    contact_number: "",
+                    source_id: 1,
+                    address: "",
+                    notes: "",
+                    site_visit_date: "",
+                    installation_type: "",
+                    panel_wattage: "",
+                    number_of_panels: "",
+                  });
+                }}
                 className="hover:bg-white/10 p-2 rounded-full transition-colors"
               >
                 <X size={24} />
