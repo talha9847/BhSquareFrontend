@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Save,
   User,
@@ -19,14 +19,38 @@ import {
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import { useLocation } from "react-router-dom";
+import axios from "axios";
 
 const DocumentCollection = () => {
+  const location = useLocation();
+
+  const { customerId } = location.state || {};
+  console.log(customerId);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // New State for "Add Item" inline input
   const [isAddingDoc, setIsAddingDoc] = useState(false);
   const [newDocName, setNewDocName] = useState("");
+  const [leadsData, setLeadsData] = useState({});
+  const apiUrl = import.meta.env.VITE_API_URL;
 
+  const getLeadsData = async () => {
+    try {
+      const res = await axios.get(
+        `${apiUrl}/api/docs/getLeadDetailFromCustomerId/${customerId}`,
+      );
+
+      if (res.status == 200) {
+        setLeadsData(res.data.data);
+        console.log(res.data.data);
+      }
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    getLeadsData();
+  }, []);
   const [formData, setFormData] = useState({
     name: "",
     number: "",
@@ -102,14 +126,14 @@ const DocumentCollection = () => {
                   <CustomInput
                     label="Full Name"
                     placeholder="Enter name"
-                    value={formData.name}
+                    value={leadsData.customer_name}
                     onChange={(v) => setFormData({ ...formData, name: v })}
                   />
                   <CustomInput
                     label="Contact"
                     placeholder="+91..."
                     icon={<Phone size={14} />}
-                    value={formData.number}
+                    value={leadsData.contact_number}
                     onChange={(v) => setFormData({ ...formData, number: v })}
                   />
                   <div className="space-y-1.5">
@@ -119,7 +143,7 @@ const DocumentCollection = () => {
                     <textarea
                       placeholder="Enter site location"
                       className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 min-h-[100px] outline-none focus:bg-white focus:border-[#1a5695] transition-all"
-                      value={formData.address}
+                      value={leadsData.address}
                       onChange={(e) =>
                         setFormData({ ...formData, address: e.target.value })
                       }
