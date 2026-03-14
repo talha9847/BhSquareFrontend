@@ -12,11 +12,23 @@ import Leads from "./components/crm/Leads";
 import Customer from "./components/crm/Customer";
 import DocumentCollection from "./components/crm/DocumentCollection";
 import Registration from "./components/crm/Registration";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 function App() {
   const [count, setCount] = useState(0);
 
   return (
     <>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnHover
+        draggable
+        theme="colored"
+      />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<FrontWeb />} />

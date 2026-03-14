@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Users,
   Plus,
@@ -17,17 +17,24 @@ import {
   ClipboardList,
   ChevronRight,
   Database,
+  Loader2,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import axios from "axios";
+import { useForm } from "react-hook-form";
+import { toast } from "react-toastify";
 
 const Leads = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sourceName, setSourceName] = useState("");
+  const [sources, setSources] = useState([]);
+  const [sourceMap, setSourceMap] = useState({});
   const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("active"); // active, delayed, cancelled
+  const [loadSaveLead, setLoadSaveLead] = useState(false);
+  const [activeTab, setActiveTab] = useState("pending"); // active, delayed, cancelled
 
   // Disposition State
   const [dispositionModal, setDispositionModal] = useState({
@@ -38,37 +45,120 @@ const Leads = () => {
   const [remark, setRemark] = useState("");
   const [followUpDate, setFollowUpDate] = useState("");
 
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
+
   // Lead Data with status
   const [leads, setLeads] = useState([
     {
       id: 1,
-      name: "Ramanbhai Patel",
-      number: "+91 87338 17262",
+      customer_name: "Ramanbhai Patel",
+      contact_number: "+91 87338 17262",
       address: "Vaskui, Mahuva",
-      capacity: "8.32 kW",
-      date: "01-01-2026",
+      total_capacity: "8.32 kW",
+      site_visit_date: "01-01-2026",
       status: "active",
     },
     {
       id: 2,
-      name: "Suresh Mehta",
-      number: "+91 98221 00234",
+      customer_name: "Suresh Mehta",
+      contact_number: "+91 98221 00234",
       address: "Adajan, Surat",
-      capacity: "5.50 kW",
-      date: "01-01-2026",
+      total_capacity: "5.50 kW",
+      site_visit_date: "01-01-2026",
       status: "delayed",
     },
     {
       id: 3,
-      name: "Anita Desai",
-      number: "+91 70445 99122",
+      customer_name: "Anita Desai",
+      contact_number: "+91 70445 99122",
       address: "Bardoli, GJ",
-      capacity: "12.00 kW",
-      date: "01-01-2026",
+      total_capacity: "12.00 kW",
+      site_visit_date: "01-01-2026",
       status: "cancelled",
     },
   ]);
+  const apiUrl = import.meta.env.VITE_API_URL;
 
+  const getSources = async () => {
+    try {
+      const result = await axios.get(`${apiUrl}/api/sources/fetchSources`);
+
+      setSources(result.data.data);
+
+      result.data.data.map((v) => {
+        sourceMap[v.id] = v.source_name;
+      });
+
+      console.log(sourceMap[1]);
+    } catch (error) {}
+  };
+
+  const getLeadsByStatus = async (status) => {
+    try {
+      const result = await axios.get(`${apiUrl}/api/leads/fetchLeadsByStatus`, {
+        params: { status: status },
+      });
+
+      console.log(result.data);
+
+      setLeads(result.data.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      await getSources();
+
+      if (activeTab === "pending") {
+        await getLeadsByStatus("pending");
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const onSubmit = async (data) => {
+    try {
+      setLoadSaveLead(true);
+      const res = await axios.post(`${apiUrl}/api/leads/addLead`, {
+        customer_name: data.customer_name,
+        contact_number: data.contact_number,
+        site_visit_date: data.site_visit_date,
+        source_id: data.source_id,
+        address: data.address,
+        notes: data.notes,
+        panel_wattage: data.panel_wattage,
+        number_of_panels: data.number_of_panels,
+        status: "pending",
+        installation_type: data.installation_type,
+      });
+
+      if (res.status == 201) {
+        toast.success("Lead save successfully");
+        getLeadsByStatus(activeTab);
+        setLoadSaveLead(false);
+        setIsModalOpen(false);
+        reset({
+          customer_name: "",
+          contact_number: "",
+          source_id: 1,
+          address: "",
+          notes: "",
+          site_visit_date: "",
+          installation_type: "",
+        });
+      }
+    } catch (error) {
+      setLoadSaveLead(false);
+    }
+  };
   // Capacity Estimator Logic
   const [plateWattage, setPlateWattage] = useState(550);
   const [quantity, setQuantity] = useState(10);
@@ -101,8 +191,8 @@ const Leads = () => {
   const filteredLeads = leads.filter((lead) => {
     const matchesTab = lead.status === activeTab;
     const matchesSearch =
-      lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.number.includes(searchQuery);
+      lead.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      lead.contact_number.includes(searchQuery);
     return matchesTab && matchesSearch;
   });
 
@@ -153,7 +243,7 @@ const Leads = () => {
           {/* TABS SYSTEM */}
           <div className="flex gap-2 mb-6 bg-slate-200/50 p-1.5 rounded-[22px] w-fit">
             {[
-              { id: "active", label: "Active", color: "bg-emerald-500" },
+              { id: "pending", label: "Active", color: "bg-emerald-500" },
               { id: "delayed", label: "Delayed", color: "bg-amber-500" },
               { id: "cancelled", label: "Cancelled", color: "bg-rose-500" },
             ].map((tab) => (
@@ -221,10 +311,10 @@ const Leads = () => {
                     >
                       <td className="px-6 py-4">
                         <p className="font-bold text-slate-800 text-sm">
-                          {lead.name}
+                          {lead.customer_name}
                         </p>
                         <p className="text-slate-400 text-[11px] font-medium">
-                          {lead.number}
+                          {lead.contact_number}
                         </p>
                       </td>
                       <td className="px-6 py-4">
@@ -237,12 +327,12 @@ const Leads = () => {
                       </td>
                       <td className="px-6 py-4">
                         <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase">
-                          {lead.source}
+                          {sourceMap[lead.source_id]}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm font-black text-[#1a5695]">
-                          {lead.capacity}
+                          {(lead.total_capacity / 1000).toFixed(2)} Kw
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">
@@ -256,7 +346,7 @@ const Leads = () => {
                             <ArrowRightLeft size={16} />
                           </button>
 
-                          {activeTab === "active" && (
+                          {activeTab === "pending" && (
                             <>
                               <button
                                 onClick={() => handleAction(lead, "delay")}
@@ -351,7 +441,7 @@ const Leads = () => {
             {/* Scrollable Form Body */}
             <form
               className="p-6 overflow-y-auto custom-scrollbar flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4"
-              onSubmit={(e) => e.preventDefault()}
+              onSubmit={handleSubmit(onSubmit)}
             >
               {/* Row 1: Identity */}
               <div className="space-y-1">
@@ -359,6 +449,9 @@ const Leads = () => {
                   Customer Name
                 </label>
                 <input
+                  {...register("customer_name", {
+                    required: "Customer name is required",
+                  })}
                   placeholder="e.g. Rajesh Bhai"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
                 />
@@ -368,6 +461,9 @@ const Leads = () => {
                   Contact Number
                 </label>
                 <input
+                  {...register("contact_number", {
+                    required: "Contact number is required",
+                  })}
                   placeholder="+91 00000 00000"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
                 />
@@ -379,6 +475,7 @@ const Leads = () => {
                   <Calendar size={10} /> Visit Schedule
                 </label>
                 <input
+                  {...register("site_visit_date")}
                   type="date"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
                 />
@@ -387,12 +484,17 @@ const Leads = () => {
                 <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase flex items-center gap-1">
                   <Database size={10} /> Lead Source
                 </label>
-                <select className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695] appearance-none">
-                  <option value="">Select Source</option>
-                  <option value="facebook">Facebook</option>
-                  <option value="instagram">Instagram</option>
-                  <option value="whatsapp">WhatsApp</option>
-                  <option value="reference">Reference</option>
+                <select
+                  {...register("source_id", {
+                    required: "source is required",
+                  })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695] appearance-none"
+                >
+                  {sources.map((v, i) => (
+                    <option key={i} value={v.id}>
+                      {v.source_name}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -401,9 +503,15 @@ const Leads = () => {
                 <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">
                   Project Category
                 </label>
-                <select className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]">
-                  <option>Residential</option>
-                  <option>Commercial</option>
+                <select
+                  {...register("installation_type", {
+                    required: "Project category is required",
+                  })}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
+                >
+                  <option value={"Residential"}>Residential</option>
+                  <option value={"Commercial"}>Commercial</option>
+                  <option value={"Industrial"}>Industrial</option>
                 </select>
               </div>
 
@@ -413,6 +521,9 @@ const Leads = () => {
                   Full Address
                 </label>
                 <textarea
+                  {...register("address", {
+                    required: "Address is required",
+                  })}
                   placeholder="Enter site address..."
                   rows="2"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none resize-none focus:border-[#1a5695]"
@@ -425,6 +536,9 @@ const Leads = () => {
                   <ClipboardList size={10} /> Internal Notes
                 </label>
                 <textarea
+                  {...register("notes", {
+                    required: "Notes is required",
+                  })}
                   placeholder="Specific requirements..."
                   rows="2"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none resize-none focus:border-[#1a5695]"
@@ -442,6 +556,7 @@ const Leads = () => {
                       Wattage (W)
                     </span>
                     <input
+                      {...register("panel_wattage")}
                       type="number"
                       value={plateWattage}
                       onChange={(e) => setPlateWattage(e.target.value)}
@@ -453,6 +568,7 @@ const Leads = () => {
                       Plates
                     </span>
                     <input
+                      {...register("number_of_panels")}
                       type="number"
                       value={quantity}
                       onChange={(e) => setQuantity(e.target.value)}
@@ -469,24 +585,31 @@ const Leads = () => {
                   </span>
                 </div>
               </div>
-            </form>
 
-            {/* Fixed Footer Actions */}
-            <div className="p-6 border-t border-slate-100 bg-slate-50/50 shrink-0 flex gap-3">
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="flex-1 px-6 py-3.5 rounded-2xl font-bold text-slate-400 bg-white border border-slate-200 hover:bg-slate-50 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="flex-[2] px-6 py-3.5 rounded-2xl font-bold text-white bg-[#f39200] shadow-lg shadow-orange-500/20 hover:bg-[#e08600] active:scale-95 transition-all"
-              >
-                Save Lead
-              </button>
-            </div>
+              <div className="p-6 border-t border-slate-100 bg-slate-50/50 shrink-0 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 px-6 py-3.5 rounded-2xl font-bold text-slate-400 bg-white border border-slate-200 hover:bg-slate-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-[2] px-6 py-3.5 rounded-2xl font-bold text-white bg-[#f39200] shadow-lg shadow-orange-500/20 hover:bg-[#e08600] active:scale-95 transition-all flex items-center justify-center gap-2"
+                  disabled={loadSaveLead} // disable button while loading
+                >
+                  {loadSaveLead ? (
+                    <>
+                      <Loader2 className="animate-spin w-5 h-5 text-white" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Lead"
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -502,7 +625,7 @@ const Leads = () => {
                 {dispositionModal.type} Lead
               </h2>
               <p className="text-white/80 text-xs font-bold">
-                {dispositionModal.lead.name}
+                {dispositionModal.lead.customer_name}
               </p>
             </div>
             <div className="p-8">
