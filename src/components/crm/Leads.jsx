@@ -362,6 +362,7 @@ const Leads = () => {
 
         if (res.status == 200) {
           toast.success("Lead converted to customer successfully");
+          getLeadsByStatus(activeTab);
           setRemark("");
           setFollowUpDate("");
           setDispositionModal({ open: false, lead: null, type: null });

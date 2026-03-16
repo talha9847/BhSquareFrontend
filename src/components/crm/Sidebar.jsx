@@ -33,6 +33,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <LayoutDashboard size={18} />,
       type: "Operations",
       path: "dashboard",
+      activePaths: ["/dashboard"], // highlight for both
     },
     {
       name: "Leads",
@@ -40,6 +41,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       count: leadCount,
       type: "Operations",
       path: "leads",
+      activePaths: ["/leads"], // highlight for both
     },
     {
       name: "Customers",
@@ -47,14 +49,15 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       count: 5,
       type: "Operations",
       path: "customers",
+      activePaths: ["/customers", "/documentcollection"], // highlight for both
     },
-    {
-      name: "Doc Collection",
-      icon: <FolderOpen size={18} />,
-      count: 8,
-      type: "Operations",
-      path: "documentcollection",
-    },
+    // {
+    //   name: "Doc Collection",
+    //   icon: <FolderOpen size={18} />,
+    //   count: 8,
+    //   type: "Operations",
+    //   path: "documentcollection",
+    // },
     {
       name: "Registration",
       icon: <Box size={18} />,
@@ -120,38 +123,48 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               </p>
               {menuItems
                 .filter((item) => item.type === cat)
-                .map((item) => (
-                  <button
-                    key={item.name}
-                    onClick={() => {
-                      setActive(item.path);
-                      setActive(item.path);
-                      navigate(`/${item.path}`);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all mb-1 ${
-                      location.pathname === `/${item.path}`
-                        ? "bg-[#1a5695] text-white shadow-md shadow-blue-900/20"
-                        : "text-slate-600 hover:bg-slate-100 hover:text-[#1a5695]"
-                    }`}
-                  >
-                    <span
-                      className={`p-1.5 rounded-lg ${location.pathname === `/${item.path}` ? "bg-white/20" : "bg-slate-100"}`}
+                .map((item) => {
+                  // Compute isActive BEFORE returning JSX
+                  const isActive = item.activePaths
+                    ? item.activePaths.includes(location.pathname)
+                    : location.pathname === `/${item.path}`;
+
+                  return (
+                    <button
+                      key={item.name}
+                      onClick={() => {
+                        setActive(item.path);
+                        navigate(`/${item.path}`);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all mb-1 ${
+                        isActive
+                          ? "bg-[#1a5695] text-white shadow-md shadow-blue-900/20"
+                          : "text-slate-600 hover:bg-slate-100 hover:text-[#1a5695]"
+                      }`}
                     >
-                      {item.icon}
-                    </span>
-                    <span className="text-sm font-semibold">{item.name}</span>
-                    {item.count >= 0 && (
                       <span
-                        className={`ml-auto  text-[10px] font-bold px-2 py-0.5 rounded-full ${item.path === "Leads" ? "bg-[#f39200] text-white" : "bg-slate-200 text-slate-600"}`}
+                        className={`p-1.5 rounded-lg ${isActive ? "bg-white/20" : "bg-slate-100"}`}
                       >
-                        {item.count}
+                        {item.icon}
                       </span>
-                    )}
-                    {item.alert && (
-                      <span className="ml-auto w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                    )}
-                  </button>
-                ))}
+                      <span className="text-sm font-semibold">{item.name}</span>
+                      {item.count >= 0 && (
+                        <span
+                          className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            item.path === "Leads"
+                              ? "bg-[#f39200] text-white"
+                              : "bg-slate-200 text-slate-600"
+                          }`}
+                        >
+                          {item.count}
+                        </span>
+                      )}
+                      {item.alert && (
+                        <span className="ml-auto w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                      )}
+                    </button>
+                  );
+                })}
             </div>
           ))}
         </nav>

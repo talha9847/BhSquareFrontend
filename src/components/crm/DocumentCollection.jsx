@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Save,
   User,
@@ -16,53 +16,205 @@ import {
   Navigation,
   X,
   Check,
+  Loader2,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import { useLocation } from "react-router-dom";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const DocumentCollection = () => {
+  const location = useLocation();
+  const { customerId } = location.state || {};
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // New State for "Add Item" inline input
   const [isAddingDoc, setIsAddingDoc] = useState(false);
   const [newDocName, setNewDocName] = useState("");
+  const [leadsData, setLeadsData] = useState({});
+  const apiUrl = import.meta.env.VITE_API_URL;
+  const [loading, setLoading] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    number: "",
-    address: "",
-    capacity: "",
-    consumerNumber: "",
-    geoCoords: "",
-    subDivision: "",
-    regId: "",
-    documents: [
-      { id: 1, name: "Aadhar Card" },
-      { id: 2, name: "Vera Bill" },
-      { id: 3, name: "Bank Passbook" },
-      { id: 4, name: "Light Bill" },
-    ],
-  });
+  const [docInfo, setDocInfo] = useState({});
+  const [isFound, setIsFound] = useState(false);
+  const [regLoading, setRegLoading] = useState(false);
+
+  const [documents, setDocuments] = useState([
+    { id: 1, name: "Aadhar Card", file: null },
+    { id: 2, name: "Vera Bill", file: null },
+    { id: 3, name: "Bank Passbook", file: null },
+    { id: 4, name: "Light Bill", file: null },
+  ]);
+  const [docLoad, setDocLoad] = useState(false);
+  const saveIdentity = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.post(`${apiUrl}/api/leads/updateLead`, {
+        id: leadsData.id,
+        customer_name: leadsData.customer_name,
+        contact_number: leadsData.contact_number,
+        address: leadsData.address,
+      });
+
+      if (res.status == 200) {
+        setLoading(false);
+        getLeadsData();
+        toast.success("Leads identity updated");
+      }
+    } catch (error) {
+      setLoading(false);
+      toast.error("Internal server error");
+    }
+  };
+
+  const getDocInfo = async () => {
+    try {
+      const res = await axios.get(
+        `${apiUrl}/api/docs/getCustomerDocumentByCustomerId/${customerId}`,
+      );
+
+      if (res.data.data) {
+        setDocInfo(res.data.data);
+        setIsFound(true);
+      } else {
+        console.log(" iam here lkj");
+        setDocInfo({
+          customer_id: customerId,
+          consumer_number: "123",
+          geo_coordinate: "talha",
+          registration_number: "malek",
+          sub_division: "sub_division",
+        });
+      }
+    } catch (error) {
+      setLoading(false);
+    }
+  };
+  const saveRegistratin = async () => {
+    try {
+      setRegLoading(true);
+      const res = await axios.put(
+        `${apiUrl}/api/docs/upsertCustomerDocument`,
+        docInfo,
+      );
+      if (res.status == 200) {
+        setRegLoading(false);
+        if (isFound) {
+          toast.success("Updated Successfully");
+        } else {
+          toast.success("Created Successfully");
+          isFound(true);
+        }
+      }
+    } catch (error) {
+      setRegLoading(false);
+    }
+  };
+  const updateCapacity = async () => {
+    try {
+      setUpdateLoading(true);
+      const res = await axios.post(`${apiUrl}/api/leads/updateLead`, {
+        id: leadsData.id,
+        panel_wattage: leadsData.panel_wattage,
+        number_of_panels: leadsData.number_of_panels,
+      });
+      if (res.status == 200) {
+        setUpdateLoading(false);
+        getLeadsData();
+        toast.success("Capacity updated");
+      }
+    } catch (error) {
+      setUpdateLoading(false);
+      toast.error("Internal server error");
+    }
+  };
+
+  const saveAllDocs = async () => {
+    try {
+      setDocLoad(true);
+      const formData = new FormData();
+
+      formData.append("customerId", customerId);
+      formData.append("customerName", leadsData.customer_name);
+      formData.append("contactNumber", leadsData.contact_number);
+      console.log(leadsData.contact_number);
+
+      documents.forEach((doc) => {
+        if (doc.file) {
+          formData.append(doc.name, doc.file);
+        }
+      });
+
+      const res = await axios.post(
+        `${apiUrl}/api/docs/uploadDocsToDrive`,
+        formData,
+      );
+      if (res.status == 200) {
+        setDocuments([
+          { id: 1, name: "Aadhar Card", file: null },
+          { id: 2, name: "Vera Bill", file: null },
+          { id: 3, name: "Bank Passbook", file: null },
+          { id: 4, name: "Light Bill", file: null },
+        ]);
+        toast.success("Uploaded successfully");
+        setDocLoad(false);
+      }
+    } catch (error) {
+      setDocuments([
+        { id: 1, name: "Aadhar Card", file: null },
+        { id: 2, name: "Vera Bill", file: null },
+        { id: 3, name: "Bank Passbook", file: null },
+        { id: 4, name: "Light Bill", file: null },
+      ]);
+      toast.success("Internal  server error");
+      setDocLoad(false);
+    }
+  };
+
+  // Auto-calculate capacity when wattage or panels change
+  // useEffect(() => {
+  //   const calc = (formData.panelWattage * formData.totalPanels) / 1000;
+  //   setFormData((prev) => ({ ...prev, capacity: calc.toFixed(2) }));
+  // }, [formData.panelWattage, formData.totalPanels]);
+
+  const getLeadsData = async () => {
+    try {
+      const res = await axios.get(
+        `${apiUrl}/api/docs/getLeadDetailFromCustomerId/${customerId}`,
+      );
+      if (res.status === 200) {
+        setLeadsData(res.data.data);
+        console.log(res.data.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    getLeadsData();
+    getDocInfo();
+  }, []);
 
   const confirmAddDoc = () => {
     if (newDocName.trim()) {
-      setFormData({
-        ...formData,
-        documents: [
-          ...formData.documents,
-          { id: Date.now(), name: newDocName },
-        ],
-      });
+      setDocuments((prevDocs) => [
+        ...prevDocs,
+        { id: Date.now(), name: newDocName, file: null },
+      ]);
+
       setNewDocName("");
       setIsAddingDoc(false);
     }
   };
-
   const removeDoc = (id) => {
-    setFormData({
-      ...formData,
-      documents: formData.documents.filter((doc) => doc.id !== id),
-    });
+    setDocuments((prevDocs) => prevDocs.filter((doc) => doc.id !== id));
+  };
+
+  const handleFileChange = (id, file) => {
+    setDocuments((prevDocs) =>
+      prevDocs.map((doc) => (doc.id === id ? { ...doc, file: file } : doc)),
+    );
   };
 
   return (
@@ -76,146 +228,260 @@ const DocumentCollection = () => {
       <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <nav className="bg-white/80 backdrop-blur-md border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-30 shadow-sm">
-          <div className="flex items-center gap-4">
-            <button className="p-2 hover:bg-slate-100 rounded-xl transition-colors text-slate-400">
-              <ArrowLeft size={20} />
+        <main className="p-4 lg:p-8 max-w-7xl mx-auto w-full space-y-8">
+          <div className="flex items-center gap-4 mb-2">
+            <button
+              onClick={() => window.history.back()}
+              className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#1a5695] hover:border-[#1a5695] hover:shadow-md transition-all group"
+            >
+              <ArrowLeft
+                size={20}
+                className="group-hover:-translate-x-1 transition-transform"
+              />
             </button>
-            <h1 className="text-xl font-black text-slate-800 tracking-tight uppercase">
-              Convert to Customer
-            </h1>
+            <div>
+              <h1 className="text-xl font-black text-slate-800 tracking-tight uppercase">
+                Customer Profile
+              </h1>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                ID: {customerId || "New Lead"}
+              </p>
+            </div>
           </div>
-          <button className="bg-[#1a5695] text-white px-8 py-3 rounded-2xl font-black text-xs uppercase flex items-center gap-2 hover:bg-[#15467a] transition-all shadow-lg shadow-blue-900/20 active:scale-95">
-            <Save size={18} /> Save Customer Profile
-          </button>
-        </nav>
-
-        <main className="p-4 lg:p-8 max-w-7xl mx-auto w-full">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* LEFT COLUMN */}
+            {/* LEFT COLUMN: Identity & System */}
             <div className="lg:col-span-1 space-y-6">
-              <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
+              {/* Card 1: Lead Identity */}
+              <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm flex flex-col">
                 <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
                   <User size={14} className="text-[#1a5695]" /> Lead Identity
                 </h2>
-                <div className="space-y-5">
+                <div className="space-y-5 mb-6">
                   <CustomInput
                     label="Full Name"
-                    placeholder="Enter name"
-                    value={formData.name}
-                    onChange={(v) => setFormData({ ...formData, name: v })}
+                    value={leadsData.customer_name}
+                    onChange={(v) => {
+                      setLeadsData({
+                        ...leadsData,
+                        customer_name: v,
+                      });
+                    }}
                   />
                   <CustomInput
                     label="Contact"
-                    placeholder="+91..."
                     icon={<Phone size={14} />}
-                    value={formData.number}
-                    onChange={(v) => setFormData({ ...formData, number: v })}
+                    value={leadsData.contact_number}
+                    onChange={(v) => {
+                      setLeadsData({
+                        ...leadsData,
+                        contact_number: v,
+                      });
+                    }}
                   />
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">
                       Site Address
                     </label>
                     <textarea
-                      placeholder="Enter site location"
-                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 min-h-[100px] outline-none focus:bg-white focus:border-[#1a5695] transition-all"
-                      value={formData.address}
-                      onChange={(e) =>
-                        setFormData({ ...formData, address: e.target.value })
-                      }
+                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 min-h-[80px] outline-none focus:bg-white focus:border-[#1a5695] transition-all"
+                      value={leadsData.address}
+                      onChange={(e) => {
+                        setLeadsData({
+                          ...leadsData,
+                          address: e.target.value,
+                        });
+                      }}
                     />
                   </div>
                 </div>
+                <button
+                  onClick={() => {
+                    saveIdentity();
+                  }}
+                  className="w-full bg-[#1a5695] text-white py-3 rounded-xl font-bold text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-[#15467a] transition-all"
+                >
+                  {loading ? (
+                    <>
+                      <Save size={14} /> Saving....
+                      <Loader2 className="animate-spin h-4 w-4" />
+                    </>
+                  ) : (
+                    <>
+                      <Save size={14} /> Save Identity
+                    </>
+                  )}
+                </button>
               </div>
 
+              {/* Card 2: System Details (Calculation) */}
               <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
                 <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                  <Zap size={14} className="text-[#1a5695]" /> System Details
+                  <Zap size={14} className="text-[#1a5695]" /> System
+                  Calculation
                 </h2>
-                <div className="space-y-5">
-                  <CustomInput
-                    label="Capacity (kW)"
-                    placeholder="e.g. 8.32"
-                    icon={<Zap size={14} />}
-                    value={formData.capacity}
-                    onChange={(v) => setFormData({ ...formData, capacity: v })}
-                  />
+                <div className="space-y-5 mb-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <CustomInput
+                      label="Wattage"
+                      placeholder="540"
+                      value={leadsData.panel_wattage}
+                      onChange={(v) =>
+                        setLeadsData({ ...leadsData, panel_wattage: v })
+                      }
+                    />
+                    <CustomInput
+                      label="Total Panels"
+                      placeholder="10"
+                      value={leadsData.number_of_panels}
+                      onChange={(v) =>
+                        setLeadsData({ ...leadsData, number_of_panels: v })
+                      }
+                    />
+                  </div>
+                  <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex justify-between items-center">
+                    <span className="text-[10px] font-black text-[#1a5695] uppercase">
+                      Total Capacity
+                    </span>
+                    <span className="text-xl font-black text-[#1a5695]">
+                      {(
+                        (leadsData.panel_wattage * leadsData.number_of_panels) /
+                        1000
+                      ).toFixed(2)}{" "}
+                      kW
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    updateCapacity();
+                  }}
+                  className="w-full bg-[#1a5695] text-white py-3 rounded-xl font-bold text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-[#15467a] transition-all"
+                >
+                  {updateLoading ? (
+                    <>
+                      <Save size={14} /> Updating....
+                      <Loader2 className="animate-spin h-4 w-4" />
+                    </>
+                  ) : (
+                    <>
+                      <Save size={14} /> Update Capacity
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: Registration & Docs */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Card 3: Registration Info */}
+              <div className="bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm">
+                <div className="flex justify-between items-center mb-8">
+                  <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <ClipboardCheck size={14} className="text-[#1a5695]" />{" "}
+                    Registration Info
+                  </h2>
+                  <button
+                    onClick={() => {
+                      saveRegistratin();
+                    }}
+                    disabled={regLoading}
+                    className="bg-[#1a5695] text-white px-6 py-2.5 rounded-xl font-bold text-[10px] uppercase flex items-center gap-2 hover:bg-[#15467a] transition-all shadow-md shadow-blue-900/10"
+                  >
+                    {regLoading ? (
+                      <>
+                        <Save size={14} />{" "}
+                        {isFound ? "Updating....." : "Saving....."}
+                        <Loader2 className="animate-spin h-4 w-4" />
+                      </>
+                    ) : (
+                      <>
+                        <Save size={14} />
+                        {isFound ? "Update Data" : "Save Data"}
+                      </>
+                    )}
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <CustomInput
                     label="Consumer Number"
                     placeholder="11 Digit No."
                     icon={<Hash size={14} />}
-                    value={formData.consumerNumber}
+                    value={docInfo.consumer_number}
                     onChange={(v) =>
-                      setFormData({ ...formData, consumerNumber: v })
+                      setDocInfo({ ...docInfo, consumer_number: v })
                     }
                   />
-                </div>
-              </div>
-            </div>
-
-            {/* RIGHT COLUMN */}
-            <div className="lg:col-span-2 space-y-6">
-              <div className="bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm">
-                <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-8 flex items-center gap-2">
-                  <ClipboardCheck size={14} className="text-[#1a5695]" />{" "}
-                  Registration Info
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <CustomInput
                     label="Geo Coordinates"
-                    placeholder="21.1702° N..."
                     icon={<Globe size={16} />}
-                    value={formData.geoCoords}
-                    onChange={(v) => setFormData({ ...formData, geoCoords: v })}
+                    value={docInfo.geo_coordinate}
+                    onChange={(v) =>
+                      setDocInfo({ ...docInfo, geo_coordinate: v })
+                    }
                   />
                   <CustomInput
                     label="Sub Division"
-                    placeholder="e.g. Surat West"
                     icon={<Navigation size={16} />}
-                    value={formData.subDivision}
+                    value={docInfo.sub_division}
                     onChange={(v) =>
-                      setFormData({ ...formData, subDivision: v })
+                      setDocInfo({ ...docInfo, sub_division: v })
                     }
                   />
-                  <div className="md:col-span-2">
-                    <CustomInput
-                      label="Registration ID"
-                      placeholder="Enter ID"
-                      value={formData.regId}
-                      onChange={(v) => setFormData({ ...formData, regId: v })}
-                    />
-                  </div>
+                  <CustomInput
+                    label="Registration ID"
+                    value={docInfo.registration_number}
+                    onChange={(v) =>
+                      setDocInfo({ ...docInfo, registration_number: v })
+                    }
+                  />
                 </div>
               </div>
 
-              {/* DOCUMENT SECTION */}
+              {/* Card 4: Documentation */}
               <div className="bg-white p-8 rounded-[40px] border border-slate-200 shadow-sm">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <FileText size={14} className="text-[#1a5695]" />{" "}
                     Documentation
                   </h2>
-                  {!isAddingDoc && (
+                  <div className="flex gap-3">
+                    {!isAddingDoc && (
+                      <button
+                        onClick={() => setIsAddingDoc(true)}
+                        className="text-[10px] font-black uppercase text-[#1a5695] bg-blue-50 px-4 py-2 rounded-xl hover:bg-[#1a5695] hover:text-white transition-all flex items-center gap-2"
+                      >
+                        <Plus size={14} /> Add Item
+                      </button>
+                    )}
                     <button
-                      onClick={() => setIsAddingDoc(true)}
-                      className="text-[10px] font-black uppercase text-[#1a5695] bg-blue-50 px-4 py-2 rounded-xl hover:bg-[#1a5695] hover:text-white transition-all flex items-center gap-2"
+                      onClick={() => {
+                        saveAllDocs();
+                      }}
+                      className="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold text-[10px] uppercase flex items-center gap-2 hover:bg-emerald-700 transition-all"
                     >
-                      <Plus size={14} /> Add Item
+                      {docLoad ? (
+                        <>
+                          <Save size={14} /> Saving Docs....
+                          <Loader2 className="animate-spin h-4 w-4" />
+                        </>
+                      ) : (
+                        <>
+                          <Save size={14} /> Sava All Docs
+                        </>
+                      )}
                     </button>
-                  )}
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  {/* INLINE ADDING INPUT */}
                   {isAddingDoc && (
                     <div className="p-6 border-2 border-[#1a5695] border-dashed rounded-[28px] bg-blue-50/50 flex flex-col justify-between h-40 animate-in zoom-in duration-200">
-                      <p className="text-[10px] font-black text-[#1a5695] uppercase tracking-tighter">
+                      <p className="text-[10px] font-black text-[#1a5695] uppercase">
                         New Document Name
                       </p>
                       <input
                         autoFocus
                         type="text"
-                        placeholder="e.g. Marriage Certificate"
                         value={newDocName}
                         onChange={(e) => setNewDocName(e.target.value)}
                         className="bg-transparent border-b border-[#1a5695] outline-none py-1 font-bold text-sm text-slate-700"
@@ -238,15 +504,16 @@ const DocumentCollection = () => {
                     </div>
                   )}
 
-                  {formData.documents.map((doc) => (
+                  {documents.map((doc) => (
                     <div
                       key={doc.id}
                       className="group relative p-6 border-2 border-dashed border-slate-100 rounded-[28px] hover:border-[#1a5695] hover:bg-blue-50/30 transition-all bg-slate-50/50 flex flex-col items-center justify-center text-center h-40"
                     >
                       <div className="flex justify-between items-center absolute top-4 w-full px-6">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-tight group-hover:text-[#1a5695]">
+                        <span className="text-[10px] font-black text-slate-400 uppercase group-hover:text-[#1a5695]">
                           {doc.name}
                         </span>
+
                         <button
                           onClick={() => removeDoc(doc.id)}
                           className="text-slate-300 hover:text-rose-500 transition-colors"
@@ -254,14 +521,29 @@ const DocumentCollection = () => {
                           <Trash2 size={14} />
                         </button>
                       </div>
+
                       <label className="flex flex-col items-center justify-center cursor-pointer w-full mt-4">
                         <div className="p-3 bg-white rounded-2xl shadow-sm mb-2 text-slate-300 group-hover:text-[#1a5695] group-hover:scale-110 transition-all">
                           <Upload size={20} />
                         </div>
-                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">
-                          Click to Upload
-                        </span>
-                        <input type="file" className="hidden" />
+
+                        {doc.file ? (
+                          <span className="text-[10px] text-emerald-600 font-bold uppercase">
+                            {doc.file.name}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 font-bold uppercase">
+                            Click to Upload
+                          </span>
+                        )}
+
+                        <input
+                          type="file"
+                          className="hidden"
+                          onChange={(e) =>
+                            handleFileChange(doc.id, e.target.files[0])
+                          }
+                        />
                       </label>
                     </div>
                   ))}
