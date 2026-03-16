@@ -38,6 +38,7 @@ const Leads = () => {
   const [activeTab, setActiveTab] = useState("pending"); // active, delayed, cancelled
   const [disPositionId, setDispositionId] = useState(0);
   const [disPosLoader, setDisPosLoader] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true); // NEW: Used for initial fetch
 
   const [convertPendingModal, setConvertPendingModal] = useState({
     open: false,
@@ -150,6 +151,7 @@ const Leads = () => {
   };
 
   const getLeadsByStatus = async (status) => {
+    setPageLoading(true);
     try {
       const result = await axios.get(`${apiUrl}/api/leads/fetchLeadsByStatus`, {
         params: { status: status },
@@ -158,8 +160,10 @@ const Leads = () => {
       console.log(result.data);
 
       setLeads(result.data.data);
+      setPageLoading(false);
     } catch (error) {
       console.log(error);
+      setPageLoading(false);
     }
   };
 
@@ -503,141 +507,150 @@ const Leads = () => {
           </div>
 
           <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-separate border-spacing-0">
-                <thead className="bg-slate-50/50">
-                  <tr>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                      Name & Mobile
-                    </th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                      Address
-                    </th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                      Visit Date
-                    </th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                      Source
-                    </th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                      Capacity
-                    </th>
-                    <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {filteredLeads.map((lead) => (
-                    <tr
-                      key={lead.id}
-                      className="hover:bg-slate-50/80 transition-colors"
-                    >
-                      <td className="px-6 py-4">
-                        <p className="font-bold text-slate-800 text-sm">
-                          {lead.customer_name}
-                        </p>
-                        <p className="text-slate-400 text-[11px] font-medium">
-                          {lead.contact_number}
-                        </p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1.5 text-slate-500 text-xs">
-                          <MapPin size={12} className="text-slate-300" />
-                          <span className="truncate max-w-[150px]">
-                            {lead.address}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span
-                            className={`text-xs uppercase tracking-tight ${getDateStyle(lead.site_visit_date)}`}
-                          >
-                            {lead.site_visit_date}
-                          </span>
-                          <span className="text-[9px] text-slate-400 font-semibold mt-0.5">
-                            Scheduled Visit
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase">
-                          {sourceMap[lead.source_id]}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm font-black text-[#1a5695]">
-                          {(lead.total_capacity / 1000).toFixed(2)} Kw
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {/* CONVERT IS NOW IN ALL TABS */}
-                          {(activeTab === "delayed" ||
-                            activeTab == "cancelled") && (
-                            <button
-                              onClick={() => {
-                                setConvertPendingModal({ open: true, lead });
-                              }}
-                              className="p-2 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 hover:bg-amber-600 hover:text-white transition-all"
-                              title="Convert to Pending"
+            {pageLoading ? (
+              <div className="flex flex-col items-center justify-center py-32">
+                <Loader2 className="w-10 h-10 text-[#1a5695] animate-spin mb-4" />
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
+                  Fetching Records
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-separate border-spacing-0">
+                  <thead className="bg-slate-50/50">
+                    <tr>
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                        Name & Mobile
+                      </th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                        Address
+                      </th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                        Visit Date
+                      </th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                        Source
+                      </th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                        Capacity
+                      </th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {filteredLeads.map((lead) => (
+                      <tr
+                        key={lead.id}
+                        className="hover:bg-slate-50/80 transition-colors"
+                      >
+                        <td className="px-6 py-4">
+                          <p className="font-bold text-slate-800 text-sm">
+                            {lead.customer_name}
+                          </p>
+                          <p className="text-slate-400 text-[11px] font-medium">
+                            {lead.contact_number}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1.5 text-slate-500 text-xs">
+                            <MapPin size={12} className="text-slate-300" />
+                            <span className="truncate max-w-[150px]">
+                              {lead.address}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span
+                              className={`text-xs uppercase tracking-tight ${getDateStyle(lead.site_visit_date)}`}
                             >
-                              <ArrowRightLeft size={16} />
-                            </button>
-                          )}
-                          {activeTab === "pending" && (
-                            <>
+                              {lead.site_visit_date}
+                            </span>
+                            <span className="text-[9px] text-slate-400 font-semibold mt-0.5">
+                              Scheduled Visit
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase">
+                            {sourceMap[lead.source_id]}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-sm font-black text-[#1a5695]">
+                            {(lead.total_capacity / 1000).toFixed(2)} Kw
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {/* CONVERT IS NOW IN ALL TABS */}
+                            {(activeTab === "delayed" ||
+                              activeTab == "cancelled") && (
                               <button
                                 onClick={() => {
-                                  handleAction(lead, "convert");
-                                  setDispositionId(lead.id);
+                                  setConvertPendingModal({ open: true, lead });
                                 }}
-                                className="p-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all"
-                                title="Convert to Customer"
+                                className="p-2 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 hover:bg-amber-600 hover:text-white transition-all"
+                                title="Convert to Pending"
                               >
                                 <ArrowRightLeft size={16} />
                               </button>
-                              <button
-                                onClick={() => {
-                                  handleAction(lead, "delay");
-                                  setDispositionId(lead.id);
-                                }}
-                                className="p-2 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 hover:bg-amber-600 hover:text-white transition-all"
-                              >
-                                <Clock size={16} />
-                              </button>
-                              <button
-                                onClick={() => {
-                                  handleAction(lead, "cancel");
-                                  setDispositionId(lead.id);
-                                }}
-                                className="p-2 bg-rose-50 text-rose-600 rounded-xl border border-rose-100 hover:bg-rose-600 hover:text-white transition-all"
-                              >
-                                <Ban size={16} />
-                              </button>
-                            </>
-                          )}
-                          <button
-                            onClick={() => {
-                              editClick(lead);
-                            }}
-                            className="p-2 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100"
-                          >
-                            <Edit size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              {filteredLeads.length === 0 && (
-                <div className="p-12 text-center text-slate-400 text-sm italic">
-                  No leads found in this category.
-                </div>
-              )}
-            </div>
+                            )}
+                            {activeTab === "pending" && (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    handleAction(lead, "convert");
+                                    setDispositionId(lead.id);
+                                  }}
+                                  className="p-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all"
+                                  title="Convert to Customer"
+                                >
+                                  <ArrowRightLeft size={16} />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    handleAction(lead, "delay");
+                                    setDispositionId(lead.id);
+                                  }}
+                                  className="p-2 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 hover:bg-amber-600 hover:text-white transition-all"
+                                >
+                                  <Clock size={16} />
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    handleAction(lead, "cancel");
+                                    setDispositionId(lead.id);
+                                  }}
+                                  className="p-2 bg-rose-50 text-rose-600 rounded-xl border border-rose-100 hover:bg-rose-600 hover:text-white transition-all"
+                                >
+                                  <Ban size={16} />
+                                </button>
+                              </>
+                            )}
+                            <button
+                              onClick={() => {
+                                editClick(lead);
+                              }}
+                              className="p-2 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100"
+                            >
+                              <Edit size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {filteredLeads.length === 0 && (
+                  <div className="p-12 text-center text-slate-400 text-sm italic">
+                    No leads found in this category.
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </main>
       </div>

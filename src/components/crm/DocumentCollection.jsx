@@ -530,6 +530,7 @@ const DocumentCollection = () => {
                     )}
                     <button
                       onClick={saveAllDocs}
+                      disabled={docLoad}
                       className="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold text-[10px] uppercase flex items-center gap-2 hover:bg-emerald-700 transition-all"
                     >
                       {docLoad ? (

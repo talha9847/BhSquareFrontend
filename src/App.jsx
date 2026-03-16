@@ -14,6 +14,7 @@ import DocumentCollection from "./components/crm/DocumentCollection";
 import Registration from "./components/crm/Registration";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import DocumentCollectionGuard from "./Guards/DocumentCollectionGuard";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -36,7 +37,14 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/customers" element={<Customer />} />
-          <Route path="/documentcollection" element={<DocumentCollection />} />
+          <Route
+            path="/documentcollection"
+            element={
+              <DocumentCollectionGuard>
+                <DocumentCollection />
+              </DocumentCollectionGuard>
+            }
+          />
           <Route path="/registration" element={<Registration />} />
         </Routes>
       </BrowserRouter>
