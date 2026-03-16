@@ -38,6 +38,9 @@ const DocumentCollection = () => {
   const [docInfo, setDocInfo] = useState({});
   const [isFound, setIsFound] = useState(false);
   const [regLoading, setRegLoading] = useState(false);
+  const [docId, setDocId] = useState(0);
+  const [gotoNext, setGotoNext] = useState(false);
+  const [finalGo, setFinalGo] = useState(false);
 
   const [documents, setDocuments] = useState([
     { id: 1, name: "Aadhar Card", file: null },
@@ -46,7 +49,43 @@ const DocumentCollection = () => {
     { id: 4, name: "Light Bill", file: null },
   ]);
   const [docLoad, setDocLoad] = useState(false);
+
+  // --- NEW: Validation State ---
+  const [errors, setErrors] = useState({});
+
+  const validate = (type) => {
+    let tempErrors = {};
+    if (type === "identity") {
+      if (!leadsData.customer_name?.trim())
+        tempErrors.customer_name = "Full name is required";
+      if (!leadsData.contact_number?.trim())
+        tempErrors.contact_number = "Contact is required";
+      else if (!/^\d{10}$/.test(leadsData.contact_number))
+        tempErrors.contact_number = "Enter valid 10-digit number";
+      if (!leadsData.address?.trim())
+        tempErrors.address = "Address is required";
+    }
+
+    if (type === "registration") {
+      if (!docInfo.consumer_number?.trim())
+        tempErrors.consumer_number = "Consumer number required";
+      if (!docInfo.geo_coordinate?.trim())
+        tempErrors.geo_coordinate = "Coordinates required";
+      if (!docInfo.sub_division?.trim())
+        tempErrors.sub_division = "Sub division required";
+      if (!docInfo.registration_number?.trim())
+        tempErrors.registration_number = "Registration ID required";
+    }
+
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+
   const saveIdentity = async () => {
+    if (!validate("identity")) {
+      toast.error("Please fill all identity fields correctly");
+      return;
+    }
     try {
       setLoading(true);
       const res = await axios.post(`${apiUrl}/api/leads/updateLead`, {
@@ -72,25 +111,28 @@ const DocumentCollection = () => {
       const res = await axios.get(
         `${apiUrl}/api/docs/getCustomerDocumentByCustomerId/${customerId}`,
       );
-
       if (res.data.data) {
         setDocInfo(res.data.data);
         setIsFound(true);
       } else {
-        console.log(" iam here lkj");
         setDocInfo({
           customer_id: customerId,
-          consumer_number: "123",
-          geo_coordinate: "talha",
-          registration_number: "malek",
-          sub_division: "sub_division",
+          consumer_number: "",
+          geo_coordinate: "",
+          registration_number: "",
+          sub_division: "",
         });
       }
     } catch (error) {
-      setLoading(false);
+      console.error(error);
     }
   };
+
   const saveRegistratin = async () => {
+    if (!validate("registration")) {
+      toast.error("Please fill all registration fields");
+      return;
+    }
     try {
       setRegLoading(true);
       const res = await axios.put(
@@ -99,17 +141,17 @@ const DocumentCollection = () => {
       );
       if (res.status == 200) {
         setRegLoading(false);
-        if (isFound) {
-          toast.success("Updated Successfully");
-        } else {
-          toast.success("Created Successfully");
-          isFound(true);
-        }
+        setIsFound(true);
+        toast.success(
+          isFound ? "Updated Successfully" : "Created Successfully",
+        );
       }
     } catch (error) {
       setRegLoading(false);
+      toast.error("Error saving registration");
     }
   };
+
   const updateCapacity = async () => {
     try {
       setUpdateLoading(true);
@@ -130,14 +172,23 @@ const DocumentCollection = () => {
   };
 
   const saveAllDocs = async () => {
+    if (!isFound) {
+      toast.error("Fill detail above and then upload docs");
+      return;
+    }
+    const hasFiles = documents.some((doc) => doc.file !== null);
+    if (!hasFiles) {
+      toast.error("Please select at least one document to upload");
+      return;
+    }
+
     try {
       setDocLoad(true);
       const formData = new FormData();
-
       formData.append("customerId", customerId);
+      formData.append("docId", docId);
       formData.append("customerName", leadsData.customer_name);
       formData.append("contactNumber", leadsData.contact_number);
-      console.log(leadsData.contact_number);
 
       documents.forEach((doc) => {
         if (doc.file) {
@@ -150,6 +201,8 @@ const DocumentCollection = () => {
         formData,
       );
       if (res.status == 200) {
+        console.log(res.data);
+        setGotoNext(res.data.readyForNextStage.status);
         setDocuments([
           { id: 1, name: "Aadhar Card", file: null },
           { id: 2, name: "Vera Bill", file: null },
@@ -160,22 +213,10 @@ const DocumentCollection = () => {
         setDocLoad(false);
       }
     } catch (error) {
-      setDocuments([
-        { id: 1, name: "Aadhar Card", file: null },
-        { id: 2, name: "Vera Bill", file: null },
-        { id: 3, name: "Bank Passbook", file: null },
-        { id: 4, name: "Light Bill", file: null },
-      ]);
-      toast.success("Internal  server error");
+      toast.error("Internal server error during upload");
       setDocLoad(false);
     }
   };
-
-  // Auto-calculate capacity when wattage or panels change
-  // useEffect(() => {
-  //   const calc = (formData.panelWattage * formData.totalPanels) / 1000;
-  //   setFormData((prev) => ({ ...prev, capacity: calc.toFixed(2) }));
-  // }, [formData.panelWattage, formData.totalPanels]);
 
   const getLeadsData = async () => {
     try {
@@ -184,7 +225,9 @@ const DocumentCollection = () => {
       );
       if (res.status === 200) {
         setLeadsData(res.data.data);
-        console.log(res.data.data);
+        setDocId(res.data.data.id);
+        console.log(res.data);
+        setGotoNext(res.data.readyForNextStage.status);
       }
     } catch (error) {
       console.error(error);
@@ -202,11 +245,11 @@ const DocumentCollection = () => {
         ...prevDocs,
         { id: Date.now(), name: newDocName, file: null },
       ]);
-
       setNewDocName("");
       setIsAddingDoc(false);
     }
   };
+
   const removeDoc = (id) => {
     setDocuments((prevDocs) => prevDocs.filter((doc) => doc.id !== id));
   };
@@ -232,7 +275,7 @@ const DocumentCollection = () => {
           <div className="flex items-center gap-4 mb-2">
             <button
               onClick={() => window.history.back()}
-              className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#1a5695] hover:border-[#1a5695] hover:shadow-md transition-all group"
+              className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#1a5695] hover:border-[#1a5695] transition-all group"
             >
               <ArrowLeft
                 size={20}
@@ -248,10 +291,10 @@ const DocumentCollection = () => {
               </p>
             </div>
           </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* LEFT COLUMN: Identity & System */}
             <div className="lg:col-span-1 space-y-6">
-              {/* Card 1: Lead Identity */}
+              {/* Lead Identity */}
               <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm flex flex-col">
                 <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
                   <User size={14} className="text-[#1a5695]" /> Lead Identity
@@ -260,22 +303,22 @@ const DocumentCollection = () => {
                   <CustomInput
                     label="Full Name"
                     value={leadsData.customer_name}
+                    error={errors.customer_name}
                     onChange={(v) => {
-                      setLeadsData({
-                        ...leadsData,
-                        customer_name: v,
-                      });
+                      setLeadsData({ ...leadsData, customer_name: v });
+                      if (errors.customer_name)
+                        setErrors({ ...errors, customer_name: null });
                     }}
                   />
                   <CustomInput
                     label="Contact"
                     icon={<Phone size={14} />}
                     value={leadsData.contact_number}
+                    error={errors.contact_number}
                     onChange={(v) => {
-                      setLeadsData({
-                        ...leadsData,
-                        contact_number: v,
-                      });
+                      setLeadsData({ ...leadsData, contact_number: v });
+                      if (errors.contact_number)
+                        setErrors({ ...errors, contact_number: null });
                     }}
                   />
                   <div className="space-y-1.5">
@@ -283,21 +326,25 @@ const DocumentCollection = () => {
                       Site Address
                     </label>
                     <textarea
-                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 min-h-[80px] outline-none focus:bg-white focus:border-[#1a5695] transition-all"
+                      className={`w-full p-4 bg-slate-50 border ${
+                        errors.address ? "border-rose-500" : "border-slate-100"
+                      } rounded-2xl text-sm font-bold text-slate-700 min-h-[80px] outline-none focus:bg-white focus:border-[#1a5695] transition-all`}
                       value={leadsData.address}
                       onChange={(e) => {
-                        setLeadsData({
-                          ...leadsData,
-                          address: e.target.value,
-                        });
+                        setLeadsData({ ...leadsData, address: e.target.value });
+                        if (errors.address)
+                          setErrors({ ...errors, address: null });
                       }}
                     />
+                    {errors.address && (
+                      <p className="text-[10px] text-rose-500 font-bold ml-1 uppercase">
+                        {errors.address}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <button
-                  onClick={() => {
-                    saveIdentity();
-                  }}
+                  onClick={saveIdentity}
                   className="w-full bg-[#1a5695] text-white py-3 rounded-xl font-bold text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-[#15467a] transition-all"
                 >
                   {loading ? (
@@ -313,7 +360,7 @@ const DocumentCollection = () => {
                 </button>
               </div>
 
-              {/* Card 2: System Details (Calculation) */}
+              {/* System Details */}
               <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
                 <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
                   <Zap size={14} className="text-[#1a5695]" /> System
@@ -352,9 +399,7 @@ const DocumentCollection = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => {
-                    updateCapacity();
-                  }}
+                  onClick={updateCapacity}
                   className="w-full bg-[#1a5695] text-white py-3 rounded-xl font-bold text-[10px] uppercase flex items-center justify-center gap-2 hover:bg-[#15467a] transition-all"
                 >
                   {updateLoading ? (
@@ -371,9 +416,8 @@ const DocumentCollection = () => {
               </div>
             </div>
 
-            {/* RIGHT COLUMN: Registration & Docs */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Card 3: Registration Info */}
+              {/* Registration Info */}
               <div className="bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
@@ -381,21 +425,19 @@ const DocumentCollection = () => {
                     Registration Info
                   </h2>
                   <button
-                    onClick={() => {
-                      saveRegistratin();
-                    }}
+                    onClick={saveRegistratin}
                     disabled={regLoading}
-                    className="bg-[#1a5695] text-white px-6 py-2.5 rounded-xl font-bold text-[10px] uppercase flex items-center gap-2 hover:bg-[#15467a] transition-all shadow-md shadow-blue-900/10"
+                    className="bg-[#1a5695] text-white px-6 py-2.5 rounded-xl font-bold text-[10px] uppercase flex items-center gap-2 hover:bg-[#15467a] transition-all shadow-md"
                   >
                     {regLoading ? (
                       <>
                         <Save size={14} />{" "}
-                        {isFound ? "Updating....." : "Saving....."}
+                        {isFound ? "Updating..." : "Saving..."}
                         <Loader2 className="animate-spin h-4 w-4" />
                       </>
                     ) : (
                       <>
-                        <Save size={14} />
+                        <Save size={14} />{" "}
                         {isFound ? "Update Data" : "Save Data"}
                       </>
                     )}
@@ -404,40 +446,51 @@ const DocumentCollection = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <CustomInput
                     label="Consumer Number"
-                    placeholder="11 Digit No."
                     icon={<Hash size={14} />}
                     value={docInfo.consumer_number}
-                    onChange={(v) =>
-                      setDocInfo({ ...docInfo, consumer_number: v })
-                    }
+                    error={errors.consumer_number}
+                    onChange={(v) => {
+                      setDocInfo({ ...docInfo, consumer_number: v });
+                      if (errors.consumer_number)
+                        setErrors({ ...errors, consumer_number: null });
+                    }}
                   />
                   <CustomInput
                     label="Geo Coordinates"
                     icon={<Globe size={16} />}
                     value={docInfo.geo_coordinate}
-                    onChange={(v) =>
-                      setDocInfo({ ...docInfo, geo_coordinate: v })
-                    }
+                    error={errors.geo_coordinate}
+                    onChange={(v) => {
+                      setDocInfo({ ...docInfo, geo_coordinate: v });
+                      if (errors.geo_coordinate)
+                        setErrors({ ...errors, geo_coordinate: null });
+                    }}
                   />
                   <CustomInput
                     label="Sub Division"
                     icon={<Navigation size={16} />}
                     value={docInfo.sub_division}
-                    onChange={(v) =>
-                      setDocInfo({ ...docInfo, sub_division: v })
-                    }
+                    error={errors.sub_division}
+                    onChange={(v) => {
+                      setDocInfo({ ...docInfo, sub_division: v });
+                      if (errors.sub_division)
+                        setErrors({ ...errors, sub_division: null });
+                    }}
                   />
                   <CustomInput
                     label="Registration ID"
                     value={docInfo.registration_number}
-                    onChange={(v) =>
-                      setDocInfo({ ...docInfo, registration_number: v })
-                    }
+                    error={errors.registration_number}
+                    onChange={(v) => {
+                      setDocInfo({ ...docInfo, registration_number: v });
+                      if (errors.registration_number)
+                        setErrors({ ...errors, registration_number: null });
+                    }}
                   />
                 </div>
               </div>
 
-              {/* Card 4: Documentation */}
+              {/* Documentation */}
               <div className="bg-white p-8 rounded-[40px] border border-slate-200 shadow-sm">
                 <div className="flex justify-between items-center mb-8">
                   <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
@@ -454,9 +507,7 @@ const DocumentCollection = () => {
                       </button>
                     )}
                     <button
-                      onClick={() => {
-                        saveAllDocs();
-                      }}
+                      onClick={saveAllDocs}
                       className="bg-emerald-600 text-white px-6 py-2 rounded-xl font-bold text-[10px] uppercase flex items-center gap-2 hover:bg-emerald-700 transition-all"
                     >
                       {docLoad ? (
@@ -466,7 +517,7 @@ const DocumentCollection = () => {
                         </>
                       ) : (
                         <>
-                          <Save size={14} /> Sava All Docs
+                          <Save size={14} /> Save All Docs
                         </>
                       )}
                     </button>
@@ -477,7 +528,7 @@ const DocumentCollection = () => {
                   {isAddingDoc && (
                     <div className="p-6 border-2 border-[#1a5695] border-dashed rounded-[28px] bg-blue-50/50 flex flex-col justify-between h-40 animate-in zoom-in duration-200">
                       <p className="text-[10px] font-black text-[#1a5695] uppercase">
-                        New Document Name
+                        New Doc Name
                       </p>
                       <input
                         autoFocus
@@ -513,7 +564,6 @@ const DocumentCollection = () => {
                         <span className="text-[10px] font-black text-slate-400 uppercase group-hover:text-[#1a5695]">
                           {doc.name}
                         </span>
-
                         <button
                           onClick={() => removeDoc(doc.id)}
                           className="text-slate-300 hover:text-rose-500 transition-colors"
@@ -526,9 +576,8 @@ const DocumentCollection = () => {
                         <div className="p-3 bg-white rounded-2xl shadow-sm mb-2 text-slate-300 group-hover:text-[#1a5695] group-hover:scale-110 transition-all">
                           <Upload size={20} />
                         </div>
-
                         {doc.file ? (
-                          <span className="text-[10px] text-emerald-600 font-bold uppercase">
+                          <span className="text-[10px] text-emerald-600 font-bold uppercase truncate max-w-[150px]">
                             {doc.file.name}
                           </span>
                         ) : (
@@ -536,7 +585,6 @@ const DocumentCollection = () => {
                             Click to Upload
                           </span>
                         )}
-
                         <input
                           type="file"
                           className="hidden"
@@ -552,12 +600,119 @@ const DocumentCollection = () => {
             </div>
           </div>
         </main>
+
+        {gotoNext && (
+          <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-[24px] flex items-center justify-between animate-in slide-in-from-top-4 duration-500 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-emerald-400 rounded-full animate-ping opacity-20"></div>
+                <div className="relative p-3 bg-emerald-500 rounded-2xl text-white shadow-lg shadow-emerald-200">
+                  <ClipboardCheck size={20} />
+                </div>
+              </div>
+              <div>
+                <h4 className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">
+                  Verification Complete
+                </h4>
+                <p className="text-sm font-bold text-slate-700">
+                  Ready to transition this lead to the next stage
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setFinalGo(true)} // Re-triggers the popup modal
+              className="group bg-[#1a5695] hover:bg-[#15467a] text-white px-8 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center gap-3 transition-all shadow-lg shadow-blue-900/10 active:scale-95"
+            >
+              Proceed to Next Stage
+              <ArrowLeft
+                size={16}
+                className="rotate-180 group-hover:translate-x-1 transition-transform"
+              />
+            </button>
+          </div>
+        )}
+
+        {finalGo && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="relative bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-200 border border-slate-100">
+              {/* Close Button */}
+              <button
+                onClick={() => setFinalGo(false)}
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/20 text-white/80 hover:text-white transition-colors z-10"
+              >
+                <X size={20} />
+              </button>
+
+              {/* Header Section - Themed Blue */}
+              <div className="bg-[#1a5695] p-8 text-white text-center relative overflow-hidden">
+                {/* Decorative Background Icon */}
+                <div className="absolute -right-4 -bottom-4 opacity-10">
+                  <ClipboardCheck size={120} />
+                </div>
+
+                <div className="relative z-10">
+                  <div className="w-16 h-16 bg-white/10 rounded-3xl flex items-center justify-center mx-auto mb-4 backdrop-blur-md border border-white/20">
+                    <Navigation size={28} className="text-white" />
+                  </div>
+                  <h2 className="text-xl font-black font-syne uppercase tracking-tight">
+                    Next Stage Transition
+                  </h2>
+                  <p className="text-blue-100/80 text-[10px] font-bold uppercase tracking-widest mt-1">
+                    Lead: {leadsData.customer_name}
+                  </p>
+                </div>
+              </div>
+
+              {/* Body Content */}
+              <div className="p-8">
+                <div className="mb-8 space-y-4 text-center">
+                  <p className="text-slate-600 font-medium leading-relaxed">
+                    You are about to move this customer to the{" "}
+                    <span className="text-[#1a5695] font-black italic">
+                      Technical Verification
+                    </span>{" "}
+                    stage. All uploaded documents will be locked for review.
+                  </p>
+
+                  <div className="flex items-center gap-2 justify-center py-2 px-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <Check size={14} className="text-emerald-500" />
+                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                      Ready for Submission
+                    </span>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="space-y-3">
+                  <button
+                    onClick={() => {
+                      // Logic for next stage transition
+                      console.log("Transitioning...");
+                    }}
+                    className="w-full py-4 bg-[#1a5695] hover:bg-[#15467a] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+                  >
+                    Confirm & Proceed
+                    <ArrowLeft size={16} className="rotate-180" />
+                  </button>
+
+                  <button
+                    onClick={() => setFinalGo(false)}
+                    className="w-full py-4 bg-white text-slate-400 hover:text-slate-600 rounded-2xl font-bold text-[10px] uppercase tracking-widest transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-const CustomInput = ({ label, placeholder, icon, value, onChange }) => (
+const CustomInput = ({ label, placeholder, icon, value, onChange, error }) => (
   <div className="space-y-1.5 w-full">
     <label className="text-[10px] font-bold text-slate-400 uppercase ml-1 tracking-wide">
       {label}
@@ -567,11 +722,20 @@ const CustomInput = ({ label, placeholder, icon, value, onChange }) => (
       <input
         type="text"
         placeholder={placeholder}
-        value={value}
+        value={value || ""}
         onChange={(e) => onChange(e.target.value)}
-        className={`w-full ${icon ? "pl-11" : "px-4"} py-3.5 bg-slate-50 border border-slate-100 rounded-2xl text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-[#1a5695] transition-all placeholder:font-medium placeholder:text-slate-300`}
+        className={`w-full ${icon ? "pl-11" : "px-4"} py-3.5 bg-slate-50 border ${
+          error
+            ? "border-rose-500 shadow-[0_0_0_1px_rgba(244,63,94,0.1)]"
+            : "border-slate-100"
+        } rounded-2xl text-sm font-bold text-slate-700 outline-none focus:bg-white focus:border-[#1a5695] transition-all`}
       />
     </div>
+    {error && (
+      <p className="text-[10px] text-rose-500 font-bold ml-1 uppercase animate-in fade-in slide-in-from-top-1">
+        {error}
+      </p>
+    )}
   </div>
 );
 
