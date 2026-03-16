@@ -20,12 +20,13 @@ import {
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 const DocumentCollection = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { customerId } = location.state || {};
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAddingDoc, setIsAddingDoc] = useState(false);
@@ -49,6 +50,7 @@ const DocumentCollection = () => {
     { id: 4, name: "Light Bill", file: null },
   ]);
   const [docLoad, setDocLoad] = useState(false);
+  const [nextLoad, setNextLoad] = useState(false);
 
   // --- NEW: Validation State ---
   const [errors, setErrors] = useState({});
@@ -260,6 +262,26 @@ const DocumentCollection = () => {
     );
   };
 
+  const goToNextStage = async () => {
+    setNextLoad(true);
+    try {
+      const res = await axios.post(
+        `${apiUrl}/api/docs/completeStageAndPrepareNext`,
+        {
+          customer_id: customerId,
+        },
+      );
+
+      if (res.status == 201) {
+        toast.success("Staged Changed successfullyy");
+        setNextLoad(false);
+        navigate("/registration");
+      }
+    } catch (error) {
+      setNextLoad(false);
+      toast.error("Internal server error");
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-50 flex font-syne">
       <Sidebar
@@ -686,14 +708,23 @@ const DocumentCollection = () => {
                 {/* Action Buttons */}
                 <div className="space-y-3">
                   <button
-                    onClick={() => {
-                      // Logic for next stage transition
-                      console.log("Transitioning...");
+                    onClick={async () => {
+                      goToNextStage();
                     }}
                     className="w-full py-4 bg-[#1a5695] hover:bg-[#15467a] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                   >
-                    Confirm & Proceed
-                    <ArrowLeft size={16} className="rotate-180" />
+                    {nextLoad ? (
+                      <>
+                        Confirming.....
+                        <ArrowLeft size={16} className="rotate-180" />
+                        <Loader2 className="animate-spin h-4 w-4" />
+                      </>
+                    ) : (
+                      <>
+                        Confirm & Proceed
+                        <ArrowLeft size={16} className="rotate-180" />
+                      </>
+                    )}
                   </button>
 
                   <button
