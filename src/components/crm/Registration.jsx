@@ -15,10 +15,13 @@ import {
   MapPin,
   PenTool,
   ClipboardCheck,
+  Pencil,
+  FileText,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const Registration = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,7 +30,13 @@ const Registration = () => {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [cId, setCId] = useState(0);
+  const [lId, setLId] = useState(0);
+  const [edit, setEdit] = useState(false);
+  const [load, setLoad] = useState(false);
+  const [rId, setRId] = useState(0);
 
+  const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
 
   const {
@@ -49,7 +58,9 @@ const Registration = () => {
       const res = await axios.get(
         `${apiUrl}/api/registrations/getCustomersWithSummary`,
       );
-      if (res.status === 200) setCustomers(res.data.data || []);
+      if (res.status === 200) {
+        setCustomers(res.data.data || []);
+      }
     } catch (error) {
       console.error("Fetch error:", error);
     } finally {
@@ -62,21 +73,28 @@ const Registration = () => {
   }, []);
 
   const openRegistrationModal = (customer) => {
-    if (customer.registration?.status?.toLowerCase() === "pending") {
+    console.log(customer);
+    if (
+      customer.registration?.status?.toLowerCase() === "pending" ||
+      customer.registration?.status?.toLowerCase() === "approved"
+    ) {
       setSelectedCustomer(customer);
 
       const panelCount = customer.lead?.number_of_panels || 0;
-      const initialSerials = Array.from({ length: panelCount }, () => ({
-        value: "",
-      }));
+      const initialSerials =
+        customer.registration?.panels?.length > 0
+          ? customer.registration.panels.map((panel) => ({
+              value: panel.serial_number,
+            }))
+          : Array.from({ length: panelCount }, () => ({ value: "" }));
 
       reset({
         customer_name: customer.lead?.customer_name || "",
         total_capacity: (customer.lead?.total_capacity / 1000).toFixed(2),
-        registration_no: "", // New Field
-        application_number: "",
-        agreement_date: "",
-        inverter_qty: "",
+        registration_date: customer.registration?.registration_date,
+        application_number: customer.registration?.application_number,
+        agreement_date: customer.registration?.agreement_date,
+        inverter_qty: customer.registration?.inverter_qty,
         panel_qty: panelCount,
         panel_serials: initialSerials,
       });
@@ -86,8 +104,51 @@ const Registration = () => {
   };
 
   const onSubmit = async (data) => {
-    console.log("Submitting Registration Data:", data);
-    setIsModalOpen(false);
+    try {
+      setLoad(true);
+      const res = await axios.post(`${apiUrl}/api/registrations/registration`, {
+        data: data,
+        leadId: lId,
+        customerId: cId,
+      });
+
+      if (res.status == 201) {
+        setLoad(false);
+        if (edit) toast.success("Edited Successfully");
+        else toast.success("Registration Done");
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      console.log(error);
+      setLoad(false);
+      toast.error("Internal server error");
+      setIsModalOpen(false);
+    }
+  };
+
+  const confirmFinalize = async () => {
+    try {
+      if (rId > 0) {
+        setLoad(true);
+        const res = await axios.post(
+          `${apiUrl}/api/registrations/markRegistrationAsDone`,
+          {
+            registrationId: rId,
+          },
+        );
+
+        if (res.status == 201) {
+          getCustomers();
+          toast.success("Done......");
+          setIsFinalizeModalOpen(false);
+          setLoad(false);
+        }
+      }
+    } catch (error) {
+      toast.error("Error......");
+      setIsFinalizeModalOpen(false);
+      setLoad(false);
+    }
   };
 
   const filteredCustomers = customers.filter((item) => {
@@ -197,16 +258,77 @@ const Registration = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          <button
-                            disabled={
-                              item.registration?.status?.toLowerCase() !==
-                              "pending"
-                            }
-                            onClick={() => openRegistrationModal(item)}
-                            className={`px-5 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all flex items-center gap-2 ml-auto shadow-lg ${item.registration?.status?.toLowerCase() === "pending" ? "bg-[#1a5695] text-white hover:bg-blue-800 shadow-blue-900/10" : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"}`}
-                          >
-                            <Send size={14} /> Process
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            {/* PENDING -> PROCESS */}
+                            {item.registration?.status?.toLowerCase() ===
+                              "pending" && (
+                              <button
+                                onClick={() => {
+                                  setEdit(false);
+                                  openRegistrationModal(item);
+                                  setCId(item.id);
+                                  setLId(item.lead.id);
+                                }}
+                                className="px-5 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all flex items-center gap-2 shadow-lg bg-[#1a5695] text-white hover:bg-blue-800 shadow-blue-900/10"
+                              >
+                                <Send size={14} /> Process
+                              </button>
+                            )}
+
+                            {/* APPROVED -> EDIT & FINALIZE */}
+                            {item.registration?.status?.toLowerCase() ===
+                              "approved" && (
+                              <>
+                                {/* Edit Button - Themed Blue Outline/Light */}
+                                <button
+                                  onClick={() => {
+                                    setEdit(true);
+                                    openRegistrationModal(item);
+                                    setCId(item.id);
+                                    setLId(item.lead.id);
+                                  }}
+                                  className="px-4 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all flex items-center gap-2 border-2 border-[#1a5695] text-[#1a5695] hover:bg-[#1a5695] hover:text-white"
+                                >
+                                  <PenTool size={14} /> Edit
+                                </button>
+
+                                {/* Finalize Button - High Visibility for State Change */}
+                                <button
+                                  onClick={() => {
+                                    setRId(item.registration?.id);
+                                    setIsFinalizeModalOpen(true);
+                                  }}
+                                  className="px-4 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all flex items-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-900/10"
+                                >
+                                  {load ? (
+                                    <>
+                                      <Loader2 className="animate-spin h-4 w-4" />
+                                      Finalizing...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <CheckCircle size={14} /> Finalize
+                                    </>
+                                  )}
+                                </button>
+                              </>
+                            )}
+
+                            {/* DONE STATUS */}
+                            {item.registration?.status?.toLowerCase() ===
+                              "done" && (
+                              <button
+                                // onClick={() => handleDownloadFile(item)}
+                                className="px-4 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all flex items-center gap-2 border border-slate-200 text-[#1a5695] hover:bg-slate-50 hover:border-[#1a5695]/30 shadow-sm"
+                              >
+                                <FileText
+                                  size={14}
+                                  className="text-[#1a5695]"
+                                />
+                                Download PDF
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -250,7 +372,7 @@ const Registration = () => {
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                       Registration No.
                     </label>
-                    {errors.registration_no && (
+                    {errors.registration_date && (
                       <span className="text-[9px] text-red-500 font-bold uppercase italic">
                         Required
                       </span>
@@ -262,9 +384,9 @@ const Registration = () => {
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
                     />
                     <input
-                      {...register("registration_no", { required: true })}
-                      placeholder="REG-2026-XXXX"
-                      className={`w-full pl-11 pr-4 py-4 border rounded-2xl outline-none transition-all font-bold text-slate-700 text-sm ${errors.registration_no ? "border-red-200 bg-red-50/30" : "border-slate-100 focus:border-[#1a5695]"}`}
+                      {...register("registration_date", { required: true })}
+                      type="date"
+                      className={`w-full pl-11 pr-4 py-4 border rounded-2xl outline-none transition-all font-bold text-slate-700 text-sm ${errors.registration_date ? "border-red-200 bg-red-50/30" : "border-slate-100 focus:border-[#1a5695]"}`}
                     />
                   </div>
                 </div>
@@ -412,11 +534,65 @@ const Registration = () => {
                   type="submit"
                   className="w-full py-5 bg-[#1a5695] text-white rounded-[24px] font-black shadow-xl shadow-blue-900/20 hover:bg-blue-800 transition-all flex items-center justify-center gap-3 uppercase text-xs tracking-widest"
                 >
-                  <CheckCircle size={20} /> Complete Portal Entry
+                  {load ? (
+                    <>
+                      <Loader2 className="animate-spin h-4 w-4" />
+                      Editing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle size={20} /> Complete Portal Entry
+                    </>
+                  )}
                 </button>
               </div>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* FINALIZE CONFIRMATION MODAL */}
+      {isFinalizeModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in duration-200">
+            {/* Visual Header */}
+            <div className="bg-emerald-50 p-8 flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-4 border border-emerald-100">
+                <CheckCircle className="text-emerald-500" size={32} />
+              </div>
+              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                Finalize Entry?
+              </h3>
+              <p className="text-xs text-slate-500 font-medium mt-2 leading-relaxed">
+                Once finalized, this entry will move to the{" "}
+                <span className="text-emerald-600 font-bold uppercase">
+                  Done
+                </span>{" "}
+                stage. You won't be able to edit these portal details again.
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="p-6 flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  confirmFinalize();
+                }}
+                className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:bg-blue-800 transition-all flex items-center justify-center gap-2"
+              >
+                Yes, Confirm Finalization
+              </button>
+
+              <button
+                onClick={() => {
+                  setIsFinalizeModalOpen(false);
+                }}
+                className="w-full py-4 bg-white text-slate-400 border border-slate-100 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all"
+              >
+                No, Go Back
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
