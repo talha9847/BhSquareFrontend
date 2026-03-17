@@ -165,23 +165,25 @@ const Registration = () => {
   const handleDownloadFile = async () => {
     try {
       console.log(rId);
-      setDLoad(true);
-      const result = await axios.post(
-        `${apiUrl}/api/registrations/getFileGeneration`,
-        { registrationId: rId },
-        { responseType: "blob" }, // ← tells axios to treat response as binary file
-      );
+      if (rId > 0) {
+        setDLoad(true);
+        const result = await axios.post(
+          `${apiUrl}/api/registrations/getFileGeneration`,
+          { registrationId: rId },
+          { responseType: "blob" }, // ← tells axios to treat response as binary file
+        );
 
-      const url = window.URL.createObjectURL(new Blob([result.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `agreement_${rId}.docx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
+        const url = window.URL.createObjectURL(new Blob([result.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `agreement_${rId}.docx`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
 
-      setDLoad(false);
+        setDLoad(false);
+      }
     } catch (error) {
       console.error("Download failed:", error);
       setDLoad(false);
