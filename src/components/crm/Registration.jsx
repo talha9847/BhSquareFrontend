@@ -122,6 +122,7 @@ const Registration = () => {
       });
 
       if (res.status == 201) {
+        getCustomers();
         setLoad(false);
         if (edit) toast.success("Edited Successfully");
         else toast.success("Registration Done");
@@ -148,7 +149,7 @@ const Registration = () => {
             leadId: lId,
           },
         );
-        if (res.status == 201) {
+        if (res.status == 200) {
           getCustomers();
           toast.success("Done......");
           setIsFinalizeModalOpen(false);
@@ -729,7 +730,7 @@ const Registration = () => {
                   type="submit"
                   className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:bg-blue-800 transition-all flex items-center justify-center gap-2"
                 >
-                  Confirm & Mark as Done
+                  {load ? "Confirming...." : "Confirm & Mark as Done"}
                 </button>
 
                 <button
