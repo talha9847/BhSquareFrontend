@@ -115,6 +115,9 @@ const DocumentCollection = () => {
       );
       if (res.data.data) {
         setDocInfo(res.data.data);
+        console.log("i am talking about this");
+        console.log(res.data.data);
+        setDocId(res.data.data.id);
         setIsFound(true);
       } else {
         setDocInfo({
@@ -142,6 +145,7 @@ const DocumentCollection = () => {
         docInfo,
       );
       if (res.status == 200) {
+        getDocInfo();
         setRegLoading(false);
         setIsFound(true);
         toast.success(
@@ -227,8 +231,8 @@ const DocumentCollection = () => {
       );
       if (res.status === 200) {
         setLeadsData(res.data.data);
-        setDocId(res.data.data.id);
-        console.log(res.data);
+        console.log("thi ;dkjkdlfj lkdsjfklsd jfkldsj ;");
+        // console.log(res.data.data);
         setGotoNext(res.data.readyForNextStage.status);
       }
     } catch (error) {
