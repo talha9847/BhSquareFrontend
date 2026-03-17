@@ -35,6 +35,7 @@ const Registration = () => {
   const [edit, setEdit] = useState(false);
   const [load, setLoad] = useState(false);
   const [rId, setRId] = useState(0);
+  const [dLoad, setDLoad] = useState(false);
 
   const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -164,6 +165,7 @@ const Registration = () => {
   const handleDownloadFile = async () => {
     try {
       console.log(rId);
+      setDLoad(true);
       const result = await axios.post(
         `${apiUrl}/api/registrations/getFileGeneration`,
         { registrationId: rId },
@@ -178,8 +180,11 @@ const Registration = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
+
+      setDLoad(false);
     } catch (error) {
       console.error("Download failed:", error);
+      setDLoad(false);
     }
   };
 
@@ -354,16 +359,23 @@ const Registration = () => {
                               <button
                                 onClick={() => {
                                   console.log(item);
-                                  handleDownloadFile();
                                   setRId(item.registration?.id);
+                                  handleDownloadFile();
                                 }}
                                 className="px-4 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all flex items-center gap-2 border border-slate-200 text-[#1a5695] hover:bg-slate-50 hover:border-[#1a5695]/30 shadow-sm"
                               >
-                                <FileText
-                                  size={14}
-                                  className="text-[#1a5695]"
-                                />
-                                Download PDF
+                                {dLoad ? (
+                                  <>Downloading..... </>
+                                ) : (
+                                  <>
+                                    {" "}
+                                    <FileText
+                                      size={14}
+                                      className="text-[#1a5695]"
+                                    />
+                                    Download PDF
+                                  </>
+                                )}
                               </button>
                             )}
                           </div>
