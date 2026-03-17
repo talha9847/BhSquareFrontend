@@ -1,46 +1,102 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
 import {
   Send,
   X,
   Hash,
-  Globe,
-  Navigation,
+  Search,
   CheckCircle,
-  MapPin,
   Zap,
-  Phone,
   Calendar,
   User,
-  FileText,
-  Stamp,
+  Loader2,
+  Box,
+  Layers,
+  MapPin,
   PenTool,
-  FileCheck,
-  QrCode,
+  ClipboardCheck,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import axios from "axios";
 
 const Registration = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Example data
-  const [queue] = useState([
-    {
-      id: 1,
-      name: "Ramanbhai Patel",
-      address: "Vaskui, Mahuva",
-      capacity: "8.32 kW",
-      number: "+91 87338 17262",
-      regStatus: "Pending",
-    },
-  ]);
+  const apiUrl = import.meta.env.VITE_API_URL;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    control,
+    formState: { errors },
+  } = useForm();
+
+  const { fields } = useFieldArray({
+    control,
+    name: "panel_serials",
+  });
+
+  const getCustomers = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `${apiUrl}/api/registrations/getCustomersWithSummary`,
+      );
+      if (res.status === 200) setCustomers(res.data.data || []);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getCustomers();
+  }, []);
 
   const openRegistrationModal = (customer) => {
-    setSelectedCustomer(customer);
-    setIsModalOpen(true);
+    if (customer.registration?.status?.toLowerCase() === "pending") {
+      setSelectedCustomer(customer);
+
+      const panelCount = customer.lead?.number_of_panels || 0;
+      const initialSerials = Array.from({ length: panelCount }, () => ({
+        value: "",
+      }));
+
+      reset({
+        customer_name: customer.lead?.customer_name || "",
+        total_capacity: (customer.lead?.total_capacity / 1000).toFixed(2),
+        registration_no: "", // New Field
+        application_number: "",
+        agreement_date: "",
+        inverter_qty: "",
+        panel_qty: panelCount,
+        panel_serials: initialSerials,
+      });
+
+      setIsModalOpen(true);
+    }
   };
+
+  const onSubmit = async (data) => {
+    console.log("Submitting Registration Data:", data);
+    setIsModalOpen(false);
+  };
+
+  const filteredCustomers = customers.filter((item) => {
+    const name = item.lead?.customer_name?.toLowerCase() || "";
+    const phone = item.lead?.contact_number || "";
+    return (
+      name.includes(searchQuery.toLowerCase()) || phone.includes(searchQuery)
+    );
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-syne">
@@ -59,9 +115,23 @@ const Registration = () => {
               <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
                 Portal Registration
               </h1>
-              <p className="text-sm text-slate-500 font-medium">
-                Manage government portal entries and file tracking
+              <p className="text-sm text-slate-500 font-medium tracking-wide">
+                Manage government portal entries
               </p>
+            </div>
+
+            <div className="relative w-full md:w-80">
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                size={18}
+              />
+              <input
+                type="text"
+                placeholder="Search name or number..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-[20px] outline-none focus:border-[#1a5695] transition-all text-sm font-bold shadow-sm"
+              />
             </div>
           </div>
 
@@ -74,7 +144,7 @@ const Registration = () => {
                       Customer
                     </th>
                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                      Location
+                      Address
                     </th>
                     <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                       Capacity
@@ -88,40 +158,59 @@ const Registration = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {queue.map((item) => (
-                    <tr
-                      key={item.id}
-                      className="hover:bg-slate-50/80 transition-all"
-                    >
-                      <td className="px-6 py-4">
-                        <p className="font-bold text-slate-800 text-sm">
-                          {item.name}
-                        </p>
-                        <p className="text-slate-400 text-[11px]">
-                          {item.number}
-                        </p>
-                      </td>
-                      <td className="px-6 py-4 text-xs font-medium text-slate-500">
-                        {item.address}
-                      </td>
-                      <td className="px-6 py-4 font-black text-[#1a5695] text-sm">
-                        {item.capacity}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="px-3 py-1 rounded-full text-[9px] font-black uppercase border bg-amber-50 text-amber-600 border-amber-100">
-                          {item.regStatus}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <button
-                          onClick={() => openRegistrationModal(item)}
-                          className="bg-[#1a5695] text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase hover:bg-blue-800 transition-all flex items-center gap-2 ml-auto shadow-lg shadow-blue-900/10"
-                        >
-                          <Send size={14} /> Process
-                        </button>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={5} className="py-24 text-center">
+                        <Loader2
+                          className="animate-spin text-[#1a5695] mx-auto"
+                          size={36}
+                        />
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredCustomers.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-slate-50/80 transition-all group"
+                      >
+                        <td className="px-6 py-4">
+                          <p className="font-bold text-slate-800 text-sm group-hover:text-[#1a5695] transition-colors">
+                            {item.lead?.customer_name}
+                          </p>
+                          <p className="text-slate-400 text-[11px] font-medium">
+                            {item.lead?.contact_number}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <p className="text-slate-500 text-xs font-medium max-w-[200px] truncate">
+                            {item.lead?.address}
+                          </p>
+                        </td>
+                        <td className="px-6 py-4 font-black text-[#1a5695] text-sm">
+                          {(item.lead?.total_capacity / 1000).toFixed(2)} kW
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span
+                            className={`px-3 py-1 rounded-full text-[9px] font-black uppercase border ${item.registration?.status?.toLowerCase() === "pending" ? "bg-amber-50 text-amber-600 border-amber-100" : "bg-emerald-50 text-emerald-600 border-emerald-100"}`}
+                          >
+                            {item.registration?.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            disabled={
+                              item.registration?.status?.toLowerCase() !==
+                              "pending"
+                            }
+                            onClick={() => openRegistrationModal(item)}
+                            className={`px-5 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all flex items-center gap-2 ml-auto shadow-lg ${item.registration?.status?.toLowerCase() === "pending" ? "bg-[#1a5695] text-white hover:bg-blue-800 shadow-blue-900/10" : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"}`}
+                          >
+                            <Send size={14} /> Process
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -129,21 +218,23 @@ const Registration = () => {
         </main>
       </div>
 
-      {/* REGISTRATION MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-4xl rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-300 max-h-[90vh] flex flex-col">
-            {/* Modal Header */}
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="bg-white w-full max-w-5xl rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-300 max-h-[92vh] flex flex-col"
+          >
             <div className="bg-[#1a5695] p-6 md:p-8 text-white flex justify-between items-center shrink-0">
               <div>
                 <h2 className="text-xl font-black uppercase tracking-tight">
-                  System Registration
+                  Portal Registration
                 </h2>
                 <p className="text-[10px] opacity-70 font-bold uppercase tracking-widest">
-                  Portal Entry & Physical File Tracking
+                  Complete Entry for {selectedCustomer?.lead?.customer_name}
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => setIsModalOpen(false)}
                 className="hover:rotate-90 transition-all p-2 bg-white/10 rounded-xl"
               >
@@ -151,145 +242,184 @@ const Registration = () => {
               </button>
             </div>
 
-            {/* Modal Scrollable Content */}
             <div className="p-8 overflow-y-auto space-y-8">
-              {/* SECTION 1: BENEFICIARY & PORTAL INFO */}
-              <div>
-                <h3 className="text-[10px] font-black text-[#1a5695] uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                  <User size={14} /> Basic Information
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <ModalInput
-                    label="Full Beneficiary Name"
-                    placeholder="As per Light Bill"
-                    icon={<User size={16} />}
-                  />
-                  <ModalInput
-                    label="Application Number"
-                    placeholder="Portal App ID"
-                    icon={<Hash size={16} />}
-                  />
-                  <ModalInput
-                    label="Registration Date"
-                    type="date"
-                    icon={<Calendar size={16} />}
-                  />
-                  <ModalInput
-                    label="Installation Capacity"
-                    placeholder="e.g. 5.50 kW"
-                    icon={<Zap size={16} />}
-                  />
-                  <div className="md:col-span-2">
-                    <ModalInput
-                      label="Full Site Address"
-                      placeholder="Enter complete address for portal"
-                      icon={<MapPin size={16} />}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Registration Number (New Field) */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between px-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Registration No.
+                    </label>
+                    {errors.registration_no && (
+                      <span className="text-[9px] text-red-500 font-bold uppercase italic">
+                        Required
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <ClipboardCheck
+                      size={16}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                    />
+                    <input
+                      {...register("registration_no", { required: true })}
+                      placeholder="REG-2026-XXXX"
+                      className={`w-full pl-11 pr-4 py-4 border rounded-2xl outline-none transition-all font-bold text-slate-700 text-sm ${errors.registration_no ? "border-red-200 bg-red-50/30" : "border-slate-100 focus:border-[#1a5695]"}`}
+                    />
+                  </div>
+                </div>
+
+                {/* Application Number */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between px-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Application Number
+                    </label>
+                    {errors.application_number && (
+                      <span className="text-[9px] text-red-500 font-bold uppercase italic">
+                        Required
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Hash
+                      size={16}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                    />
+                    <input
+                      {...register("application_number", { required: true })}
+                      placeholder="Portal ID"
+                      className={`w-full pl-11 pr-4 py-4 border rounded-2xl outline-none transition-all font-bold text-slate-700 text-sm ${errors.application_number ? "border-red-200 bg-red-50/30" : "border-slate-100 focus:border-[#1a5695]"}`}
+                    />
+                  </div>
+                </div>
+
+                {/* Agreement Date */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between px-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Agreement Date
+                    </label>
+                    {errors.agreement_date && (
+                      <span className="text-[9px] text-red-500 font-bold uppercase italic">
+                        Required
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Calendar
+                      size={16}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                    />
+                    <input
+                      {...register("agreement_date", { required: true })}
+                      type="date"
+                      className={`w-full pl-11 pr-4 py-4 border rounded-2xl outline-none transition-all font-bold text-slate-700 text-sm ${errors.agreement_date ? "border-red-200 bg-red-50/30" : "border-slate-100 focus:border-[#1a5695]"}`}
+                    />
+                  </div>
+                </div>
+
+                {/* Inverter Qty */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between px-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Inverter Qty
+                    </label>
+                    {errors.inverter_qty && (
+                      <span className="text-[9px] text-red-500 font-bold uppercase italic">
+                        Required
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Box
+                      size={16}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                    />
+                    <input
+                      {...register("inverter_qty", { required: true })}
+                      type="number"
+                      placeholder="1"
+                      className={`w-full pl-11 pr-4 py-4 border rounded-2xl outline-none transition-all font-bold text-slate-700 text-sm ${errors.inverter_qty ? "border-red-200 bg-red-50/30" : "border-slate-100 focus:border-[#1a5695]"}`}
+                    />
+                  </div>
+                </div>
+
+                {/* Panel Qty */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                    Fixed Panel Quantity
+                  </label>
+                  <div className="relative">
+                    <Layers
+                      size={16}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-200"
+                    />
+                    <input
+                      {...register("panel_qty")}
+                      readOnly
+                      className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-400 text-sm cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+
+                {/* Capacity */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                    Capacity (kW)
+                  </label>
+                  <div className="relative">
+                    <Zap
+                      size={16}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-200"
+                    />
+                    <input
+                      {...register("total_capacity")}
+                      readOnly
+                      className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-400 text-sm cursor-not-allowed"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* SECTION 2: GEO LOCATION */}
-              <div>
-                <h3 className="text-[10px] font-black text-[#1a5695] uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
-                  <Globe size={14} /> Site Geo-Tagging
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <ModalInput
-                    label="Latitude"
-                    placeholder="21.1702"
-                    icon={<Navigation size={16} />}
-                  />
-                  <ModalInput
-                    label="Longitude"
-                    placeholder="72.8311"
-                    icon={<Navigation size={16} />}
-                  />
-                </div>
-              </div>
-
-              {/* SECTION 3: FILE TRACKING (TOGGLES) */}
+              {/* Dynamic Panel Serials */}
               <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100">
-                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-                  <FileCheck size={14} /> File Processing Checklist
+                <h3 className="text-[10px] font-black text-[#1a5695] uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+                  <PenTool size={14} /> Enter{" "}
+                  {selectedCustomer?.lead?.number_of_panels} Panel Serial
+                  Numbers
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                  <ToggleItem label="Stamp Order" icon={<Stamp size={18} />} />
-                  <ToggleItem
-                    label="File Generation"
-                    icon={<FileText size={18} />}
-                  />
-                  <ToggleItem
-                    label="File Signed"
-                    icon={<PenTool size={18} />}
-                  />
-                  <ToggleItem
-                    label="File Scanned"
-                    icon={<QrCode size={18} />}
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {fields.map((field, index) => (
+                    <div key={field.id} className="space-y-1">
+                      <label className="text-[9px] font-bold text-slate-400 uppercase ml-1">
+                        Panel #{index + 1}
+                      </label>
+                      <input
+                        {...register(`panel_serials.${index}.value`, {
+                          required: true,
+                        })}
+                        placeholder={`Serial ${index + 1}`}
+                        className={`w-full px-4 py-3 bg-white border rounded-xl font-bold text-xs outline-none focus:border-[#1a5695] transition-all ${errors.panel_serials?.[index] ? "border-red-200 bg-red-50/50" : "border-slate-200 shadow-sm"}`}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
 
-              {/* FOOTER ACTION */}
               <div className="pt-4">
-                <button className="w-full py-5 bg-[#1a5695] text-white rounded-[24px] font-black shadow-xl shadow-blue-900/20 hover:bg-blue-800 transition-all flex items-center justify-center gap-3 uppercase text-xs tracking-widest">
+                <button
+                  type="submit"
+                  className="w-full py-5 bg-[#1a5695] text-white rounded-[24px] font-black shadow-xl shadow-blue-900/20 hover:bg-blue-800 transition-all flex items-center justify-center gap-3 uppercase text-xs tracking-widest"
+                >
                   <CheckCircle size={20} /> Complete Portal Entry
                 </button>
               </div>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </div>
-  );
-};
-
-// HELPER COMPONENTS
-const ModalInput = ({ label, placeholder, icon, type = "text" }) => (
-  <div className="space-y-1.5 w-full">
-    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
-      {label}
-    </label>
-    <div className="relative">
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300">
-        {icon}
-      </div>
-      <input
-        type={type}
-        placeholder={placeholder}
-        className="w-full pl-11 pr-4 py-4 bg-white border border-slate-100 rounded-2xl outline-none focus:border-[#1a5695] transition-all font-bold text-slate-700 text-sm"
-      />
-    </div>
-  </div>
-);
-
-const ToggleItem = ({ label, icon }) => {
-  const [active, setActive] = useState(false);
-  return (
-    <button
-      onClick={() => setActive(!active)}
-      className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-2 transition-all group ${
-        active
-          ? "bg-[#1a5695] border-[#1a5695] text-white shadow-lg shadow-blue-900/20"
-          : "bg-white border-slate-200 text-slate-400 hover:border-slate-300"
-      }`}
-    >
-      <div
-        className={`${active ? "text-white" : "text-slate-300 group-hover:text-[#1a5695]"} transition-colors`}
-      >
-        {icon}
-      </div>
-      <span className="text-[9px] font-black uppercase tracking-tighter text-center leading-none">
-        {label}
-      </span>
-      <div
-        className={`w-8 h-4 rounded-full flex items-center px-1 transition-all ${active ? "bg-white/20 justify-end" : "bg-slate-100 justify-start"}`}
-      >
-        <div
-          className={`w-2 h-2 rounded-full ${active ? "bg-white" : "bg-slate-300"}`}
-        />
-      </div>
-    </button>
   );
 };
 
