@@ -49,7 +49,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       count: 5,
       type: "Operations",
       path: "customers",
-      activePaths: ["/customers", "/documentcollection"], // highlight for both
+      activePaths: ["/customers", "/documentcollection","/namechange"], // highlight for both
     },
     // {
     //   name: "Doc Collection",

@@ -298,17 +298,14 @@ const Customer = () => {
                                 {c.name_change === "required" ? (
                                   <>
                                     {" "}
-                                    <FileText size={14} /> Process Name
-                                    Change{" "}
+                                    <FileText size={14} /> Process Name Change
                                   </>
                                 ) : c.status?.toLowerCase() === "done" ? (
                                   <>
-                                    {" "}
-                                    <Zap size={14} /> Go Registration{" "}
+                                    <Zap size={14} /> Go Registration
                                   </>
                                 ) : (
                                   <>
-                                    {" "}
                                     <Eye size={14} /> Collect Docs{" "}
                                   </>
                                 )}
