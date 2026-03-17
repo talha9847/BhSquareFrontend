@@ -47,6 +47,13 @@ const Registration = () => {
     formState: { errors },
   } = useForm();
 
+  const {
+    register: re1,
+    handleSubmit: hs1,
+    reset: rs1,
+    formState: { errors: errors1 },
+  } = useForm();
+
   const { fields } = useFieldArray({
     control,
     name: "panel_serials",
@@ -60,6 +67,7 @@ const Registration = () => {
       );
       if (res.status === 200) {
         setCustomers(res.data.data || []);
+        console.log(res.data.data);
       }
     } catch (error) {
       console.error("Fetch error:", error);
@@ -126,17 +134,19 @@ const Registration = () => {
     }
   };
 
-  const confirmFinalize = async () => {
+  const confirmFinalize = async (data) => {
     try {
-      if (rId > 0) {
+      if (rId > 0 && cId > 0 && lId > 0) {
         setLoad(true);
         const res = await axios.post(
           `${apiUrl}/api/registrations/markRegistrationAsDone`,
           {
             registrationId: rId,
+            data: data,
+            customerId: cId,
+            leadId: lId,
           },
         );
-
         if (res.status == 201) {
           getCustomers();
           toast.success("Done......");
@@ -148,6 +158,28 @@ const Registration = () => {
       toast.error("Error......");
       setIsFinalizeModalOpen(false);
       setLoad(false);
+    }
+  };
+
+  const handleDownloadFile = async () => {
+    try {
+      console.log(rId);
+      const result = await axios.post(
+        `${apiUrl}/api/registrations/getFileGeneration`,
+        { registrationId: rId },
+        { responseType: "blob" }, // ← tells axios to treat response as binary file
+      );
+
+      const url = window.URL.createObjectURL(new Blob([result.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `agreement_${rId}.docx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
     }
   };
 
@@ -296,6 +328,8 @@ const Registration = () => {
                                 <button
                                   onClick={() => {
                                     setRId(item.registration?.id);
+                                    setCId(item.id);
+                                    setLId(item.lead?.id);
                                     setIsFinalizeModalOpen(true);
                                   }}
                                   className="px-4 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all flex items-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-900/10"
@@ -318,7 +352,11 @@ const Registration = () => {
                             {item.registration?.status?.toLowerCase() ===
                               "done" && (
                               <button
-                                // onClick={() => handleDownloadFile(item)}
+                                onClick={() => {
+                                  console.log(item);
+                                  handleDownloadFile();
+                                  setRId(item.registration?.id);
+                                }}
                                 className="px-4 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all flex items-center gap-2 border border-slate-200 text-[#1a5695] hover:bg-slate-50 hover:border-[#1a5695]/30 shadow-sm"
                               >
                                 <FileText
@@ -553,45 +591,145 @@ const Registration = () => {
 
       {/* FINALIZE CONFIRMATION MODAL */}
       {isFinalizeModalOpen && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in duration-200">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm text-syne">
+          <div className="bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-200 flex flex-col max-h-[92vh]">
             {/* Visual Header */}
-            <div className="bg-emerald-50 p-8 flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center mb-4 border border-emerald-100">
-                <CheckCircle className="text-emerald-500" size={32} />
+            <div className="bg-emerald-50 p-6 flex flex-col items-center text-center shrink-0">
+              <div className="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center mb-3 border border-emerald-100">
+                <CheckCircle className="text-emerald-500" size={24} />
               </div>
-              <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
-                Finalize Entry?
+              <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">
+                Technical Finalization
               </h3>
-              <p className="text-xs text-slate-500 font-medium mt-2 leading-relaxed">
-                Once finalized, this entry will move to the{" "}
-                <span className="text-emerald-600 font-bold uppercase">
-                  Done
-                </span>{" "}
-                stage. You won't be able to edit these portal details again.
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1">
+                Provide final system specifications
               </p>
             </div>
 
-            {/* Action Buttons */}
-            <div className="p-6 flex flex-col gap-3">
-              <button
-                onClick={() => {
-                  confirmFinalize();
-                }}
-                className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:bg-blue-800 transition-all flex items-center justify-center gap-2"
-              >
-                Yes, Confirm Finalization
-              </button>
+            <form
+              onSubmit={hs1(confirmFinalize)}
+              className="flex-1 overflow-y-auto p-6 md:p-8 space-y-6"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {/* Consumer Number */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                    Consumer No (CS_NO)
+                  </label>
+                  <input
+                    {...re1("cs_no", {
+                      required: "Consumer number is required",
+                    })}
+                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.cs_no ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
+                    placeholder="Enter CS Number"
+                  />
+                  {errors1.cs_no && (
+                    <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
+                      {errors1.cs_no.message}
+                    </p>
+                  )}
+                </div>
 
-              <button
-                onClick={() => {
-                  setIsFinalizeModalOpen(false);
-                }}
-                className="w-full py-4 bg-white text-slate-400 border border-slate-100 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all"
-              >
-                No, Go Back
-              </button>
-            </div>
+                {/* Panel Brand */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                    Panel Brand
+                  </label>
+                  <input
+                    {...re1("panel_brand", {
+                      required: "Panel brand is required",
+                    })}
+                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel_brand ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
+                    placeholder="e.g. Waaree, Adani"
+                  />
+                  {errors1.panel_brand && (
+                    <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
+                      {errors1.panel_brand.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Inverter Brand */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                    Inverter Brand
+                  </label>
+                  <input
+                    {...re1("inverter_brand", {
+                      required: "Inverter brand is required",
+                    })}
+                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.inverter_brand ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
+                    placeholder="e.g. Growatt, Solis"
+                  />
+                  {errors1.inverter_brand && (
+                    <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
+                      {errors1.inverter_brand.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Inverter Capacity */}
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                    Inverter Capacity
+                  </label>
+                  <input
+                    {...re1("inverter_capacity", {
+                      required: "Capacity is required",
+                    })}
+                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.inverter_capacity ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
+                    placeholder="e.g. 5kW"
+                  />
+                  {errors1.inverter_capacity && (
+                    <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
+                      {errors1.inverter_capacity.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Inverter Quantity (New Field) */}
+                <div className="space-y-1 md:col-span-2">
+                  <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                    Inverter Quantity
+                  </label>
+                  <input
+                    type="number"
+                    {...re1("inverter_qty", {
+                      required: "Inverter quantity is required",
+                      min: { value: 1, message: "Min 1 required" },
+                    })}
+                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.inverter_qty ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
+                    placeholder="Enter number of inverters"
+                  />
+                  {errors1.inverter_qty && (
+                    <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
+                      {errors1.inverter_qty.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3 pt-4">
+                <button
+                  type="submit"
+                  className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:bg-blue-800 transition-all flex items-center justify-center gap-2"
+                >
+                  Confirm & Mark as Done
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsFinalizeModalOpen(false);
+                    rs1();
+                  }}
+                  className="w-full py-4 bg-white text-slate-400 border border-slate-100 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
