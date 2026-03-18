@@ -170,7 +170,7 @@ const Registration = () => {
         console.log(customers);
         const result = await axios.post(
           `${apiUrl}/api/registrations/getFileGeneration`,
-          { registrationId: rId },
+          { registrationId: item.registration.id },
           { responseType: "blob" }, // ← tells axios to treat response as binary file
         );
 
