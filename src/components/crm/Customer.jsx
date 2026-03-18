@@ -290,7 +290,11 @@ const Customer = () => {
                                         ? "/registration"
                                         : "/documentcollection";
                                   navigate(route, {
-                                    state: { customerId: c.id },
+                                    state: {
+                                      customerId: c.id,
+                                      customerName: c.lead.customer_name,
+                                      contactNumber: c.lead.contact_number,
+                                    },
                                   });
                                 }}
                                 className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm active:scale-95"
