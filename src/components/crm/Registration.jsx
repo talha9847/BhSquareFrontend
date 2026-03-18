@@ -163,11 +163,11 @@ const Registration = () => {
     }
   };
 
-  const handleDownloadFile = async () => {
+  const handleDownloadFile = async (item) => {
     try {
-      console.log(rId);
-      if (rId > 0) {
+      if (item.registration.id > 0) {
         setDLoad(true);
+        console.log(customers);
         const result = await axios.post(
           `${apiUrl}/api/registrations/getFileGeneration`,
           { registrationId: rId },
@@ -177,7 +177,10 @@ const Registration = () => {
         const url = window.URL.createObjectURL(new Blob([result.data]));
         const link = document.createElement("a");
         link.href = url;
-        link.setAttribute("download", `agreement_${rId}.docx`);
+        link.setAttribute(
+          "download",
+          `agreement_${item.lead.customer_name}.docx`,
+        );
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -363,7 +366,7 @@ const Registration = () => {
                                 onClick={() => {
                                   console.log(item);
                                   setRId(item.registration?.id);
-                                  handleDownloadFile();
+                                  handleDownloadFile(item);
                                 }}
                                 className="px-4 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all flex items-center gap-2 border border-slate-200 text-[#1a5695] hover:bg-slate-50 hover:border-[#1a5695]/30 shadow-sm"
                               >
