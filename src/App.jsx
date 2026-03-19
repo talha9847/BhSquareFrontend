@@ -17,6 +17,8 @@ import "react-toastify/dist/ReactToastify.css";
 import DocumentCollectionGuard from "./Guards/DocumentCollectionGuard";
 import NameChange from "./components/crm/NameChange";
 import NameChangeGuard from "./Guards/NameChangeGuard";
+import KitReady from "./components/crm/KitReady";
+import LoanStep from "./components/crm/LoanStep";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -39,6 +41,8 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/customers" element={<Customer />} />
+          <Route path="/kitready" element={<KitReady />} />
+          <Route path="/loanstep" element={<LoanStep />} />
           <Route
             path="/namechange"
             element={

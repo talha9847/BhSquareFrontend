@@ -49,7 +49,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       count: 5,
       type: "Operations",
       path: "customers",
-      activePaths: ["/customers", "/documentcollection","/namechange"], // highlight for both
+      activePaths: ["/customers", "/documentcollection", "/namechange"], // highlight for both
     },
     // {
     //   name: "Doc Collection",
@@ -63,6 +63,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <Box size={18} />,
       type: "Operations",
       path: "registration",
+    },
+    {
+      name: "Kit Ready",
+      icon: <Box size={18} />,
+      type: "Operations",
+      path: "kitready",
+      activePaths: ["/loanstep"], // highlight for both
     },
     { name: "Field Teams", icon: <HardHat size={18} />, type: "Installation" },
     { name: "AMC & Service", icon: <Wrench size={18} />, type: "After Sales" },
