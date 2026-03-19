@@ -14,12 +14,13 @@ import {
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const KitReady = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -211,13 +212,20 @@ const KitReady = () => {
                               </button>
                             ) : (
                               <button
-                                onClick={() =>
+                                onClick={() => {
+                                  console.log(c.customer.lead.id);
                                   navigate(
                                     c.loan_status === "required"
                                       ? "/loanstep"
                                       : "/kit-dispatch",
-                                  )
-                                }
+                                    {
+                                      state: {
+                                        customerId: c.customer.id,
+                                        leadId: c.customer.lead?.id,
+                                      },
+                                    },
+                                  );
+                                }}
                                 className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
                               >
                                 {c.loan_status === "required" ? (
