@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, get } from "react-hook-form";
 import {
   Send,
   X,
@@ -36,6 +36,8 @@ const Registration = () => {
   const [load, setLoad] = useState(false);
   const [rId, setRId] = useState(0);
   const [dLoad, setDLoad] = useState(false);
+
+  const [brands, setBrands] = useState([{}]);
 
   const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -77,8 +79,19 @@ const Registration = () => {
     }
   };
 
+  const getBrands = async () => {
+    try {
+      const res = await axios.get(`${apiUrl}/api/kitready/getAllBrands`);
+      if (res.status == 200) {
+        console.log(res.data.data);
+        setBrands(res.data.data);
+      }
+    } catch (error) {}
+  };
+
   useEffect(() => {
     getCustomers();
+    getBrands();
   }, []);
 
   const openRegistrationModal = (customer) => {
@@ -140,6 +153,7 @@ const Registration = () => {
     try {
       if (rId > 0 && cId > 0 && lId > 0) {
         setLoad(true);
+        console.log(data);
         const res = await axios.post(
           `${apiUrl}/api/registrations/markRegistrationAsDone`,
           {
@@ -653,13 +667,28 @@ const Registration = () => {
                   <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
                     Panel Brand
                   </label>
-                  <input
+                  <select
                     {...re1("panel_brand", {
                       required: "Panel brand is required",
                     })}
+                    name="panel_brand"
+                    id=""
                     className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel_brand ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
+                  >
+                    <option value="">--select brand--</option>
+                    {brands.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.name}
+                      </option>
+                    ))}
+                  </select>
+                  {/* <input
+                    {...re1("panel_brand", {
+                      required: "Panel brand is required",
+                    })}
+                    
                     placeholder="e.g. Waaree, Adani"
-                  />
+                  /> */}
                   {errors1.panel_brand && (
                     <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
                       {errors1.panel_brand.message}
@@ -672,13 +701,29 @@ const Registration = () => {
                   <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
                     Inverter Brand
                   </label>
-                  <input
+
+                  <select
+                    {...re1("inverter_brand", {
+                      required: "Panel brand is required",
+                    })}
+                    name="inverter_brand"
+                    id=""
+                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel_brand ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
+                  >
+                    <option value="">--select brand--</option>
+                    {brands.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.name}
+                      </option>
+                    ))}
+                  </select>
+                  {/* <input
                     {...re1("inverter_brand", {
                       required: "Inverter brand is required",
                     })}
                     className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.inverter_brand ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
                     placeholder="e.g. Growatt, Solis"
-                  />
+                  /> */}
                   {errors1.inverter_brand && (
                     <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
                       {errors1.inverter_brand.message}

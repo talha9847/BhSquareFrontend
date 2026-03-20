@@ -19,6 +19,7 @@ import NameChange from "./components/crm/NameChange";
 import NameChangeGuard from "./Guards/NameChangeGuard";
 import KitReady from "./components/crm/KitReady";
 import LoanStep from "./components/crm/LoanStep";
+import InventoryManager from "./components/crm/InventoryManger";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -43,6 +44,7 @@ function App() {
           <Route path="/customers" element={<Customer />} />
           <Route path="/kitready" element={<KitReady />} />
           <Route path="/loanstep" element={<LoanStep />} />
+          <Route path="/inventory" element={<InventoryManager />} />
           <Route
             path="/namechange"
             element={
