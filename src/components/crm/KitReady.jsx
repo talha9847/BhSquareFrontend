@@ -183,7 +183,9 @@ const KitReady = () => {
                             </span>
                           ) : (
                             <span className="text-emerald-600 text-[10px] font-black uppercase tracking-tighter">
-                              ● Paid / Direct
+                              {c.loan_status == "completed"
+                                ? "Loan Done"
+                                : "Not applicable"}
                             </span>
                           )}
                         </td>
@@ -242,6 +244,26 @@ const KitReady = () => {
                                   className="group-hover/btn:translate-x-1 transition-transform"
                                 />
                               </button>
+                            )}
+
+                            {c.loan_status == "completed" ? (
+                              <>
+                                <button
+                                  onClick={() => {
+                                    navigate("/loanstep", {
+                                      state: {
+                                        customerId: c.customer.id,
+                                        leadId: c.customer.lead?.id,
+                                      },
+                                    });
+                                  }}
+                                  className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
+                                >
+                                  See Loan
+                                </button>
+                              </>
+                            ) : (
+                              <></>
                             )}
                           </div>
                         </td>

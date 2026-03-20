@@ -120,34 +120,18 @@ const LoanStep = () => {
 
   const handleNextStage = async () => {
     setSubmittingNextStage(true);
+    console.log("Yes procceeedd clickedd");
+    console.log(customerId);
+
     try {
-      // 1. First save any pending loan data
-      const body = {
-        bank_name: loanData.bankName,
-        is_applied: loanData.loanApplied,
-        is_approved: true, // Mark as approved
-        estimated: loanData.estimateAmount || null,
-        loan_amount: loanData.approvedAmount || null,
-        interest_rate: loanData.interestRate || null,
-        bank_remarks: loanData.bankRemark || "",
-        stage: "Disbursement", // Or whatever your next stage name is
-      };
-
       const res = await axios.put(
-        `${apiUrl}/api/loan/updateLoan/${customerId}`,
-        body,
+        `${apiUrl}/api/loan/completeLoanAndMoveToKitReady/${customerId}`,
       );
-
-      if (res.status === 200) {
-        toast.success("Loan Approved! Moving to Disbursement...");
-        navigate("/disbursement", { state: { leadId, customerId } });
+      if (res.status == 200) {
+        navigate("/kitready");
       }
-    } catch (error) {
-      toast.error("Failed to update stage");
-    } finally {
-      setSubmittingNextStage(false);
-      setShowModal(false);
-    }
+    } catch (error) {}
+    setSubmittingNextStage(false);
   };
 
   const getLoan = async () => {
@@ -171,6 +155,18 @@ const LoanStep = () => {
     } catch (error) {
       setPageLoading(false);
     }
+  };
+
+  const approveLoan = async () => {
+    try {
+      const res = await axios.patch(
+        `${apiUrl}/api/loan/approveLoan/${customerId}`,
+      );
+
+      if (res.status == 200) {
+        setIsApproved(true);
+      }
+    } catch (error) {}
   };
 
   const handleSaveFullProfile = async () => {
@@ -533,7 +529,7 @@ const LoanStep = () => {
                   Approved
                 </span>
                 <button
-                  onClick={() => setIsApproved(!isApproved)}
+                  onClick={() => approveLoan()}
                   className={`w-14 h-7 rounded-full p-1 transition-colors flex items-center ${isApproved ? "bg-white/30" : "bg-slate-200"}`}
                 >
                   <div

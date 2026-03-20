@@ -69,7 +69,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <Box size={18} />,
       type: "Operations",
       path: "kitready",
-      activePaths: ["/loanstep"], // highlight for both
+      activePaths: ["/loanstep", "/kitready"], // highlight for both
     },
     { name: "Field Teams", icon: <HardHat size={18} />, type: "Installation" },
     { name: "AMC & Service", icon: <Wrench size={18} />, type: "After Sales" },
