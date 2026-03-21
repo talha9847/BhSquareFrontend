@@ -34,6 +34,7 @@ const DocumentCollection = () => {
   const [leadsData, setLeadsData] = useState({});
   const [loading, setLoading] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const [docInfo, setDocInfo] = useState({});
   const [isFound, setIsFound] = useState(false);
