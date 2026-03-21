@@ -21,6 +21,7 @@ import KitReady from "./components/crm/KitReady";
 import LoanStep from "./components/crm/LoanStep";
 import InventoryManager from "./components/crm/InventoryManger";
 import BrandManager from "./components/crm/BrandManager";
+import PrepareKit from "./components/crm/PrepareKit";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -47,6 +48,7 @@ function App() {
           <Route path="/loanstep" element={<LoanStep />} />
           <Route path="/inventory" element={<InventoryManager />} />
           <Route path="/brands" element={<BrandManager />} />
+          <Route path="/preparekit" element={<PrepareKit />} />
           <Route
             path="/namechange"
             element={

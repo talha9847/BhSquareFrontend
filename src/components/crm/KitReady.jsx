@@ -219,7 +219,7 @@ const KitReady = () => {
                                   navigate(
                                     c.loan_status === "required"
                                       ? "/loanstep"
-                                      : "/kit-dispatch",
+                                      : "/preparekit",
                                     {
                                       state: {
                                         customerId: c.customer.id,

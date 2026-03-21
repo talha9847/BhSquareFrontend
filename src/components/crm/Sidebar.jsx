@@ -69,7 +69,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <Box size={18} />,
       type: "Operations",
       path: "kitready",
-      activePaths: ["/loanstep", "/kitready", "/brands"], // highlight for both
+      activePaths: ["/loanstep", "/kitready", "/brands", "/preparekit"], // highlight for both
     },
     {
       name: "Inventory",
