@@ -125,7 +125,7 @@ const PrepareKit = () => {
         kit_id: product.kit_id,
         inventory_id: product.id,
       });
-      if (res.status === 200) {
+      if (res.status === 201) {
         toast.success("Added to kit");
         fetchMainData();
         setIsModalOpen(false);
