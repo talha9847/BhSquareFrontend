@@ -33,6 +33,7 @@ const KitReady = () => {
   // DATA STATE
   const [customers, setCustomers] = useState([]);
   const [pageLoading, setPageLoading] = useState(true);
+  const [naviLoad, setNaviLoad] = useState(false);
 
   const getCustomers = async () => {
     try {
@@ -47,6 +48,28 @@ const KitReady = () => {
       console.error(error);
     } finally {
       setPageLoading(false);
+    }
+  };
+
+  const insertKit = async (customerId, loan_status, leadId) => {
+    try {
+      setNaviLoad(true);
+      console.log("Hello i am hjererer");
+
+      const res = await axios.post(`${apiUrl}/api/kitready/addKitItems`, {
+        customerId,
+      });
+      if (res.status == 200 || res.status == 210) {
+        setNaviLoad(false);
+        navigate(loan_status === "required" ? "/loanstep" : "/preparekit", {
+          state: {
+            customerId: customerId,
+            leadId: leadId,
+          },
+        });
+      }
+    } catch (error) {
+      setNaviLoad(false);
     }
   };
 
@@ -215,17 +238,10 @@ const KitReady = () => {
                             ) : (
                               <button
                                 onClick={() => {
-                                  console.log(c.customer.lead.id);
-                                  navigate(
-                                    c.loan_status === "required"
-                                      ? "/loanstep"
-                                      : "/preparekit",
-                                    {
-                                      state: {
-                                        customerId: c.customer.id,
-                                        leadId: c.customer.lead?.id,
-                                      },
-                                    },
+                                  insertKit(
+                                    c.customer.id,
+                                    c.loan_status,
+                                    c.customer.lead?.id,
                                   );
                                 }}
                                 className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
@@ -236,7 +252,13 @@ const KitReady = () => {
                                   </>
                                 ) : (
                                   <>
-                                    <Package size={14} /> Go For Kit
+                                    {naviLoad ? (
+                                      <>Going.....</>
+                                    ) : (
+                                      <>
+                                        <Package size={14} /> Go For Kit
+                                      </>
+                                    )}
                                   </>
                                 )}
                                 <ChevronRight
