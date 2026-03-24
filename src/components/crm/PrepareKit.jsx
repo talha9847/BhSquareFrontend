@@ -10,6 +10,7 @@ import {
   Inbox,
   ArrowDownRight,
   Menu,
+  Plus,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
