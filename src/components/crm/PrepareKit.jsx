@@ -15,13 +15,14 @@ import {
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const PrepareKit = () => {
   const location = useLocation();
   const apiUrl = import.meta.env.VITE_API_URL;
   const customerId = location.state?.customerId;
+  const navigate = useNavigate();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tableLoading, setTableLoading] = useState(true);
@@ -36,7 +37,7 @@ const PrepareKit = () => {
 
   useEffect(() => {
     if (customerId) fetchMainData();
-    else toast.error("No Customer ID found.");
+    else navigate("/kitready");
   }, [customerId]);
 
   const fetchMainData = async () => {
@@ -121,6 +122,7 @@ const PrepareKit = () => {
 
   const addItemToKit = async (product) => {
     try {
+      setIsModalOpen(false);
       const res = await axios.post(`${apiUrl}/api/kitready/addItem`, {
         kit_id: product.kit_id,
         inventory_id: product.id,
@@ -128,7 +130,6 @@ const PrepareKit = () => {
       if (res.status === 201) {
         toast.success("Added to kit");
         fetchMainData();
-        setIsModalOpen(false);
       }
     } catch (error) {
       toast.error("Failed to add product");

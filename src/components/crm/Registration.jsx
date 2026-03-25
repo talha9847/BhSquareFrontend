@@ -103,12 +103,12 @@ const Registration = () => {
       setSelectedCustomer(customer);
 
       const panelCount = customer.lead?.number_of_panels || 0;
-      const initialSerials =
-        customer.registration?.panels?.length > 0
-          ? customer.registration.panels.map((panel) => ({
-              value: panel.serial_number,
-            }))
-          : Array.from({ length: panelCount }, () => ({ value: "" }));
+      // const initialSerials =
+      //   customer.registration?.panels?.length > 0
+      //     ? customer.registration.panels.map((panel) => ({
+      //         value: panel.serial_number,
+      //       }))
+      //     : Array.from({ length: panelCount }, () => ({ value: "" }));
 
       reset({
         customer_name: customer.lead?.customer_name || "",
@@ -118,7 +118,7 @@ const Registration = () => {
         agreement_date: customer.registration?.agreement_date,
         inverter_qty: customer.registration?.inverter_qty,
         panel_qty: panelCount,
-        panel_serials: initialSerials,
+        // panel_serials: initialSerials,
       });
 
       setIsModalOpen(true);
@@ -128,6 +128,7 @@ const Registration = () => {
   const onSubmit = async (data) => {
     try {
       setLoad(true);
+      console.log(data);
       const res = await axios.post(`${apiUrl}/api/registrations/registration`, {
         data: data,
         leadId: lId,
@@ -575,7 +576,7 @@ const Registration = () => {
               </div>
 
               {/* Dynamic Panel Serials */}
-              <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100">
+              {/* <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100">
                 <h3 className="text-[10px] font-black text-[#1a5695] uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                   <PenTool size={14} /> Enter{" "}
                   {selectedCustomer?.lead?.number_of_panels} Panel Serial
@@ -597,7 +598,7 @@ const Registration = () => {
                     </div>
                   ))}
                 </div>
-              </div>
+              </div> */}
 
               <div className="pt-4">
                 <button
