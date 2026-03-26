@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { FaBridgeCircleExclamation } from "react-icons/fa6";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [active, setActive] = useState("dashboard");
@@ -77,6 +78,12 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       type: "Operations",
       path: "dispatch",
       activePaths: ["/dispatch"], // highlight for both
+    },
+    {
+      name: "Fabricatoin",
+      icon: <FaBridgeCircleExclamation size={18} />,
+      type: "Operations",
+      path: "fabrication",
     },
     {
       name: "Inventory",
