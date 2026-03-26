@@ -72,6 +72,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       activePaths: ["/loanstep", "/kitready", "/brands", "/preparekit"], // highlight for both
     },
     {
+      name: "Dispatch",
+      icon: <Box size={18} />,
+      type: "Operations",
+      path: "dispatch",
+      activePaths: ["/dispatch"], // highlight for both
+    },
+    {
       name: "Inventory",
       icon: <HardHat size={18} />,
       type: "Installation",
