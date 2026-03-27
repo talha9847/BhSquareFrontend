@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Search,
   Plus,
@@ -14,8 +14,11 @@ import {
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
+import axios from "axios";
 
 const WiringInventory = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -25,49 +28,59 @@ const WiringInventory = () => {
   // Adjustment States
   const [adjustmentType, setAdjustmentType] = useState("add");
   const [adjustmentValue, setAdjustmentValue] = useState("");
-
+  const fetchAll = async () => {
+    try {
+      const res = await axios.get(`${apiUrl}/api/wiring/fetchAllWireInventory`);
+      if (res.status == 200) {
+        console.log(res.data.data);
+        setInventory(res.data.data);
+      }
+    } catch (error) {}
+  };
   // --- DUMMY DATA ---
   const [inventory, setInventory] = useState([
     {
       id: 1,
-      brand: "Finolex",
-      type: "DC Wire",
-      gauge: "4 sq mm",
+      brand_name: "Finolex",
+      wire_type: "DC Wire",
+      gauge: "4",
       color: "Red",
-      qty: 450,
+      stock: 450,
     },
     {
       id: 2,
-      brand: "Polycab",
-      type: "AC Wire",
-      gauge: "2.5 sq mm",
+      brand_name: "Polycab",
+      wire_type: "AC Wire",
+      gauge: "2.5",
       color: "Black",
-      qty: 210,
+      stock: 210,
     },
     {
       id: 3,
-      brand: "RR Kabel",
-      type: "LA Wire",
-      gauge: "10 sq mm",
+      brand_name: "RR Kabel",
+      wire_type: "LA Wire",
+      gauge: "10",
       color: "Green",
-      qty: 85,
+      stock: 85,
     },
     {
       id: 4,
-      brand: "Finolex",
-      type: "DC Wire",
-      gauge: "4 sq mm",
+      brand_name: "Finolex",
+      wire_type: "DC Wire",
+      gauge: "4",
       color: "Black",
-      qty: 380,
+      stock: 380,
     },
   ]);
-
+  useEffect(() => {
+    fetchAll();
+  }, []);
   const [formData, setFormData] = useState({
-    brand: "",
-    type: "DC Wire",
+    brand_name: "",
+    wire_type: "DC Wire",
     gauge: "",
     color: "Red",
-    qty: "",
+    stock: "",
   });
 
   const handleOpenModal = (wire = null) => {
@@ -79,61 +92,55 @@ const WiringInventory = () => {
     } else {
       setEditingWire(null);
       setFormData({
-        brand: "",
-        type: "DC Wire",
+        brand_name: "",
+        wire_type: "DC Wire",
         gauge: "",
         color: "Red",
-        qty: "",
+        stock: "",
       });
     }
     setIsModalOpen(true);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    setTimeout(() => {
+    try {
       if (editingWire) {
-        const change = Number(adjustmentValue) || 0;
-        const currentQty = Number(editingWire.qty);
-        const finalQty =
-          adjustmentType === "add" ? currentQty + change : currentQty - change;
-
-        setInventory(
-          inventory.map((item) =>
-            item.id === editingWire.id
-              ? { ...formData, qty: Math.max(0, finalQty) }
-              : item,
-          ),
-        );
-        toast.success(
-          `Stock ${adjustmentType === "add" ? "increased" : "decreased"} successfully`,
-        );
       } else {
-        setInventory([
-          ...inventory,
-          { ...formData, id: Date.now(), qty: Number(formData.qty) },
-        ]);
-        toast.success("New wire added to inventory");
+        const res = await axios.post(
+          `${apiUrl}/api/wiring/createWireInventory`,
+          formData,
+        );
+
+        if (res.status == 201) {
+          fetchAll();
+          toast.success("Created Successfully");
+          setLoading(false);
+
+          setIsModalOpen(false);
+        }
       }
+    } catch (error) {
+      toast.error("Some error");
+      console.log(error);
       setLoading(false);
       setIsModalOpen(false);
-    }, 800);
+    }
   };
 
   // --- SEARCH LOGIC ---
   const filteredInventory = inventory.filter(
     (item) =>
-      item.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.brand_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.wire_type.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.color.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const previewTotal = editingWire
     ? adjustmentType === "add"
-      ? Number(editingWire.qty) + (Number(adjustmentValue) || 0)
-      : Number(editingWire.qty) - (Number(adjustmentValue) || 0)
+      ? Number(editingWire.stock) + (Number(adjustmentValue) || 0)
+      : Number(editingWire.stock) - (Number(adjustmentValue) || 0)
     : 0;
 
   return (
@@ -172,7 +179,7 @@ const WiringInventory = () => {
               <input
                 type="text"
                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold focus:bg-white focus:border-[#1a5695]/20 transition-all"
-                placeholder="Search brand, type or color..."
+                placeholder="Search brand_name, type or color..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -189,7 +196,7 @@ const WiringInventory = () => {
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-4">
                     <span className="px-3 py-1 bg-[#1a5695] text-white text-[9px] font-black uppercase rounded-lg tracking-tighter">
-                      {item.brand}
+                      {item.brand_name}
                     </span>
                     <button
                       onClick={() => handleOpenModal(item)}
@@ -200,11 +207,11 @@ const WiringInventory = () => {
                   </div>
 
                   <h3 className="text-lg font-black text-slate-800 uppercase mb-1">
-                    {item.type}
+                    {item.wire_type}
                   </h3>
                   <div className="flex flex-wrap gap-2 mb-6">
                     <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase">
-                      <Layers size={12} /> {item.gauge}
+                      <Layers size={12} /> {item.gauge} sq mm
                     </span>
                     <span className="text-slate-200">•</span>
                     <span className="flex items-center gap-1 text-[10px] font-bold text-slate-400 uppercase">
@@ -217,7 +224,7 @@ const WiringInventory = () => {
                       Available
                     </div>
                     <div className="text-xl font-black text-[#1a5695]">
-                      {item.qty}
+                      {item.stock}
                       <span className="text-[10px] ml-1 uppercase">mtr</span>
                     </div>
                   </div>
@@ -253,7 +260,7 @@ const WiringInventory = () => {
 
             <div className="overflow-y-auto p-6 lg:p-8 custom-scrollbar">
               <form onSubmit={handleSave} className="space-y-8">
-                {/* Section 1: Brand & Type Information */}
+                {/* Section 1: brand_name & Type Information */}
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-1.5">
@@ -264,9 +271,12 @@ const WiringInventory = () => {
                         required
                         className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:border-[#1a5695] transition-all placeholder:text-slate-300"
                         placeholder="e.g. Finolex"
-                        value={formData.brand}
+                        value={formData.brand_name}
                         onChange={(e) =>
-                          setFormData({ ...formData, brand: e.target.value })
+                          setFormData({
+                            ...formData,
+                            brand_name: e.target.value,
+                          })
                         }
                       />
                     </div>
@@ -276,9 +286,12 @@ const WiringInventory = () => {
                       </label>
                       <select
                         className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:border-[#1a5695] appearance-none"
-                        value={formData.type}
+                        value={formData.wire_type}
                         onChange={(e) =>
-                          setFormData({ ...formData, type: e.target.value })
+                          setFormData({
+                            ...formData,
+                            wire_type: e.target.value,
+                          })
                         }
                       >
                         <option value="DC Wire">DC Wire</option>
@@ -345,7 +358,7 @@ const WiringInventory = () => {
                       <Layers size={14} className="text-[#1a5695]" /> Gauge Info
                     </label>
                     <input
-                      placeholder="e.g. 4 sq mm"
+                      placeholder="e.g. 4"
                       className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:border-[#1a5695] transition-all"
                       value={formData.gauge}
                       onChange={(e) =>
@@ -393,9 +406,9 @@ const WiringInventory = () => {
                           type="number"
                           className="w-full p-3.5 bg-white border border-slate-200 rounded-xl text-sm font-black text-slate-700 outline-none focus:border-[#1a5695] shadow-sm"
                           placeholder="0"
-                          value={formData.qty}
+                          value={formData.stock}
                           onChange={(e) =>
-                            setFormData({ ...formData, qty: e.target.value })
+                            setFormData({ ...formData, stock: e.target.value })
                           }
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-300 uppercase">
@@ -416,7 +429,7 @@ const WiringInventory = () => {
                           Existing
                         </p>
                         <p className="text-sm font-black text-slate-600 tracking-tight">
-                          {editingWire.qty}m
+                          {editingWire.stock}m
                         </p>
                       </div>
                       <div className="px-4">
