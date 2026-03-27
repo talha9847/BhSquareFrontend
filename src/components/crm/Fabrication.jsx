@@ -229,7 +229,7 @@ const Fabrication = () => {
                             )}
                             {item.status === "done" && (
                               <button
-                                onClick={() => navigate(`/wiring/${item.id}`)}
+                                onClick={() => navigate(`/wiring`)}
                                 className="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-xl transition-all border border-indigo-100 font-black text-[9px] uppercase tracking-widest"
                               >
                                 <Zap size={14} />
