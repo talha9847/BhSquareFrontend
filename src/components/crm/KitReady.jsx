@@ -216,9 +216,10 @@ const KitReady = () => {
                         {/* KIT STATUS */}
                         <td className="px-6 py-4 text-center">
                           <span
-                            className={`text-[10px] font-black uppercase tracking-widest ${c.kit_status === "ready" ? "text-emerald-600" : "text-slate-400"}`}
+                            className={`text-[10px] font-black uppercase tracking-widest ${c.status === "done" ? "text-emerald-600" : "text-slate-400"}`}
                           >
-                            {c.kit_status === "ready" ? "Ready" : "Pending"}
+                            {c.status === "done" ? "Dispatched" : "Pending"}
+                            {console.log(c)}
                           </span>
                         </td>
 

@@ -107,6 +107,16 @@ const WiringInventory = () => {
     setLoading(true);
     try {
       if (editingWire) {
+        console.log(editingWire);
+        console.log(adjustmentType);
+        let qty = 0;
+        if (adjustmentType == "deduct") {
+          qty = adjustmentValue * -1;
+        } else {
+          qty = adjustmentValue;
+        }
+        
+        setLoading(false);
       } else {
         const res = await axios.post(
           `${apiUrl}/api/wiring/createWireInventory`,
@@ -297,6 +307,7 @@ const WiringInventory = () => {
                         <option value="DC Wire">DC Wire</option>
                         <option value="AC Wire">AC Wire</option>
                         <option value="LA Wire">LA Wire</option>
+                        <option value="EARTHING Wire">EARTHING Wire</option>
                       </select>
                     </div>
                   </div>
