@@ -8,6 +8,7 @@ import {
   Clock,
   CheckCircle2,
   Eye,
+  Share,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -94,10 +95,11 @@ const Wiring = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     setLoading(true);
+    console.log(formData);
     try {
       // Assuming your update endpoint follows this pattern
-      const res = await axios.post(
-        `${apiUrl}/api/wiring/updateWiringDetails`,
+      const res = await axios.put(
+        `${apiUrl}/api/wiring/updateWiring/${formData.wiring_id}`,
         formData,
       );
       if (res.status === 200 || res.status === 201) {
@@ -226,12 +228,22 @@ const Wiring = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          {item.wiring_status === "pending" && (
+                          {item.wiring_inv_status === "pending" && (
                             <button
                               onClick={() => handleUpdateClick(item)}
                               className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-blue-50 rounded-xl transition-all border border-slate-100"
                             >
                               <Edit3 size={16} />
+                            </button>
+                          )}
+                          {item.wiring_inv_status === "done" && (
+                            <button
+                              onClick={() => {
+                                console.log("helloeoe");
+                              }}
+                              className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-blue-50 rounded-xl transition-all border border-slate-100"
+                            >
+                              <Share size={16} />
                             </button>
                           )}
                         </td>
@@ -248,11 +260,13 @@ const Wiring = () => {
       {/* MODAL */}
       {isUpdateModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden border border-white/20">
-            <div className="bg-[#1a5695] p-8 text-white flex justify-between items-center relative">
+          {/* Added max-h and overflow-y-auto here */}
+          <div className="bg-white w-full max-w-2xl rounded-[32px] md:rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Modal Header (Fixed at top) */}
+            <div className="bg-[#1a5695] p-6 md:p-8 text-white flex justify-between items-center relative shrink-0">
               <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
               <div className="relative z-10">
-                <h2 className="text-xl font-black uppercase tracking-tight">
+                <h2 className="text-lg md:text-xl font-black uppercase tracking-tight">
                   Wiring Logistics
                 </h2>
                 <div className="flex items-center gap-2 mt-1">
@@ -270,70 +284,73 @@ const Wiring = () => {
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-                <div className="md:col-span-2">
-                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
-                    Select Technician
-                  </label>
-                  <select
-                    required
-                    className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold focus:bg-white focus:border-[#1a5695]/30 transition-all"
-                    value={formData.technician_id}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        technician_id: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="">Choose Personnel</option>
-                    {technicians.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {[
-                  { label: "AC Wire Red (mtr)", key: "ac_wire_red" },
-                  { label: "AC Wire Black (mtr)", key: "ac_wire_black" },
-                  { label: "DC Wire Red (mtr)", key: "dc_wire_red" },
-                  { label: "DC Wire Black (mtr)", key: "dc_wire_black" },
-                  { label: "LA Wire (mtr)", key: "la_wire" },
-                  { label: "Earthing Qty", key: "earthing" },
-                  { label: "Conduit Pipe", key: "conduit_pipe" },
-                ].map((f) => (
-                  <div key={f.key}>
+            {/* Scrollable Form Body */}
+            <div className="overflow-y-auto p-6 md:p-8 custom-scrollbar">
+              <form onSubmit={handleSave}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                  <div className="md:col-span-2">
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
-                      {f.label}
+                      Select Technician
                     </label>
-                    <input
-                      type="number"
+                    <select
                       required
                       className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold focus:bg-white focus:border-[#1a5695]/30 transition-all"
-                      value={formData[f.key]}
+                      value={formData.technician_id}
                       onChange={(e) =>
-                        setFormData({ ...formData, [f.key]: e.target.value })
+                        setFormData({
+                          ...formData,
+                          technician_id: e.target.value,
+                        })
                       }
-                      placeholder="0"
-                    />
+                    >
+                      <option value="">Choose Personnel</option>
+                      {technicians.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                ))}
-              </div>
 
-              <button
-                disabled={loading}
-                className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg flex items-center justify-center gap-3 hover:bg-[#15467a] transition-all"
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  "Finalize & Save"
-                )}
-              </button>
-            </form>
+                  {[
+                    { label: "AC Wire Red (mtr)", key: "ac_wire_red" },
+                    { label: "AC Wire Black (mtr)", key: "ac_wire_black" },
+                    { label: "DC Wire Red (mtr)", key: "dc_wire_red" },
+                    { label: "DC Wire Black (mtr)", key: "dc_wire_black" },
+                    { label: "LA Wire (mtr)", key: "la_wire" },
+                    { label: "Earthing Qty", key: "earthing" },
+                    { label: "Conduit Pipe", key: "conduit_pipe" },
+                  ].map((f) => (
+                    <div key={f.key}>
+                      <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
+                        {f.label}
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold focus:bg-white focus:border-[#1a5695]/30 transition-all"
+                        value={formData[f.key]}
+                        onChange={(e) =>
+                          setFormData({ ...formData, [f.key]: e.target.value })
+                        }
+                        placeholder="0"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  disabled={loading}
+                  className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg flex items-center justify-center gap-3 hover:bg-[#15467a] active:scale-95 transition-all"
+                >
+                  {loading ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    "Finalize & Save"
+                  )}
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       )}
