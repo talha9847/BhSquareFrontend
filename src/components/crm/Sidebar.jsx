@@ -99,6 +99,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       path: "/inventory",
       activePaths: ["/inventory"],
     },
+    {
+      name: "Wiring Inventory",
+      icon: <HardHat size={18} />,
+      type: "Installation",
+      path: "/winventory",
+      activePaths: ["/winventory"],
+    },
     { name: "AMC & Service", icon: <Wrench size={18} />, type: "After Sales" },
   ];
 

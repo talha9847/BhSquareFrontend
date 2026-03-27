@@ -27,6 +27,7 @@ import Fabrication from "./components/crm/Fabrication";
 import FabricatorManager from "./components/crm/FabricatorManager";
 import Wiring from "./components/crm/Wiring";
 import TechnicianManager from "./components/crm/TechnicianManager";
+import WiringInventory from "./components/crm/WiringInventory";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -59,6 +60,7 @@ function App() {
           <Route path="/fabricators" element={<FabricatorManager />} />
           <Route path="/wiring" element={<Wiring />} />
           <Route path="/technicians" element={<TechnicianManager />} />
+          <Route path="/winventory" element={<WiringInventory />} />
           <Route
             path="/namechange"
             element={
