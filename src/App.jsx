@@ -25,6 +25,8 @@ import PrepareKit from "./components/crm/PrepareKit";
 import Dispatch from "./components/crm/Dispatch";
 import Fabrication from "./components/crm/Fabrication";
 import FabricatorManager from "./components/crm/FabricatorManager";
+import Wiring from "./components/crm/Wiring";
+import TechnicianManager from "./components/crm/TechnicianManager";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -55,6 +57,8 @@ function App() {
           <Route path="/dispatch" element={<Dispatch />} />
           <Route path="/fabrication" element={<Fabrication />} />
           <Route path="/fabricators" element={<FabricatorManager />} />
+          <Route path="/wiring" element={<Wiring />} />
+          <Route path="/technicians" element={<TechnicianManager />} />
           <Route
             path="/namechange"
             element={

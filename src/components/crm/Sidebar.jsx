@@ -19,6 +19,7 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaBridgeCircleExclamation } from "react-icons/fa6";
+import { WiRefresh } from "react-icons/wi";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [active, setActive] = useState("dashboard");
@@ -84,6 +85,12 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <FaBridgeCircleExclamation size={18} />,
       type: "Operations",
       path: "fabrication",
+    },
+    {
+      name: "Wiring",
+      icon: <WiRefresh size={18} />,
+      type: "Operations",
+      path: "wiring",
     },
     {
       name: "Inventory",
