@@ -29,6 +29,8 @@ import Wiring from "./components/crm/Wiring";
 import TechnicianManager from "./components/crm/TechnicianManager";
 import WiringInventory from "./components/crm/WiringInventory";
 import UpdateWiringLog from "./components/crm/UpdateWiringLog";
+import Drivers from "./components/crm/Driver";
+import Cars from "./components/crm/Cars";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -63,6 +65,8 @@ function App() {
           <Route path="/technicians" element={<TechnicianManager />} />
           <Route path="/winventory" element={<WiringInventory />} />
           <Route path="/updatewiring" element={<UpdateWiringLog />} />
+          <Route path="/drivers" element={<Drivers />} />
+          <Route path="/cars" element={<Cars />} />
           <Route
             path="/namechange"
             element={

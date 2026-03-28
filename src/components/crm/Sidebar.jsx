@@ -78,7 +78,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <Box size={18} />,
       type: "Operations",
       path: "dispatch",
-      activePaths: ["/dispatch"], // highlight for both
+      activePaths: ["/dispatch", "/drivers", "/cars"], // highlight for both
     },
     {
       name: "Fabricatoin",

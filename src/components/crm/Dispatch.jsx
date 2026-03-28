@@ -4,17 +4,15 @@ import {
   MapPin,
   Truck,
   User,
-  Calendar,
   Package,
   ChevronRight,
-  Filter,
   Loader2,
   Clock,
-  ExternalLink,
-  Smartphone,
   ShieldCheck,
   X,
   Check,
+  Users,
+  Car,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -54,7 +52,6 @@ const Dispatch = () => {
       setPageLoading(true);
       const res = await axios.get(`${apiUrl}/api/dispatch/fetchDispatches`);
       if (res.status === 200) {
-        console.log(res.data.data);
         setDispatches(res.data.data);
       }
     } catch (error) {
@@ -64,8 +61,25 @@ const Dispatch = () => {
     }
   };
 
+  const [drivers, setDrivers] = useState([]);
+
+  const fetchDrivers = async () => {
+    try {
+      setPageLoading(true);
+      const res = await axios.get(`${apiUrl}/api/dispatch/fetchDrivers`);
+      if (res.status === 200) {
+        setDrivers(res.data.data);
+      }
+    } catch (error) {
+      toast.error("Failed to load drivers");
+    } finally {
+      setPageLoading(false);
+    }
+  };
+
   useEffect(() => {
     getDispatch();
+    fetchDrivers();
   }, []);
 
   const handleOpenModal = (d) => {
@@ -83,10 +97,6 @@ const Dispatch = () => {
       toast.warning("Please fill all logistics details");
       return;
     }
-
-    console.log(formData.driver_name);
-    console.log(formData.vehicle);
-    console.log(formData.status);
 
     try {
       setLoading(true);
@@ -129,12 +139,28 @@ const Dispatch = () => {
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase">
+              <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase">
                 Logistics & Dispatch
               </h1>
               <p className="text-sm text-slate-500">
                 Track and manage outgoing equipment
               </p>
+            </div>
+
+            {/* --- NEW ACTION BUTTONS --- */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate("/drivers")}
+                className="flex items-center gap-2 px-5 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+              >
+                <Users size={16} className="text-[#1a5695]" /> View Drivers
+              </button>
+              <button
+                onClick={() => navigate("/cars")}
+                className="flex items-center gap-2 px-5 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+              >
+                <Car size={16} className="text-[#1a5695]" /> View Cars
+              </button>
             </div>
           </div>
 
@@ -231,7 +257,9 @@ const Dispatch = () => {
                         </td>
                         <td className="px-6 py-4 text-center">
                           <span
-                            className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase inline-flex items-center gap-1.5 ${getStatusStyle(d.status)}`}
+                            className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase inline-flex items-center gap-1.5 ${getStatusStyle(
+                              d.status,
+                            )}`}
                           >
                             {d.status === "done" ? (
                               <ShieldCheck size={10} />
@@ -245,11 +273,11 @@ const Dispatch = () => {
                           <button
                             onClick={() => {
                               d.status === "pending" && handleOpenModal(d);
-                              d.status == "done" && navigate("/fabrication");
+                              d.status === "done" && navigate("/fabrication");
                             }}
                             className={`group/btn flex items-center gap-2 px-4 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border shadow-sm ${
                               d.status === "done"
-                                ? "bg-white text-slate-300 border-slate-100 cursor-default"
+                                ? "bg-white text-slate-300 border-slate-100"
                                 : "bg-slate-50 text-slate-700 hover:bg-[#1a5695] hover:text-white active:scale-95"
                             }`}
                           >
@@ -278,7 +306,7 @@ const Dispatch = () => {
           <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
             <div className="bg-[#1a5695] p-8 text-white flex justify-between items-center relative">
               <div className="relative z-10">
-                <h2 className="text-xl font-black font-syne uppercase tracking-tight">
+                <h2 className="text-xl font-black uppercase tracking-tight">
                   Finalize Dispatch
                 </h2>
                 <p className="text-blue-100/60 text-[10px] font-bold uppercase tracking-widest mt-1">
@@ -312,6 +340,24 @@ const Dispatch = () => {
                       setFormData({ ...formData, driver_name: e.target.value })
                     }
                   />
+                </div>
+                <div className="relative">
+                  <User
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                    size={16}
+                  />
+                  <select
+                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#1a5695]/10 outline-none transition-all text-sm font-bold"
+                    name=""
+                    id=""
+                  >
+                    {drivers &&
+                      drivers.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}  -  {d.mobile}
+                        </option>
+                      ))}
+                  </select>
                 </div>
               </div>
 

@@ -106,7 +106,7 @@ const PrepareKit = () => {
         },
       );
       if (res.status == 201) {
-        navigate("/customers");
+        navigate("/dispatch");
       }
     } catch (error) {
       setConfirmLoad(false);
@@ -249,6 +249,7 @@ const PrepareKit = () => {
 
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
+                  disabled={tableLoading || kitStatus}
                   onClick={() => {
                     setIsModalOpen(true);
                     fetchAvailableProducts();
