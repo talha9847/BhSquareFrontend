@@ -354,7 +354,7 @@ const Dispatch = () => {
                     {drivers &&
                       drivers.map((d) => (
                         <option key={d.id} value={d.id}>
-                          {d.name}  -  {d.mobile}
+                          {d.name}  - {d.mobile}
                         </option>
                       ))}
                   </select>
