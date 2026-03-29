@@ -26,13 +26,14 @@ const Dispatch = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const [cars, setCars] = useState([]);
 
   // MODAL STATES
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDispatch, setSelectedDispatch] = useState(null);
   const [formData, setFormData] = useState({
-    driver_name: "",
-    vehicle: "",
+    driver_id: "",
+    car_id: "",
     status: "done",
   });
 
@@ -61,6 +62,20 @@ const Dispatch = () => {
     }
   };
 
+  const fetchCars = async () => {
+    try {
+      setPageLoading(true);
+      const res = await axios.get(`${apiUrl}/api/dispatch/fetchCars`);
+      if (res.status === 200) {
+        setCars(res.data.data);
+      }
+    } catch (error) {
+      toast.error("Failed to load fleet data");
+    } finally {
+      setPageLoading(false);
+    }
+  };
+
   const [drivers, setDrivers] = useState([]);
 
   const fetchDrivers = async () => {
@@ -80,24 +95,24 @@ const Dispatch = () => {
   useEffect(() => {
     getDispatch();
     fetchDrivers();
+    fetchCars();
   }, []);
 
   const handleOpenModal = (d) => {
     setSelectedDispatch(d);
     setFormData({
-      driver_name: d.driver_name || "",
-      vehicle: d.vehicle || "",
+      driver_id: d.driver_id || "",
+      car_id: d.car_id || "",
       status: "done",
     });
     setIsModalOpen(true);
   };
 
   const handleUpdateDispatch = async () => {
-    if (!formData.driver_name || !formData.vehicle) {
+    if (!formData.driver_id || !formData.car_id) {
       toast.warning("Please fill all logistics details");
       return;
     }
-
     try {
       setLoading(true);
       const res = await axios.post(`${apiUrl}/api/dispatch/updateDispatch`, {
@@ -323,7 +338,7 @@ const Dispatch = () => {
 
             <div className="p-8 space-y-5">
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
+                {/* <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
                   Driver Name
                 </label>
                 <div className="relative">
@@ -335,12 +350,12 @@ const Dispatch = () => {
                     type="text"
                     className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#1a5695]/10 outline-none transition-all text-sm font-bold"
                     placeholder="Enter driver name"
-                    value={formData.driver_name}
+                    value={formData.driver_id}
                     onChange={(e) =>
-                      setFormData({ ...formData, driver_name: e.target.value })
+                      setFormData({ ...formData, driver_id: e.target.value })
                     }
                   />
-                </div>
+                </div> */}
                 <div className="relative">
                   <User
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -350,11 +365,15 @@ const Dispatch = () => {
                     className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#1a5695]/10 outline-none transition-all text-sm font-bold"
                     name=""
                     id=""
+                    value={formData.driver_id}
+                    onChange={(e) => {
+                      setFormData({ ...formData, driver_id: e.target.value });
+                    }}
                   >
                     {drivers &&
                       drivers.map((d) => (
                         <option key={d.id} value={d.id}>
-                          {d.name}  - {d.mobile}
+                          {d.name} - {d.mobile}
                         </option>
                       ))}
                   </select>
@@ -370,7 +389,7 @@ const Dispatch = () => {
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                     size={16}
                   />
-                  <input
+                  {/* <input
                     type="text"
                     className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#1a5695]/10 outline-none transition-all text-sm font-bold uppercase"
                     placeholder="GJ-XX-XXXX"
@@ -378,7 +397,23 @@ const Dispatch = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, vehicle: e.target.value })
                     }
-                  />
+                  /> */}
+
+                  <select
+                    className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#1a5695]/10 outline-none transition-all text-sm font-bold uppercase"
+                    name=""
+                    id=""
+                    value={formData.car_id}
+                    onChange={(e) => {
+                      setFormData({ ...formData, car_id: e.target.value });
+                    }}
+                  >
+                    {cars.map((e) => (
+                      <option value={e.id}>
+                        {e.name} - {e.number}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

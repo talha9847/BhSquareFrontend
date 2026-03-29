@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Search,
   Truck,
@@ -7,11 +7,12 @@ import {
   Plus,
   Edit2,
   Trash2,
-  Hash,
-  Settings,
+  Loader2,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Cars = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -19,23 +20,85 @@ const Cars = () => {
   const [editingCar, setEditingCar] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [cars, setCars] = useState([
-    { id: 1, plate: "GJ-05-AB-1234", model: "Tata Ace" },
-    { id: 2, plate: "GJ-05-XY-9876", model: "Mahindra Bolero" },
-  ]);
+  // States for loading
+  const [loading, setLoading] = useState(false); // Modal Action Loading
+  const [pageLoading, setPageLoading] = useState(true); // Initial Fetch Loading
 
-  const [formData, setFormData] = useState({ plate: "", model: "" });
+  const [cars, setCars] = useState([]);
+  const [formData, setFormData] = useState({ number: "", name: "" });
+
+  const apiUrl = import.meta.env.VITE_API_URL;
+
+  const fetchCars = async () => {
+    try {
+      setPageLoading(true);
+      const res = await axios.get(`${apiUrl}/api/dispatch/fetchCars`);
+      if (res.status === 200) {
+        setCars(res.data.data);
+      }
+    } catch (error) {
+      toast.error("Failed to load fleet data");
+    } finally {
+      setPageLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCars();
+  }, []);
 
   const handleOpenModal = (car = null) => {
     if (car) {
       setEditingCar(car);
-      setFormData({ plate: car.plate, model: car.model });
+      setFormData({ number: car.number, name: car.name });
     } else {
       setEditingCar(null);
-      setFormData({ plate: "", model: "" });
+      setFormData({ number: "", name: "" });
     }
     setIsModalOpen(true);
   };
+
+  const createCar = async () => {
+    if (!formData.number || !formData.name) {
+      toast.warning("Please fill all vehicle details");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      if (editingCar) {
+        // Update Logic
+        const res = await axios.put(
+          `${apiUrl}/api/dispatch/updateCar/${editingCar.id}`,
+          formData,
+        );
+        if (res.status === 200) {
+          toast.success("Vehicle updated successfully");
+          setIsModalOpen(false);
+          fetchCars();
+        }
+      } else {
+        // Create Logic
+        const res = await axios.post(
+          `${apiUrl}/api/dispatch/createCar`,
+          formData,
+        );
+        if (res.status === 200 || res.status === 201) {
+          toast.success("Vehicle registered successfully");
+          setIsModalOpen(false);
+          fetchCars();
+        }
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Operation failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredCars = cars.filter((car) =>
+    car.number?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -81,65 +144,84 @@ const Cars = () => {
           </div>
 
           <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-separate border-spacing-0">
-                <thead className="bg-slate-50/50">
-                  <tr>
-                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                      Vehicle Info
-                    </th>
-                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {cars.map((car) => (
-                    <tr
-                      key={car.id}
-                      className="hover:bg-slate-50/80 transition-colors group"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-[#1a5695]/10 flex items-center justify-center text-[#1a5695]">
-                            <Truck size={18} />
-                          </div>
-                          <div>
-                            <p className="font-black text-[#1a5695] text-sm uppercase">
-                              {car.plate}
-                            </p>
-                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                              {car.model}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleOpenModal(car)}
-                            className="p-2 text-slate-400 hover:text-[#1a5695] hover:bg-blue-50 rounded-xl transition-all"
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
+            {pageLoading ? (
+              <div className="flex flex-col items-center justify-center py-32">
+                <Loader2 className="w-10 h-10 text-[#1a5695] animate-spin mb-4" />
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Loading Fleet Data...
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-separate border-spacing-0">
+                  <thead className="bg-slate-50/50">
+                    <tr>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                        Vehicle Info
+                      </th>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {filteredCars.map((car) => (
+                      <tr
+                        key={car.id}
+                        className="hover:bg-slate-50/80 transition-colors group"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-[#1a5695]/10 flex items-center justify-center text-[#1a5695]">
+                              <Truck size={18} />
+                            </div>
+                            <div>
+                              <p className="font-black text-[#1a5695] text-sm uppercase">
+                                {car.number}
+                              </p>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                {car.name}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end gap-2">
+                            <button
+                              onClick={() => handleOpenModal(car)}
+                              className="p-2 text-slate-400 hover:text-[#1a5695] hover:bg-blue-50 rounded-xl transition-all"
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                            <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all">
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {!pageLoading && filteredCars.length === 0 && (
+                      <tr>
+                        <td
+                          colSpan="2"
+                          className="px-6 py-10 text-center text-slate-400 text-xs font-bold italic"
+                        >
+                          No vehicles found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </main>
       </div>
 
       {/* VEHICLE MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
             <div className="bg-[#1a5695] p-8 text-white flex justify-between items-center">
               <div>
                 <h2 className="text-xl font-black uppercase tracking-tight">
@@ -165,9 +247,12 @@ const Cars = () => {
                   type="text"
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#1a5695]/10 outline-none transition-all text-sm font-bold uppercase"
                   placeholder="GJ-XX-XXXX"
-                  value={formData.plate}
+                  value={formData.number}
                   onChange={(e) =>
-                    setFormData({ ...formData, plate: e.target.value })
+                    setFormData({
+                      ...formData,
+                      number: e.target.value.toUpperCase(),
+                    })
                   }
                 />
               </div>
@@ -179,14 +264,22 @@ const Cars = () => {
                   type="text"
                   className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#1a5695]/10 outline-none transition-all text-sm font-bold"
                   placeholder="e.g. Tata Ace"
-                  value={formData.model}
+                  value={formData.name}
                   onChange={(e) =>
-                    setFormData({ ...formData, model: e.target.value })
+                    setFormData({ ...formData, name: e.target.value })
                   }
                 />
               </div>
-              <button className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:bg-[#15467a] transition-all flex items-center justify-center gap-3">
-                <ShieldCheck size={18} />{" "}
+              <button
+                onClick={createCar}
+                disabled={loading}
+                className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:bg-[#15467a] transition-all flex items-center justify-center gap-3 disabled:opacity-70"
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin h-4 w-4" />
+                ) : (
+                  <ShieldCheck size={18} />
+                )}
                 {editingCar ? "Confirm Update" : "Register Vehicle"}
               </button>
             </div>
