@@ -13,6 +13,8 @@ import {
   Camera,
   MapPin,
   FileText,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -31,14 +33,19 @@ const Wiring = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [uploadLoading, setUploadLoading] = useState(false);
 
-  // Data & Form States
+  // Data States
   const [wiringLogs, setWiringLogs] = useState([]);
   const [selectedWiring, setSelectedWiring] = useState(null);
-  const [files, setFiles] = useState({
+
+  // Mandatory Form States
+  const [mandatoryFiles, setMandatoryFiles] = useState({
     geoTag: null,
     sitePic: null,
-    document: null,
+    completionFile: null,
   });
+
+  // Dynamic "Other" Documents State
+  const [otherDocs, setOtherDocs] = useState([]);
 
   const getWiring = async () => {
     setTableLoading(true);
@@ -48,7 +55,7 @@ const Wiring = () => {
       );
       if (res.status === 200) setWiringLogs(res.data.data);
     } catch (error) {
-      toast.error("Failed to load wiring records");
+      toast.error("Failed to load records");
     } finally {
       setTableLoading(false);
     }
@@ -58,27 +65,67 @@ const Wiring = () => {
     getWiring();
   }, []);
 
+  // --- Dynamic Rows Logic ---
+  const addOtherDocRow = () => {
+    setOtherDocs([...otherDocs, { id: Date.now(), docName: "", file: null }]);
+  };
+
+  const removeOtherDocRow = (id) => {
+    setOtherDocs(otherDocs.filter((doc) => doc.id !== id));
+  };
+
+  const updateOtherDoc = (id, field, value) => {
+    setOtherDocs(
+      otherDocs.map((doc) =>
+        doc.id === id ? { ...doc, [field]: value } : doc,
+      ),
+    );
+  };
+
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!files.geoTag || !files.sitePic || !files.document) {
-      return toast.warning("Please upload all three files");
-    }
+    // if (
+    //   !mandatoryFiles.geoTag ||
+    //   !mandatoryFiles.sitePic ||
+    //   !mandatoryFiles.completionFile
+    // ) {
+    //   return toast.warning("Please upload all mandatory site proofs");
+    // }
 
     setUploadLoading(true);
     const formData = new FormData();
-    formData.append("wiring_id", selectedWiring.wiring_id);
-    formData.append("geo_tag", files.geoTag);
-    formData.append("site_pic", files.sitePic);
-    formData.append("file", files.document);
+    formData.append("wiringId", selectedWiring.wiring_id);
+    formData.append("customerId", selectedWiring.customer_id);
+    formData.append("geo_tag", mandatoryFiles.geoTag);
+    formData.append("site_pic", mandatoryFiles.sitePic);
+    formData.append("completion_file", mandatoryFiles.completionFile);
+
+    // Append dynamic "Other" documents
+    otherDocs.forEach((doc, index) => {
+      console.log(doc);
+      if (doc.file && doc.docName) {
+        formData.append(`${doc.docName}`, doc.file);
+      }
+    });
 
     try {
-      // Replace with your actual upload API
-      // const res = await axios.post(`${apiUrl}/api/wiring/uploadSiteData`, formData);
-      toast.success("Site documentation uploaded successfully!");
-      setIsModalOpen(false);
-      setFiles({ geoTag: null, sitePic: null, document: null });
+      const res = await axios.post(
+        `${apiUrl}/api/wiring/uploadWiringDocs`,
+        formData,
+      );
+      if (res.status === 200 || res.status === 201) {
+        toast.success("Documentation submitted successfully!");
+        setIsModalOpen(false);
+        setMandatoryFiles({
+          geoTag: null,
+          sitePic: null,
+          completionFile: null,
+        });
+        setOtherDocs([]);
+        getWiring();
+      }
     } catch (error) {
-      toast.error("Failed to upload files");
+      toast.error("Upload failed");
     } finally {
       setUploadLoading(false);
     }
@@ -100,14 +147,14 @@ const Wiring = () => {
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="p-4 lg:p-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase flex items-center gap-3">
               <Zap className="text-[#1a5695]" fill="currentColor" size={28} />
               Wiring Inventory
             </h1>
           </div>
 
-          {/* Search Box */}
+          {/* Search */}
           <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 shadow-sm">
             <div className="relative">
               <Search
@@ -117,21 +164,21 @@ const Wiring = () => {
               <input
                 type="text"
                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold"
-                placeholder="Search by customer name..."
+                placeholder="Search customer..."
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>
 
-          {/* Table Container */}
-          <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm min-h-[400px] relative">
+          {/* Table */}
+          <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm relative min-h-[400px]">
             {tableLoading ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 backdrop-blur-[2px] z-10">
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 backdrop-blur-[2px]">
                 <Loader2
                   className="animate-spin text-[#1a5695] mb-2"
                   size={32}
                 />
-                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <span className="text-[10px] font-black uppercase text-slate-400">
                   Loading Data...
                 </span>
               </div>
@@ -140,7 +187,7 @@ const Wiring = () => {
                 <table className="w-full text-left border-separate border-spacing-0">
                   <thead className="bg-slate-50/50">
                     <tr>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center w-16">
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">
                         ID
                       </th>
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
@@ -198,7 +245,7 @@ const Wiring = () => {
                                   },
                                 })
                               }
-                              className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-blue-50 rounded-xl border border-slate-100 transition-all"
+                              className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] rounded-xl border border-slate-100 transition-all"
                             >
                               <Edit3 size={16} />
                             </button>
@@ -224,7 +271,7 @@ const Wiring = () => {
         </main>
       </div>
 
-      {/* UPLOAD MODAL */}
+      {/* DYNAMIC DOCUMENT MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           <div
@@ -232,15 +279,15 @@ const Wiring = () => {
             onClick={() => !uploadLoading && setIsModalOpen(false)}
           />
 
-          <div className="relative bg-white w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-            <div className="p-8">
+          <div className="relative bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="p-8 max-h-[90vh] overflow-y-auto custom-scrollbar">
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">
-                    Site Verification
+                    Site Finalization
                   </h2>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-                    Upload required proofs for #{selectedWiring?.wiring_id}
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                    Verify proofs for {selectedWiring?.customer_name}
                   </p>
                 </div>
                 <button
@@ -251,104 +298,140 @@ const Wiring = () => {
                 </button>
               </div>
 
-              <form onSubmit={handleUpload} className="space-y-4">
-                {/* File Input 1: Geo Tag */}
-                <div className="group relative border-2 border-dashed border-slate-100 rounded-[24px] p-4 hover:border-[#1a5695] hover:bg-blue-50/30 transition-all">
-                  <input
-                    type="file"
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    onChange={(e) =>
-                      setFiles({ ...files, geoTag: e.target.files[0] })
-                    }
-                  />
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-[#1a5695]">
-                      <MapPin size={20} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[10px] font-black uppercase text-slate-800 tracking-widest">
-                        Geo Tag Photo
+              <form onSubmit={handleUpload} className="space-y-6">
+                {/* MANDATORY SECTION */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    {
+                      key: "geoTag",
+                      label: "Geo Tag",
+                      icon: <MapPin size={16} />,
+                    },
+                    {
+                      key: "sitePic",
+                      label: "Site Pic",
+                      icon: <Camera size={16} />,
+                    },
+                    {
+                      key: "completionFile",
+                      label: "Bill/Doc",
+                      icon: <FileText size={16} />,
+                    },
+                  ].map((field) => (
+                    <div
+                      key={field.key}
+                      className="relative group border-2 border-dashed border-slate-100 rounded-3xl p-4 text-center hover:border-[#1a5695] hover:bg-blue-50/30 transition-all cursor-pointer"
+                    >
+                      <input
+                        type="file"
+                        className="absolute inset-0 opacity-0 cursor-pointer"
+                        onChange={(e) =>
+                          setMandatoryFiles({
+                            ...mandatoryFiles,
+                            [field.key]: e.target.files[0],
+                          })
+                        }
+                      />
+                      <div
+                        className={`mx-auto w-10 h-10 rounded-2xl flex items-center justify-center mb-2 ${mandatoryFiles[field.key] ? "bg-emerald-50 text-emerald-500" : "bg-slate-50 text-[#1a5695]"}`}
+                      >
+                        {mandatoryFiles[field.key] ? (
+                          <CheckCircle2 size={18} />
+                        ) : (
+                          field.icon
+                        )}
+                      </div>
+                      <p className="text-[9px] font-black uppercase text-slate-800 tracking-widest">
+                        {field.label}
                       </p>
-                      <p className="text-[10px] font-bold text-slate-400 truncate">
-                        {files.geoTag
-                          ? files.geoTag.name
-                          : "Tap to select file"}
+                      <p className="text-[8px] font-bold text-slate-400 truncate mt-1">
+                        {mandatoryFiles[field.key]
+                          ? mandatoryFiles[field.key].name
+                          : "Upload"}
                       </p>
                     </div>
-                    {files.geoTag && (
-                      <CheckCircle2 className="text-emerald-500" size={18} />
-                    )}
-                  </div>
+                  ))}
                 </div>
 
-                {/* File Input 2: Site Pic */}
-                <div className="group relative border-2 border-dashed border-slate-100 rounded-[24px] p-4 hover:border-[#1a5695] hover:bg-blue-50/30 transition-all">
-                  <input
-                    type="file"
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    onChange={(e) =>
-                      setFiles({ ...files, sitePic: e.target.files[0] })
-                    }
-                  />
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-[#1a5695]">
-                      <Camera size={20} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[10px] font-black uppercase text-slate-800 tracking-widest">
-                        Site Picture
-                      </p>
-                      <p className="text-[10px] font-bold text-slate-400 truncate">
-                        {files.sitePic
-                          ? files.sitePic.name
-                          : "Tap to select file"}
-                      </p>
-                    </div>
-                    {files.sitePic && (
-                      <CheckCircle2 className="text-emerald-500" size={18} />
-                    )}
+                {/* DYNAMIC OTHER DOCUMENTS SECTION */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                      Other Documents ({otherDocs.length})
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={addOtherDocRow}
+                      className="flex items-center gap-1 text-[10px] font-black text-[#1a5695] uppercase hover:underline"
+                    >
+                      <Plus size={14} /> Add New
+                    </button>
                   </div>
-                </div>
 
-                {/* File Input 3: Document */}
-                <div className="group relative border-2 border-dashed border-slate-100 rounded-[24px] p-4 hover:border-[#1a5695] hover:bg-blue-50/30 transition-all">
-                  <input
-                    type="file"
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    onChange={(e) =>
-                      setFiles({ ...files, document: e.target.files[0] })
-                    }
-                  />
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-[#1a5695]">
-                      <FileText size={20} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[10px] font-black uppercase text-slate-800 tracking-widest">
-                        Documentation (PDF/Image)
-                      </p>
-                      <p className="text-[10px] font-bold text-slate-400 truncate">
-                        {files.document
-                          ? files.document.name
-                          : "Tap to select file"}
+                  {otherDocs.length === 0 ? (
+                    <div className="py-8 border-2 border-dashed border-slate-50 rounded-3xl text-center">
+                      <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest italic">
+                        No extra documents added
                       </p>
                     </div>
-                    {files.document && (
-                      <CheckCircle2 className="text-emerald-500" size={18} />
-                    )}
-                  </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {otherDocs.map((doc) => (
+                        <div
+                          key={doc.id}
+                          className="flex flex-col sm:flex-row gap-3 p-4 bg-slate-50 rounded-[24px] border border-slate-100 animate-in slide-in-from-top-2 duration-200"
+                        >
+                          <input
+                            type="text"
+                            placeholder="Enter Document Name (e.g. Identity Proof)"
+                            className="flex-1 bg-white border border-slate-100 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:border-[#1a5695]"
+                            value={doc.docName}
+                            onChange={(e) =>
+                              updateOtherDoc(doc.id, "docName", e.target.value)
+                            }
+                          />
+                          <div className="relative h-10 flex-1">
+                            <input
+                              type="file"
+                              className="absolute inset-0 opacity-0 z-10 cursor-pointer"
+                              onChange={(e) =>
+                                updateOtherDoc(
+                                  doc.id,
+                                  "file",
+                                  e.target.files[0],
+                                )
+                              }
+                            />
+                            <div className="h-full bg-white border border-slate-100 rounded-xl px-4 flex items-center justify-between text-slate-400">
+                              <span className="text-[10px] font-black uppercase truncate pr-4">
+                                {doc.file ? doc.file.name : "Choose File"}
+                              </span>
+                              <Upload size={14} />
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeOtherDocRow(doc.id)}
+                            className="p-2 text-red-400 hover:bg-red-50 rounded-xl transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <button
                   type="submit"
                   disabled={uploadLoading}
-                  className="w-full mt-6 py-5 bg-[#1a5695] text-white rounded-[24px] font-black uppercase text-[11px] tracking-[0.2em] shadow-xl shadow-blue-200 hover:bg-[#15467a] active:scale-95 transition-all flex items-center justify-center gap-3"
+                  className="w-full py-5 bg-[#1a5695] text-white rounded-[24px] font-black uppercase text-[11px] tracking-[0.2em] shadow-xl shadow-blue-100 hover:bg-[#15467a] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                 >
                   {uploadLoading ? (
                     <Loader2 className="animate-spin" size={18} />
                   ) : (
                     <>
-                      <Upload size={18} /> Submit Documentation
+                      <Upload size={18} /> Submit Verification
                     </>
                   )}
                 </button>

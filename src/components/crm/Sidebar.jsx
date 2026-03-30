@@ -15,11 +15,13 @@ import {
   Bell,
   Menu,
   X,
+  FileSignal,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaBridgeCircleExclamation } from "react-icons/fa6";
 import { WiRefresh } from "react-icons/wi";
+import { FiExternalLink } from "react-icons/fi";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [active, setActive] = useState("dashboard");
@@ -93,6 +95,12 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       path: "wiring",
     },
     {
+      name: "Final Stage",
+      icon: <FileSignal size={18} />,
+      type: "Operations",
+      path: "finalstage",
+    },
+    {
       name: "Inventory",
       icon: <HardHat size={18} />,
       type: "Installation",
@@ -106,6 +114,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       path: "/winventory",
       activePaths: ["/winventory"],
     },
+
     { name: "AMC & Service", icon: <Wrench size={18} />, type: "After Sales" },
   ];
 
