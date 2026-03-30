@@ -1,68 +1,136 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import {
   Save,
   ArrowLeft,
-  MinusCircle,
-  Plus,
   Zap,
-  Box,
   User,
   Loader2,
+  PackageOpen,
+  Check,
   AlertCircle,
+  ArrowRight,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import axios from "axios";
 
 const UpdateWiringLog = () => {
   const { id } = useParams();
-  const { state } = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const wiringId = location.state?.wiring_id;
+  const customerId = location.state?.customer_id;
+  const apiUrl = import.meta.env.VITE_API_URL;
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [l, setL] = useState(false);
 
-  // --- DUMMY DATA ---
-  const [inventory] = useState([
-    { id: 1, brand: "Finolex", wire_type: "DC Wire (Red)", current_qty: 450 },
-    { id: 2, brand: "Finolex", wire_type: "DC Wire (Black)", current_qty: 380 },
-    { id: 3, brand: "Polycab", wire_type: "AC Wire", current_qty: 210 },
-  ]);
-
-  const [technicians] = useState([
-    { id: 101, name: "Rahul Sharma", role: "Senior Electrician" },
-    { id: 102, name: "Amit Patel", role: "Technician" },
-    { id: 103, name: "Suresh Kumar", role: "Junior Helper" },
-  ]);
-
-  // --- STATE ---
+  // Data States
+  const [inventory, setInventory] = useState([]);
+  const [technicians, setTechnicians] = useState([]);
   const [selectedTechnician, setSelectedTechnician] = useState("");
-  const [selections, setSelections] = useState([
-    { inventory_id: "", length: "" },
-  ]);
+  const [wireSelection, setWireSelection] = useState({
+    inventory_id: "",
+    length: "",
+  });
+  const [done, setDone] = useState("");
+  const [localLog, setLocalLog] = useState([]);
 
-  const addLineItem = () =>
-    setSelections([...selections, { inventory_id: "", length: "" }]);
+  // Logic Check
+  const isEditable = done === "pending";
 
-  const removeLineItem = (index) => {
-    if (selections.length > 1) {
-      setSelections(selections.filter((_, i) => i !== index));
+  const fetchData = useCallback(async () => {
+    setPageLoading(true);
+    try {
+      const [invRes, techRes, issuedRes] = await Promise.all([
+        axios.get(`${apiUrl}/api/wiring/getAvailableWireInventory/${wiringId}`),
+        axios.get(`${apiUrl}/api/wiring/fetchTechnicians`),
+        axios.get(`${apiUrl}/api/wiring/fetchIssuedWires/${wiringId}`),
+      ]);
+
+      setInventory(invRes.data.data || []);
+      setTechnicians(techRes.data.data || []);
+      setLocalLog(issuedRes.data.data || []);
+      setSelectedTechnician(issuedRes.data.extraData.technician_id || "");
+      setDone(issuedRes.data.extraData.inventory_status);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load data");
+    } finally {
+      setPageLoading(false);
+    }
+  }, [apiUrl, wiringId]);
+
+  useEffect(() => {
+    if (!customerId || !wiringId) return navigate("/wiring");
+    fetchData();
+  }, [fetchData, navigate, customerId, wiringId]);
+
+  const selectedWire = inventory.find(
+    (i) => i.id === Number(wireSelection.inventory_id),
+  );
+  const isOverLimit =
+    selectedWire && Number(wireSelection.length) > selectedWire.stock;
+
+  const saveTechnician = async () => {
+    if (!isEditable) return;
+    setL(true);
+    try {
+      const res = await axios.put(
+        `${apiUrl}/api/wiring/updateTechni/${wiringId}`,
+        {
+          technician_id: selectedTechnician,
+        },
+      );
+      if (res.status === 200) toast.success("Technician Assigned");
+    } catch (error) {
+      toast.error("Update failed");
+    } finally {
+      setL(false);
     }
   };
 
-  const handleFinalize = (e) => {
-    e.preventDefault();
-    if (!selectedTechnician) return toast.error("Please select a technician");
+  const saveWireToStore = async () => {
+    if (
+      !isEditable ||
+      !wireSelection.inventory_id ||
+      !wireSelection.length ||
+      isOverLimit
+    )
+      return;
+    setActionLoading(true);
+    try {
+      const res = await axios.post(`${apiUrl}/api/wiring/createWiringItem`, {
+        wiring_id: wiringId,
+        wire_inventory_id: Number(wireSelection.inventory_id),
+        qty: Number(wireSelection.length),
+      });
 
-    const isValid = selections.every((s) => s.inventory_id && s.length > 0);
-    if (!isValid) return toast.error("Please fill all wire details");
+      if (res.status === 200 || res.status === 201) {
+        toast.success("Wire Issued");
+        setWireSelection({ inventory_id: "", length: "" });
+        fetchData();
+      }
+    } catch (e) {
+      toast.error("Save failed");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
-    setLoading(true);
-    setTimeout(() => {
-      toast.success("Wiring Log Updated Successfully");
-      setLoading(false);
-      navigate("/wiring");
-    }, 1200);
+  const handleNextStep = async () => {
+    try {
+      // Add your API call here to change status to 'completed' or next phase
+      toast.info("Moving to next stage...");
+      console.log(wiringId);
+    } catch (error) {
+      toast.error("Status update failed");
+    }
   };
 
   return (
@@ -76,174 +144,199 @@ const UpdateWiringLog = () => {
       <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8 max-w-5xl mx-auto w-full">
-          {/* Back Button */}
-          <button
-            onClick={() => navigate(-1)}
-            className="group flex items-center gap-2 text-slate-400 mb-6 font-black uppercase text-[10px] tracking-widest hover:text-[#1a5695] transition-all"
-          >
-            <ArrowLeft size={14} /> Back to Customer List
-          </button>
+        <main className="p-4 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
+          <div className="flex justify-between items-center">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-[#1a5695]"
+            >
+              <ArrowLeft size={14} /> Back
+            </button>
+            {!isEditable && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
+                <CheckCircle2 size={14} />
+                <span className="text-[10px] font-black uppercase tracking-widest">
+                  Inventory Finalized
+                </span>
+              </div>
+            )}
+          </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            {/* Left Column: Form Details */}
-            <div className="xl:col-span-2 space-y-6">
-              <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-200">
-                <div className="flex items-center gap-4 mb-8">
-                  <div className="w-12 h-12 bg-[#1a5695] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-200">
-                    <Zap size={24} fill="currentColor" />
+          {pageLoading ? (
+            <div className="h-64 flex flex-col items-center justify-center bg-white rounded-[32px] border border-slate-200 shadow-sm">
+              <Loader2 className="animate-spin text-[#1a5695] mb-2" />
+              <p className="text-[10px] font-black text-slate-300 uppercase">
+                Loading Details...
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* BOX 1: TECHNICIAN */}
+                <div
+                  className={`bg-white rounded-[32px] p-6 border border-slate-200 shadow-sm flex flex-col ${!isEditable && "opacity-60"}`}
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <User size={18} className="text-[#1a5695]" />
+                    <h3 className="font-black text-slate-800 uppercase text-[10px] tracking-widest">
+                      Technician
+                    </h3>
                   </div>
-                  <div>
-                    <h2 className="text-xl font-black uppercase text-slate-800 leading-none">
-                      Issue Material
-                    </h2>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mt-1 tracking-widest">
-                      Job ID: {id || "NEW"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Dynamic Wire Rows */}
-                <div className="space-y-4">
-                  {selections.map((sel, idx) => {
-                    const selectedItem = inventory.find(
-                      (i) => i.id === Number(sel.inventory_id),
-                    );
-                    const isOverLimit =
-                      selectedItem &&
-                      Number(sel.length) > selectedItem.current_qty;
-
-                    return (
-                      <div
-                        key={idx}
-                        className="p-4 bg-slate-50 rounded-3xl border border-slate-100 flex flex-col sm:flex-row gap-4 items-end transition-all"
-                      >
-                        <div className="flex-1 w-full">
-                          <label className="text-[9px] font-black uppercase text-slate-400 ml-2 mb-1 block tracking-widest">
-                            Wire Specification
-                          </label>
-                          <select
-                            className="w-full p-4 bg-white border border-slate-200 rounded-2xl font-bold text-xs outline-none focus:border-[#1a5695] shadow-sm"
-                            value={sel.inventory_id}
-                            onChange={(e) => {
-                              const newSels = [...selections];
-                              newSels[idx].inventory_id = e.target.value;
-                              setSelections(newSels);
-                            }}
-                          >
-                            <option value="">Choose from stock...</option>
-                            {inventory.map((wire) => (
-                              <option key={wire.id} value={wire.id}>
-                                {wire.brand} {wire.wire_type} (
-                                {wire.current_qty}m avail)
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div className="w-full sm:w-32">
-                          <label className="text-[9px] font-black uppercase text-slate-400 ml-2 mb-1 block tracking-widest">
-                            Length
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="number"
-                              className={`w-full p-4 bg-white border rounded-2xl font-black text-sm outline-none transition-all ${isOverLimit ? "border-rose-500 text-rose-500 ring-4 ring-rose-500/10" : "border-slate-200 focus:border-[#1a5695]"}`}
-                              placeholder="0"
-                              value={sel.length}
-                              onChange={(e) => {
-                                const newSels = [...selections];
-                                newSels[idx].length = e.target.value;
-                                setSelections(newSels);
-                              }}
-                            />
-                            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-300 uppercase">
-                              mtr
-                            </span>
-                          </div>
-                        </div>
-
-                        {selections.length > 1 && (
-                          <button
-                            onClick={() => removeLineItem(idx)}
-                            className="p-4 text-rose-400 hover:bg-rose-50 rounded-2xl transition-all"
-                          >
-                            <MinusCircle size={20} />
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-
-                  <button
-                    onClick={addLineItem}
-                    className="w-full py-4 border-2 border-dashed border-slate-200 rounded-3xl text-slate-400 font-black text-[10px] uppercase tracking-widest hover:border-[#1a5695]/30 hover:text-[#1a5695] transition-all flex items-center justify-center gap-2"
+                  <select
+                    disabled={!isEditable}
+                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-xs outline-none focus:border-[#1a5695] disabled:cursor-not-allowed"
+                    value={selectedTechnician}
+                    onChange={(e) => setSelectedTechnician(e.target.value)}
                   >
-                    <Plus size={14} /> Add More Wires
+                    <option value="">Select Staff...</option>
+                    {technicians.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    disabled={!isEditable || l}
+                    onClick={saveTechnician}
+                    className="mt-4 w-full py-4 bg-slate-800 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-black transition-all disabled:bg-slate-200 disabled:text-slate-400"
+                  >
+                    {l ? "Updating..." : "Update Technician"}
                   </button>
                 </div>
-              </div>
-            </div>
 
-            {/* Right Column: Technician & Summary */}
-            <div className="space-y-6">
-              <div className="bg-white rounded-[40px] p-8 shadow-sm border border-slate-200">
-                <label className="text-[10px] font-black uppercase text-slate-400 mb-4 block tracking-widest flex items-center gap-2">
-                  <User size={14} className="text-[#1a5695]" /> Assigned
-                  Technician
-                </label>
-                <div className="space-y-3">
-                  {technicians.map((tech) => (
-                    <button
-                      key={tech.id}
-                      onClick={() => setSelectedTechnician(tech.id)}
-                      className={`w-full p-4 rounded-2xl border flex flex-col items-start transition-all ${
-                        selectedTechnician === tech.id
-                          ? "bg-[#1a5695] border-[#1a5695] text-white shadow-lg"
-                          : "bg-slate-50 border-slate-100 text-slate-600 hover:border-slate-300"
-                      }`}
+                {/* BOX 2: SINGLE WIRE SAVE */}
+                <div
+                  className={`bg-white rounded-[32px] p-6 border border-slate-200 shadow-sm ${!isEditable && "opacity-60"}`}
+                >
+                  <div className="flex items-center gap-3 mb-6">
+                    <Zap
+                      size={18}
+                      className="text-[#1a5695]"
+                      fill="currentColor"
+                    />
+                    <h3 className="font-black text-slate-800 uppercase text-[10px] tracking-widest">
+                      Issue Material
+                    </h3>
+                  </div>
+                  <div className="space-y-4">
+                    <select
+                      disabled={!isEditable}
+                      className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-xs outline-none focus:border-[#1a5695] disabled:cursor-not-allowed"
+                      value={wireSelection.inventory_id}
+                      onChange={(e) =>
+                        setWireSelection({
+                          ...wireSelection,
+                          inventory_id: e.target.value,
+                        })
+                      }
                     >
-                      <span className="text-xs font-black uppercase">
-                        {tech.name}
+                      <option value="">Choose Wire...</option>
+                      {inventory.map((i) => (
+                        <option key={i.id} value={i.id}>
+                          {i.brand_name} {i.wire_type} ({i.stock}m left)
+                        </option>
+                      ))}
+                    </select>
+                    <div className="relative">
+                      <input
+                        disabled={!isEditable}
+                        type="number"
+                        placeholder="Length"
+                        className={`w-full p-4 bg-slate-50 border rounded-2xl font-black text-xs outline-none transition-all ${isOverLimit ? "border-red-500 bg-red-50 text-red-600 ring-2 ring-red-100" : "border-slate-100 focus:border-[#1a5695] disabled:cursor-not-allowed"}`}
+                        value={wireSelection.length}
+                        onChange={(e) =>
+                          setWireSelection({
+                            ...wireSelection,
+                            length: e.target.value,
+                          })
+                        }
+                      />
+                      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-300">
+                        MTR
                       </span>
-                      <span
-                        className={`text-[9px] font-bold uppercase ${selectedTechnician === tech.id ? "text-blue-200" : "text-slate-400"}`}
-                      >
-                        {tech.role}
-                      </span>
+                    </div>
+                    {isOverLimit && (
+                      <p className="text-[9px] font-black text-red-500 uppercase ml-2 animate-pulse flex items-center gap-1">
+                        <AlertCircle size={10} /> Limit: {selectedWire.stock}m
+                      </p>
+                    )}
+                    <button
+                      onClick={saveWireToStore}
+                      disabled={
+                        !isEditable ||
+                        actionLoading ||
+                        isOverLimit ||
+                        !wireSelection.inventory_id ||
+                        !wireSelection.length
+                      }
+                      className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-[#15467a] disabled:opacity-30 transition-all"
+                    >
+                      {actionLoading ? (
+                        <Loader2 className="animate-spin mx-auto" size={14} />
+                      ) : (
+                        "Save Wire to Store"
+                      )}
                     </button>
-                  ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Action Button */}
-              <button
-                onClick={handleFinalize}
-                disabled={loading}
-                className="w-full py-6 bg-[#1a5695] text-white rounded-[32px] font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-blue-900/20 flex items-center justify-center gap-3 hover:bg-[#15467a] active:scale-95 transition-all disabled:opacity-50"
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin" size={20} />
-                ) : (
-                  <>
-                    <Save size={18} /> Finalize & Deduct
-                  </>
-                )}
-              </button>
-
-              <div className="bg-amber-50 p-4 rounded-3xl border border-amber-100 flex gap-3">
-                <AlertCircle className="text-amber-500 shrink-0" size={18} />
-                <p className="text-[9px] font-bold text-amber-700 leading-relaxed uppercase">
-                  Note: Confirming this will permanently deduct{" "}
-                  {selections.reduce(
-                    (acc, s) => acc + (Number(s.length) || 0),
-                    0,
+              {/* LOG TABLE */}
+              <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
+                  <h3 className="font-black text-slate-500 uppercase text-[10px] tracking-widest">
+                    Recent Activity
+                  </h3>
+                </div>
+                <div className="p-4">
+                  {localLog.length > 0 ? (
+                    <table className="w-full">
+                      <tbody className="divide-y divide-slate-50">
+                        {localLog.map((log, i) => (
+                          <tr
+                            key={i}
+                            className="hover:bg-slate-50/50 transition-colors"
+                          >
+                            <td className="p-4 text-xs font-black text-[#1a5695] uppercase">
+                              {log.brand_name} {log.wire_type}
+                            </td>
+                            <td className="p-4 text-center text-[10px] font-black">
+                              {log.qty}m Issued
+                            </td>
+                            <td className="p-4 text-right text-emerald-500">
+                              <Check size={14} className="ml-auto" />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="py-12 text-center text-slate-300">
+                      <PackageOpen
+                        size={32}
+                        className="mx-auto mb-2 opacity-20"
+                      />
+                      <p className="text-[10px] font-black uppercase tracking-widest">
+                        No wire sent
+                      </p>
+                    </div>
                   )}
-                  m from master stock.
-                </p>
+                </div>
               </div>
-            </div>
-          </div>
+
+              {/* NEXT STEP BUTTON */}
+              {isEditable && (
+                <div className="pt-4">
+                  <button
+                    onClick={handleNextStep}
+                    className="w-full py-6 bg-emerald-500 text-white rounded-[32px] font-black uppercase text-[11px] tracking-[0.2em] hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-100 flex items-center justify-center gap-3"
+                  >
+                    Move to Next Step <ArrowRight size={18} />
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </main>
       </div>
     </div>

@@ -107,15 +107,35 @@ const WiringInventory = () => {
     setLoading(true);
     try {
       if (editingWire) {
-        console.log(editingWire);
+        const adjustmentNum = Number(adjustmentValue);
+
         console.log(adjustmentType);
         let qty = 0;
         if (adjustmentType == "deduct") {
-          qty = adjustmentValue * -1;
+          qty = -adjustmentNum;
         } else {
-          qty = adjustmentValue;
+          qty = adjustmentNum;
         }
-        
+        const updatedFormData = {
+          ...formData,
+          stock: Number(formData.stock) + qty, // convert to number first
+        };
+
+        setFormData(updatedFormData);
+
+        const res = await axios.put(
+          `${apiUrl}/api/wiring/updateWireInventory/${formData.id}`,
+          updatedFormData, // ✅ send the updated data
+        );
+
+        if (res.status == 200) {
+          fetchAll();
+          toast.success("Updated Successfully");
+          setLoading(false);
+
+          setIsModalOpen(false);
+        }
+
         setLoading(false);
       } else {
         const res = await axios.post(

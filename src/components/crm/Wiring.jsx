@@ -230,7 +230,15 @@ const Wiring = () => {
                         <td className="px-6 py-4 text-right">
                           {item.wiring_inv_status === "pending" && (
                             <button
-                              onClick={() => handleUpdateClick(item)}
+                              onClick={() => {
+                                // handleUpdateClick(item);
+                                navigate("/updatewiring", {
+                                  state: {
+                                    wiring_id: item.wiring_id,
+                                    customer_id: item.customer_id,
+                                  },
+                                });
+                              }}
                               className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-blue-50 rounded-xl transition-all border border-slate-100"
                             >
                               <Edit3 size={16} />
