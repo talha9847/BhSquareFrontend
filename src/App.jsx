@@ -32,6 +32,7 @@ import UpdateWiringLog from "./components/crm/UpdateWiringLog";
 import Drivers from "./components/crm/Driver";
 import Cars from "./components/crm/Cars";
 import FinalStage from "./components/crm/FinalStage";
+import CustomerMaster from "./components/crm/CustomerMaster";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -69,6 +70,7 @@ function App() {
           <Route path="/drivers" element={<Drivers />} />
           <Route path="/cars" element={<Cars />} />
           <Route path="/finalstage" element={<FinalStage />} />
+          <Route path="/master" element={<CustomerMaster />} />
           <Route
             path="/namechange"
             element={

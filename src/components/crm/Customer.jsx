@@ -205,7 +205,15 @@ const Customer = () => {
                               {c.lead?.customer_name?.charAt(0)}
                             </div>
                             <div>
-                              <p className="font-bold text-slate-800 text-sm leading-tight">
+                              <p
+                                onClick={() => {
+                                  console.log(c.id);
+                                  navigate("/master", {
+                                    state: { customerId: c.id },
+                                  });
+                                }}
+                                className="font-bold text-slate-800 text-sm leading-tight cursor-pointer"
+                              >
                                 {c.lead?.customer_name}
                               </p>
                               <p className="text-slate-400 text-[11px] font-medium">
