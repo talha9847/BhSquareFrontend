@@ -29,6 +29,7 @@ const UpdateWiringLog = () => {
   const [pageLoading, setPageLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [l, setL] = useState(false);
+  const [uL, setUL] = useState(false);
 
   // Data States
   const [inventory, setInventory] = useState([]);
@@ -125,11 +126,20 @@ const UpdateWiringLog = () => {
 
   const handleNextStep = async () => {
     try {
+      setUL(true);
       // Add your API call here to change status to 'completed' or next phase
       toast.info("Moving to next stage...");
       console.log(wiringId);
+      const res = await axios.put(
+        `${apiUrl}/api/wiring/updateInventoryStatus/${wiringId}`,
+      );
+      if (res.status == 200) {
+        navigate("/wiring");
+      }
     } catch (error) {
       toast.error("Status update failed");
+    } finally {
+      setUL(false);
     }
   };
 
@@ -331,7 +341,13 @@ const UpdateWiringLog = () => {
                     onClick={handleNextStep}
                     className="w-full py-6 bg-emerald-500 text-white rounded-[32px] font-black uppercase text-[11px] tracking-[0.2em] hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-100 flex items-center justify-center gap-3"
                   >
-                    Move to Next Step <ArrowRight size={18} />
+                    {uL ? (
+                      "Moving..."
+                    ) : (
+                      <>
+                        Move to Next Step <ArrowRight size={18} />
+                      </>
+                    )}
                   </button>
                 </div>
               )}

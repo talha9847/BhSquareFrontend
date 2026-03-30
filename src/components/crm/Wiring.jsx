@@ -9,6 +9,10 @@ import {
   CheckCircle2,
   Eye,
   Share,
+  Upload,
+  Camera,
+  MapPin,
+  FileText,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -22,95 +26,61 @@ const Wiring = () => {
 
   // UI States
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [uploadLoading, setUploadLoading] = useState(false);
 
-  // Data States
+  // Data & Form States
   const [wiringLogs, setWiringLogs] = useState([]);
-  const [technicians, setTechnicians] = useState([]);
-  const [formData, setFormData] = useState({
-    wiring_id: null, // Mapped from API
-    technician_id: "",
-    ac_wire_red: "",
-    ac_wire_black: "",
-    dc_wire_red: "",
-    dc_wire_black: "",
-    la_wire: "",
-    earthing: "",
-    conduit_pipe: "",
+  const [selectedWiring, setSelectedWiring] = useState(null);
+  const [files, setFiles] = useState({
+    geoTag: null,
+    sitePic: null,
+    document: null,
   });
 
-  // Fetch Wiring Details
   const getWiring = async () => {
     setTableLoading(true);
     try {
       const res = await axios.get(
         `${apiUrl}/api/wiring/fetchWiringCustomerDetails`,
       );
-      if (res.status === 200) {
-        setWiringLogs(res.data.data);
-      }
+      if (res.status === 200) setWiringLogs(res.data.data);
     } catch (error) {
-      console.error("Fetch Wiring Error:", error);
       toast.error("Failed to load wiring records");
     } finally {
       setTableLoading(false);
     }
   };
 
-  // Fetch Technicians for Dropdown
-  const getAllTechnicians = async () => {
-    try {
-      const res = await axios.get(`${apiUrl}/api/wiring/fetchTechnicians`);
-      if (res.status === 200) {
-        setTechnicians(res.data.data);
-      }
-    } catch (error) {
-      console.error("Fetch Technicians Error:", error);
-    }
-  };
-
   useEffect(() => {
     getWiring();
-    getAllTechnicians();
   }, []);
 
-  const handleUpdateClick = (item) => {
-    setFormData({
-      wiring_id: item.wiring_id, // Using wiring_id from API
-      technician_id: "",
-      ac_wire_red: "",
-      ac_wire_black: "",
-      dc_wire_red: "",
-      dc_wire_black: "",
-      la_wire: "",
-      earthing: "",
-      conduit_pipe: "",
-    });
-    setIsUpdateModalOpen(true);
-  };
-
-  const handleSave = async (e) => {
+  const handleUpload = async (e) => {
     e.preventDefault();
-    setLoading(true);
-    console.log(formData);
+    if (!files.geoTag || !files.sitePic || !files.document) {
+      return toast.warning("Please upload all three files");
+    }
+
+    setUploadLoading(true);
+    const formData = new FormData();
+    formData.append("wiring_id", selectedWiring.wiring_id);
+    formData.append("geo_tag", files.geoTag);
+    formData.append("site_pic", files.sitePic);
+    formData.append("file", files.document);
+
     try {
-      // Assuming your update endpoint follows this pattern
-      const res = await axios.put(
-        `${apiUrl}/api/wiring/updateWiring/${formData.wiring_id}`,
-        formData,
-      );
-      if (res.status === 200 || res.status === 201) {
-        toast.success("Wiring stage finalized!");
-        setIsUpdateModalOpen(false);
-        getWiring(); // Refresh table
-      }
+      // Replace with your actual upload API
+      // const res = await axios.post(`${apiUrl}/api/wiring/uploadSiteData`, formData);
+      toast.success("Site documentation uploaded successfully!");
+      setIsModalOpen(false);
+      setFiles({ geoTag: null, sitePic: null, document: null });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to save details");
+      toast.error("Failed to upload files");
     } finally {
-      setLoading(false);
+      setUploadLoading(false);
     }
   };
 
@@ -135,14 +105,9 @@ const Wiring = () => {
               <Zap className="text-[#1a5695]" fill="currentColor" size={28} />
               Wiring Inventory
             </h1>
-            <button
-              onClick={() => navigate("/technicians")}
-              className="flex items-center gap-2 px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-95"
-            >
-              <Eye size={16} /> View Technicians
-            </button>
           </div>
 
+          {/* Search Box */}
           <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 shadow-sm">
             <div className="relative">
               <Search
@@ -158,6 +123,7 @@ const Wiring = () => {
             </div>
           </div>
 
+          {/* Table Container */}
           <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm min-h-[400px] relative">
             {tableLoading ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 backdrop-blur-[2px] z-10">
@@ -179,9 +145,6 @@ const Wiring = () => {
                       </th>
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         Customer
-                      </th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Wireman
                       </th>
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">
                         Status
@@ -208,9 +171,6 @@ const Wiring = () => {
                             {item.contact_number}
                           </div>
                         </td>
-                        <td className="px-6 py-4 font-black text-[11px] text-[#1a5695] uppercase">
-                          {item.technician_name || "Not Assigned"}
-                        </td>
                         <td className="px-6 py-4 text-center">
                           <span
                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-black text-[9px] uppercase tracking-wider ${
@@ -228,28 +188,27 @@ const Wiring = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right">
-                          {item.wiring_inv_status === "pending" && (
+                          {item.wiring_inv_status === "pending" ? (
                             <button
-                              onClick={() => {
-                                // handleUpdateClick(item);
+                              onClick={() =>
                                 navigate("/updatewiring", {
                                   state: {
                                     wiring_id: item.wiring_id,
                                     customer_id: item.customer_id,
                                   },
-                                });
-                              }}
-                              className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-blue-50 rounded-xl transition-all border border-slate-100"
+                                })
+                              }
+                              className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-blue-50 rounded-xl border border-slate-100 transition-all"
                             >
                               <Edit3 size={16} />
                             </button>
-                          )}
-                          {item.wiring_inv_status === "done" && (
+                          ) : (
                             <button
                               onClick={() => {
-                                console.log("helloeoe");
+                                setSelectedWiring(item);
+                                setIsModalOpen(true);
                               }}
-                              className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-blue-50 rounded-xl transition-all border border-slate-100"
+                              className="p-2.5 bg-[#1a5695] text-white hover:bg-[#15467a] rounded-xl shadow-lg shadow-blue-100 transition-all"
                             >
                               <Share size={16} />
                             </button>
@@ -265,96 +224,132 @@ const Wiring = () => {
         </main>
       </div>
 
-      {/* MODAL */}
-      {isUpdateModalOpen && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          {/* Added max-h and overflow-y-auto here */}
-          <div className="bg-white w-full max-w-2xl rounded-[32px] md:rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            {/* Modal Header (Fixed at top) */}
-            <div className="bg-[#1a5695] p-6 md:p-8 text-white flex justify-between items-center relative shrink-0">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-              <div className="relative z-10">
-                <h2 className="text-lg md:text-xl font-black uppercase tracking-tight">
-                  Wiring Logistics
-                </h2>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></span>
-                  <p className="text-white/60 text-[10px] font-bold uppercase tracking-widest">
-                    Inventory Management
+      {/* UPLOAD MODAL */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => !uploadLoading && setIsModalOpen(false)}
+          />
+
+          <div className="relative bg-white w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="p-8">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight">
+                    Site Verification
+                  </h2>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                    Upload required proofs for #{selectedWiring?.wiring_id}
                   </p>
                 </div>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="p-2 hover:bg-slate-50 rounded-full text-slate-400 transition-colors"
+                >
+                  <X size={20} />
+                </button>
               </div>
-              <button
-                onClick={() => setIsUpdateModalOpen(false)}
-                className="relative z-10 p-2 hover:bg-white/10 rounded-full transition-all"
-              >
-                <X size={24} />
-              </button>
-            </div>
 
-            {/* Scrollable Form Body */}
-            <div className="overflow-y-auto p-6 md:p-8 custom-scrollbar">
-              <form onSubmit={handleSave}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
-                  <div className="md:col-span-2">
-                    <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
-                      Select Technician
-                    </label>
-                    <select
-                      required
-                      className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold focus:bg-white focus:border-[#1a5695]/30 transition-all"
-                      value={formData.technician_id}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          technician_id: e.target.value,
-                        })
-                      }
-                    >
-                      <option value="">Choose Personnel</option>
-                      {technicians.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {[
-                    { label: "AC Wire Red (mtr)", key: "ac_wire_red" },
-                    { label: "AC Wire Black (mtr)", key: "ac_wire_black" },
-                    { label: "DC Wire Red (mtr)", key: "dc_wire_red" },
-                    { label: "DC Wire Black (mtr)", key: "dc_wire_black" },
-                    { label: "LA Wire (mtr)", key: "la_wire" },
-                    { label: "Earthing Qty", key: "earthing" },
-                    { label: "Conduit Pipe", key: "conduit_pipe" },
-                  ].map((f) => (
-                    <div key={f.key}>
-                      <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
-                        {f.label}
-                      </label>
-                      <input
-                        type="number"
-                        required
-                        className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold focus:bg-white focus:border-[#1a5695]/30 transition-all"
-                        value={formData[f.key]}
-                        onChange={(e) =>
-                          setFormData({ ...formData, [f.key]: e.target.value })
-                        }
-                        placeholder="0"
-                      />
+              <form onSubmit={handleUpload} className="space-y-4">
+                {/* File Input 1: Geo Tag */}
+                <div className="group relative border-2 border-dashed border-slate-100 rounded-[24px] p-4 hover:border-[#1a5695] hover:bg-blue-50/30 transition-all">
+                  <input
+                    type="file"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    onChange={(e) =>
+                      setFiles({ ...files, geoTag: e.target.files[0] })
+                    }
+                  />
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-[#1a5695]">
+                      <MapPin size={20} />
                     </div>
-                  ))}
+                    <div className="flex-1">
+                      <p className="text-[10px] font-black uppercase text-slate-800 tracking-widest">
+                        Geo Tag Photo
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-400 truncate">
+                        {files.geoTag
+                          ? files.geoTag.name
+                          : "Tap to select file"}
+                      </p>
+                    </div>
+                    {files.geoTag && (
+                      <CheckCircle2 className="text-emerald-500" size={18} />
+                    )}
+                  </div>
+                </div>
+
+                {/* File Input 2: Site Pic */}
+                <div className="group relative border-2 border-dashed border-slate-100 rounded-[24px] p-4 hover:border-[#1a5695] hover:bg-blue-50/30 transition-all">
+                  <input
+                    type="file"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    onChange={(e) =>
+                      setFiles({ ...files, sitePic: e.target.files[0] })
+                    }
+                  />
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-[#1a5695]">
+                      <Camera size={20} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[10px] font-black uppercase text-slate-800 tracking-widest">
+                        Site Picture
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-400 truncate">
+                        {files.sitePic
+                          ? files.sitePic.name
+                          : "Tap to select file"}
+                      </p>
+                    </div>
+                    {files.sitePic && (
+                      <CheckCircle2 className="text-emerald-500" size={18} />
+                    )}
+                  </div>
+                </div>
+
+                {/* File Input 3: Document */}
+                <div className="group relative border-2 border-dashed border-slate-100 rounded-[24px] p-4 hover:border-[#1a5695] hover:bg-blue-50/30 transition-all">
+                  <input
+                    type="file"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    onChange={(e) =>
+                      setFiles({ ...files, document: e.target.files[0] })
+                    }
+                  />
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center text-[#1a5695]">
+                      <FileText size={20} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[10px] font-black uppercase text-slate-800 tracking-widest">
+                        Documentation (PDF/Image)
+                      </p>
+                      <p className="text-[10px] font-bold text-slate-400 truncate">
+                        {files.document
+                          ? files.document.name
+                          : "Tap to select file"}
+                      </p>
+                    </div>
+                    {files.document && (
+                      <CheckCircle2 className="text-emerald-500" size={18} />
+                    )}
+                  </div>
                 </div>
 
                 <button
-                  disabled={loading}
-                  className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg flex items-center justify-center gap-3 hover:bg-[#15467a] active:scale-95 transition-all"
+                  type="submit"
+                  disabled={uploadLoading}
+                  className="w-full mt-6 py-5 bg-[#1a5695] text-white rounded-[24px] font-black uppercase text-[11px] tracking-[0.2em] shadow-xl shadow-blue-200 hover:bg-[#15467a] active:scale-95 transition-all flex items-center justify-center gap-3"
                 >
-                  {loading ? (
-                    <Loader2 className="animate-spin" />
+                  {uploadLoading ? (
+                    <Loader2 className="animate-spin" size={18} />
                   ) : (
-                    "Finalize & Save"
+                    <>
+                      <Upload size={18} /> Submit Documentation
+                    </>
                   )}
                 </button>
               </form>
