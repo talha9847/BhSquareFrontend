@@ -12,6 +12,7 @@ import {
   Save,
   Tags,
   Eye,
+  Layers,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -23,7 +24,6 @@ const InventoryManager = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // NEW: State for Brand Modal
   const [isBrandModalOpen, setIsBrandModalOpen] = useState(false);
   const [brandName, setBrandName] = useState("");
 
@@ -36,10 +36,11 @@ const InventoryManager = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isIncrement, setIsIncrement] = useState(true);
   const [editingId, setEditingId] = useState(null);
-
+  const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     brand_id: "",
+    category_id: "",
     qty: "",
   });
 
@@ -52,6 +53,15 @@ const InventoryManager = () => {
       console.error("Fetch Inventory Error:", error);
     } finally {
       setTableLoading(false);
+    }
+  };
+
+  const getAllCategories = async () => {
+    try {
+      const res = await axios.get(`${apiUrl}/api/kitready/getCategories`);
+      if (res.status == 200) setCategories(res.data.data);
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -72,40 +82,27 @@ const InventoryManager = () => {
   useEffect(() => {
     getBrands();
     getAllInve();
+    getAllCategories();
   }, []);
 
-  // NEW: Handle Brand Submission
-  const handleAddBrand = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const res = await axios.post(`${apiUrl}/api/kitready/createBrand`, {
-        name: brandName,
-      });
-      if (res.status === 201 || res.status === 200) {
-        toast.success("New brand added!");
-        setBrandName("");
-        setIsBrandModalOpen(false);
-        getBrands(); // Refresh dropdown list
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to add brand");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const openAddModal = () => {
-    setEditingId(null);
-    setFormData({ name: "", brand_id: brands[0]?.id || "", qty: "" });
-    setIsModalOpen(true);
-  };
+  // Logic to group the filtered items by category name
+  const groupedInventory = inventory
+    .filter((item) =>
+      item.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+    )
+    .reduce((acc, item) => {
+      const category = item.category_name || "Uncategorized";
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(item);
+      return acc;
+    }, {});
 
   const handleEditClick = (item) => {
     setEditingId(item.id);
     setFormData({
       name: item.name,
       brand_id: item.brand_id,
+      category_id: item.category_id || "",
       qty: Math.abs(item.qty),
     });
     setIsIncrement(true);
@@ -118,19 +115,13 @@ const InventoryManager = () => {
     const finalQty = isIncrement ? formData.qty : -Math.abs(formData.qty);
     const payload = { ...formData, qty: finalQty };
     try {
-      let res;
-      if (editingId) {
-        res = await axios.put(
-          `${apiUrl}/api/kitready/updateInventory/${editingId}`,
-          payload,
-        );
-        console.log(payload);
-      } else {
-        res = await axios.post(
-          `${apiUrl}/api/kitready/createInventory`,
-          payload,
-        );
-      }
+      let res = editingId
+        ? await axios.put(
+            `${apiUrl}/api/kitready/updateInventory/${editingId}`,
+            payload,
+          )
+        : await axios.post(`${apiUrl}/api/kitready/createInventory`, payload);
+
       if (res.status === 200 || res.status === 201) {
         toast.success(editingId ? "Stock updated!" : "Product added!");
         setIsModalOpen(false);
@@ -142,10 +133,6 @@ const InventoryManager = () => {
       setLoading(false);
     }
   };
-
-  const filteredItems = inventory.filter((item) =>
-    item.name?.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -163,25 +150,24 @@ const InventoryManager = () => {
             <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase">
               Stock Inventory
             </h1>
-
             <div className="flex gap-3">
-              {/* NEW: ADD BRAND BUTTON */}
-
               <button
-                onClick={() => navigate("/brands")} // Ensure this matches your route path
+                onClick={() => navigate("/brands")}
                 className="flex items-center gap-2 px-5 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-95"
               >
                 <Eye size={16} /> View Brands
               </button>
               <button
-                onClick={() => setIsBrandModalOpen(true)}
+                onClick={() => navigate("/category")}
                 className="flex items-center gap-2 px-5 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-95"
               >
-                <Tags size={16} /> Add Brand
+                <Eye size={16} /> View Category
               </button>
-
               <button
-                onClick={openAddModal}
+                onClick={() => {
+                  setEditingId(null);
+                  setIsModalOpen(true);
+                }}
                 className="flex items-center gap-2 px-6 py-3 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg active:scale-95"
               >
                 <Plus size={16} /> Add Product
@@ -189,8 +175,7 @@ const InventoryManager = () => {
             </div>
           </div>
 
-          {/* Search and Table remains the same... */}
-          <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
+          <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-8 flex items-center gap-3 shadow-sm">
             <div className="flex-1 relative">
               <Search
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -199,137 +184,112 @@ const InventoryManager = () => {
               <input
                 type="text"
                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold"
-                placeholder="Search products..."
+                placeholder="Search items by name..."
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>
 
-          <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm min-h-[400px] relative">
-            {tableLoading ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/50 z-10">
-                <Loader2 className="animate-spin text-[#1a5695]" size={40} />
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-separate border-spacing-0">
-                  <thead className="bg-slate-50/50">
-                    <tr>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        No.
-                      </th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Product Name
-                      </th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Brand
-                      </th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">
-                        Qty
-                      </th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {filteredItems.map((item, index) => (
-                      <tr
-                        key={item.id}
-                        className="hover:bg-slate-50/80 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-xs font-black text-slate-400">
-                          #{index + 1}
-                        </td>
-                        <td className="px-6 py-4 font-bold text-slate-800 text-sm">
-                          {item.name}
-                        </td>
-                        <td className="px-6 py-4 font-black uppercase text-[11px] text-blue-600">
-                          {item.brand_name || "N/A"}
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span
-                            className={`text-sm font-black ${item.qty < 10 ? "text-red-600 animate-pulse" : "text-slate-800"}`}
+          {tableLoading ? (
+            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[40px] border border-slate-200 shadow-sm">
+              <Loader2 className="animate-spin text-[#1a5695] mb-4" size={48} />
+              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                Loading Inventory...
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-10">
+              {Object.entries(groupedInventory).map(([category, items]) => (
+                <div
+                  key={category}
+                  className="group animate-in fade-in slide-in-from-bottom-4 duration-500"
+                >
+                  <div className="flex items-center gap-4 mb-4 px-2">
+                    <div className="p-2 bg-[#1a5695] rounded-xl text-white shadow-md">
+                      <Layers size={18} />
+                    </div>
+                    <div>
+                      <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">
+                        {category}
+                      </h2>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase">
+                        {items.length} Products in stock
+                      </p>
+                    </div>
+                    <div className="flex-1 h-[1px] bg-slate-200 ml-2"></div>
+                  </div>
+
+                  <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <table className="w-full text-left border-separate border-spacing-0">
+                      <thead className="bg-slate-50/50">
+                        <tr>
+                          <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            No.
+                          </th>
+                          <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Product Name
+                          </th>
+                          <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            Brand
+                          </th>
+                          <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">
+                            Qty
+                          </th>
+                          <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50">
+                        {items.map((item, index) => (
+                          <tr
+                            key={item.id}
+                            className="hover:bg-slate-50/80 transition-colors"
                           >
-                            {item.qty}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            <button
-                              onClick={() => handleEditClick(item)}
-                              className="p-2.5 bg-slate-50 text-slate-400 hover:text-blue-600 rounded-xl transition-all border border-slate-100"
-                            >
-                              <Edit3 size={16} />
-                            </button>
-                            <button className="p-2.5 bg-slate-50 text-slate-400 hover:text-red-600 rounded-xl transition-all border border-slate-100">
-                              <Trash2 size={16} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+                            <td className="px-6 py-4 text-xs font-black text-slate-400">
+                              #{index + 1}
+                            </td>
+                            <td className="px-6 py-4 font-bold text-slate-800 text-sm">
+                              {item.name}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className="px-3 py-1 bg-blue-50 text-[#1a5695] rounded-lg font-black uppercase text-[9px] tracking-widest border border-blue-100">
+                                {item.brand_name || "Generic"}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-center">
+                              <span
+                                className={`text-sm font-black px-4 py-1.5 rounded-xl ${item.qty < 10 ? "text-red-600 bg-red-50 animate-pulse" : "text-slate-700 bg-slate-100"}`}
+                              >
+                                {item.qty}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <div className="flex justify-end gap-2">
+                                <button
+                                  onClick={() => handleEditClick(item)}
+                                  className="p-2.5 bg-white text-slate-400 hover:text-[#1a5695] hover:border-[#1a5695] rounded-xl transition-all border border-slate-200"
+                                >
+                                  <Edit3 size={16} />
+                                </button>
+                                <button className="p-2.5 bg-white text-slate-400 hover:text-red-600 hover:border-red-200 rounded-xl transition-all border border-slate-200">
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </main>
       </div>
 
-      {/* NEW: ADD BRAND MODAL */}
-      {isBrandModalOpen && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-sm rounded-[40px] shadow-2xl overflow-hidden border border-white/20">
-            <div className="bg-slate-800 p-8 text-white flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-black uppercase tracking-tight">
-                  Add Brand
-                </h2>
-                <p className="text-white/40 text-[10px] font-bold uppercase mt-1">
-                  New Category
-                </p>
-              </div>
-              <button
-                onClick={() => setIsBrandModalOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-full transition-all"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <form onSubmit={handleAddBrand} className="p-8 space-y-6">
-              <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
-                  Brand Name
-                </label>
-                <input
-                  required
-                  type="text"
-                  placeholder="e.g. Nike, Apple..."
-                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none text-sm font-bold"
-                  value={brandName}
-                  onChange={(e) => setBrandName(e.target.value)}
-                />
-              </div>
-              <button
-                disabled={loading}
-                type="submit"
-                className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg hover:bg-slate-900 flex items-center justify-center gap-3 transition-all disabled:opacity-50"
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin" size={18} />
-                ) : (
-                  <>
-                    <Check size={18} /> Save Brand
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* PRODUCT MODAL (Existing) */}
+      {/* REUSE MODALS - Keeping all logic and themes identical */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden border border-white/20">
@@ -351,7 +311,7 @@ const InventoryManager = () => {
                 <X size={24} />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
+            <form onSubmit={handleSubmit} className="p-8 space-y-5">
               <div>
                 <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
                   Product Name
@@ -364,7 +324,7 @@ const InventoryManager = () => {
                   onChange={(e) =>
                     setFormData({
                       ...formData,
-                      name: e.target.value.toLocaleUpperCase(),
+                      name: e.target.value.toUpperCase(),
                     })
                   }
                 />
@@ -381,6 +341,9 @@ const InventoryManager = () => {
                       setFormData({ ...formData, brand_id: e.target.value })
                     }
                   >
+                    <option value="" disabled>
+                      Select Brand
+                    </option>
                     {brands.map((brand) => (
                       <option key={brand.id} value={brand.id}>
                         {brand.name}
@@ -389,31 +352,52 @@ const InventoryManager = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2 flex justify-between">
-                    Qty
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
+                    Category
                   </label>
-                  <div className="flex items-center bg-slate-50 border border-slate-100 rounded-2xl mt-1 overflow-hidden">
-                    <button
-                      type="button"
-                      onClick={() => setIsIncrement(!isIncrement)}
-                      className={`p-4 transition-colors ${isIncrement ? "text-green-600 bg-green-50" : "text-red-600 bg-red-50"}`}
-                    >
-                      {isIncrement ? (
-                        <Plus size={16} strokeWidth={3} />
-                      ) : (
-                        <Minus size={16} strokeWidth={3} />
-                      )}
-                    </button>
-                    <input
-                      required
-                      type="number"
-                      className="w-full p-4 bg-transparent outline-none text-sm font-bold"
-                      value={formData.qty}
-                      onChange={(e) =>
-                        setFormData({ ...formData, qty: e.target.value })
-                      }
-                    />
-                  </div>
+                  <select
+                    className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold cursor-pointer"
+                    value={formData.category_id}
+                    onChange={(e) =>
+                      setFormData({ ...formData, category_id: e.target.value })
+                    }
+                  >
+                    <option value="" disabled>
+                      Select Category
+                    </option>
+                    {categories.map((cat) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
+                  Quantity
+                </label>
+                <div className="flex items-center bg-slate-50 border border-slate-100 rounded-2xl mt-1 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => setIsIncrement(!isIncrement)}
+                    className={`p-4 transition-colors ${isIncrement ? "text-green-600 bg-green-50" : "text-red-600 bg-red-50"}`}
+                  >
+                    {isIncrement ? (
+                      <Plus size={16} strokeWidth={3} />
+                    ) : (
+                      <Minus size={16} strokeWidth={3} />
+                    )}
+                  </button>
+                  <input
+                    required
+                    type="number"
+                    className="w-full p-4 bg-transparent outline-none text-sm font-bold"
+                    value={formData.qty}
+                    onChange={(e) =>
+                      setFormData({ ...formData, qty: e.target.value })
+                    }
+                  />
                 </div>
               </div>
               <button

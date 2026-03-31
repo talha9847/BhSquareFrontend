@@ -73,6 +73,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <Box size={18} />,
       type: "Operations",
       path: "registration",
+      activePaths: ["/registration", "/allregistration"],
     },
     {
       name: "Kit Ready",

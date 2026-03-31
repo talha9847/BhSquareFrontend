@@ -36,6 +36,8 @@ import CustomerMaster from "./components/crm/CustomerMaster";
 import AllCustomers from "./components/crm/AllCustomers";
 import RegistrationsManager from "./components/crm/RegistrationsManager";
 import AllKitReady from "./components/crm/AllKitReady";
+import AllDispatch from "./components/crm/AllDispatch";
+import CategoryManager from "./components/crm/CategoryManager";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -64,8 +66,10 @@ function App() {
           <Route path="/loanstep" element={<LoanStep />} />
           <Route path="/inventory" element={<InventoryManager />} />
           <Route path="/brands" element={<BrandManager />} />
+          <Route path="/category" element={<CategoryManager />} />
           <Route path="/preparekit" element={<PrepareKit />} />
           <Route path="/dispatch" element={<Dispatch />} />
+          <Route path="/alldispatch" element={<AllDispatch />} />
           <Route path="/fabrication" element={<Fabrication />} />
           <Route path="/fabricators" element={<FabricatorManager />} />
           <Route path="/wiring" element={<Wiring />} />
