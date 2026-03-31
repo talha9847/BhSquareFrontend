@@ -209,7 +209,10 @@ const Customer = () => {
                                 onClick={() => {
                                   console.log(c.id);
                                   navigate("/master", {
-                                    state: { customerId: c.id },
+                                    state: {
+                                      customerId: c.id,
+                                      leadId: c.lead_id,
+                                    },
                                   });
                                 }}
                                 className="font-bold text-slate-800 text-sm leading-tight cursor-pointer"
