@@ -184,7 +184,18 @@ const KitReady = () => {
                               {c.customer.lead.customer_name.charAt(0)}
                             </div>
                             <div>
-                              <p className="font-bold text-slate-800 text-sm">
+                              <p
+                                onClick={() => {
+                                  console.log(c.customer);
+                                  navigate("/master", {
+                                    state: {
+                                      customerId: c.customer.id,
+                                      leadId: c.customer.lead.id,
+                                    },
+                                  });
+                                }}
+                                className="font-bold text-slate-800 text-sm cursor-pointer"
+                              >
                                 {c.customer.lead.customer_name}
                               </p>
                               <div className="flex items-center gap-1 text-slate-400 text-[11px]">

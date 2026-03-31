@@ -234,7 +234,18 @@ const Dispatch = () => {
                         className="hover:bg-slate-50/80 transition-colors group"
                       >
                         <td className="px-6 py-4">
-                          <p className="font-bold text-slate-800 text-sm">
+                          <p
+                            onClick={() => {
+                              console.log(d);
+                              navigate("/master", {
+                                state: {
+                                  customerId: d.customer_id,
+                                  leadId: d.lead_id,
+                                },
+                              });
+                            }}
+                            className="font-bold text-slate-800 text-sm cursor-pointer"
+                          >
                             {d.customer_name}
                           </p>
                           <div className="flex items-center gap-1.5 text-slate-400 text-[11px] mt-1">

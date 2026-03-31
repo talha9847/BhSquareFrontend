@@ -22,8 +22,10 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const Registration = () => {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -293,7 +295,18 @@ const Registration = () => {
                         className="hover:bg-slate-50/80 transition-all group"
                       >
                         <td className="px-6 py-4">
-                          <p className="font-bold text-slate-800 text-sm group-hover:text-[#1a5695] transition-colors">
+                          <p
+                            onClick={() => {
+                              console.log(item);
+                              navigate("/master", {
+                                state: {
+                                  customerId: item.id,
+                                  leadId: item.lead.id,
+                                },
+                              });
+                            }}
+                            className="font-bold text-slate-800 text-sm group-hover:text-[#1a5695] transition-colors cursor-pointer"
+                          >
                             {item.lead?.customer_name}
                           </p>
                           <p className="text-slate-400 text-[11px] font-medium">

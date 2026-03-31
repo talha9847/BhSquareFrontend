@@ -219,7 +219,18 @@ const Fabrication = () => {
                         className="hover:bg-slate-50/80 transition-colors"
                       >
                         <td className="px-6 py-4">
-                          <div className="font-bold text-slate-800 text-sm uppercase">
+                          <div
+                            onClick={() => {
+                              console.log(item);
+                              navigate("/master", {
+                                state: {
+                                  customerId: item.customer_id,
+                                  leadId: item.lead_id,
+                                },
+                              });
+                            }}
+                            className="font-bold text-slate-800 text-sm uppercase cursor-pointer"
+                          >
                             {item.customer_name}
                           </div>
                           <div className="text-[10px] text-slate-400 font-bold">
