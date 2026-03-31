@@ -62,6 +62,10 @@ const Leads = () => {
     setEdit(true);
     setEditId(lead.id);
     setIsModalOpen(true);
+    setPlateWattage(lead.panel_wattage);
+    setQuantity(lead.number_of_panels);
+    setQty(lead.number_of_inverters);
+    setInvereterKWattage(lead.inverter_kw);
     reset({
       customer_name: lead.customer_name,
       contact_number: lead.contact_number,
@@ -72,6 +76,8 @@ const Leads = () => {
       installation_type: lead.installation_type,
       panel_wattage: lead.panel_wattage,
       number_of_panels: lead.number_of_panels,
+      inverter_kw: lead.inverter_kw,
+      number_of_inverters: lead.number_of_inverters,
     });
   };
 
@@ -214,6 +220,7 @@ const Leads = () => {
           return;
         }
         setLoadSaveLead(true);
+        console.log(data);
         const res = await axios.post(`${apiUrl}/api/leads/updateLead`, {
           id: editId,
           customer_name: data.customer_name,
@@ -222,8 +229,10 @@ const Leads = () => {
           source_id: data.source_id,
           address: data.address,
           notes: data.notes,
-          panel_wattage: data.panel_wattage,
-          number_of_panels: data.number_of_panels,
+          panel_wattage: Number(data.panel_wattage), // cast to number
+          number_of_panels: Number(data.number_of_panels),
+          inverter_kw: Number(data.inverter_kw), // cast to number
+          number_of_inverters: Number(data.number_of_inverters),
           installation_type: data.installation_type,
         });
 
@@ -256,6 +265,7 @@ const Leads = () => {
     } else {
       try {
         setLoadSaveLead(true);
+        console.log(data);
         const res = await axios.post(`${apiUrl}/api/leads/addLead`, {
           customer_name: data.customer_name,
           contact_number: data.contact_number,
@@ -265,6 +275,8 @@ const Leads = () => {
           notes: data.notes,
           panel_wattage: data.panel_wattage,
           number_of_panels: data.number_of_panels,
+          inverter_kw: data.inverter_kw,
+          number_of_inverters: data.number_of_inverters,
           status: "pending",
           installation_type: data.installation_type,
         });
@@ -284,6 +296,8 @@ const Leads = () => {
             installation_type: "",
             panel_wattage: "",
             number_of_panels: "",
+            inverter_kw: "",
+            number_of_inverters: "",
           });
         }
       } catch (error) {
@@ -293,7 +307,10 @@ const Leads = () => {
   };
   // Capacity Estimator Logic
   const [plateWattage, setPlateWattage] = useState(550);
-  const [quantity, setQuantity] = useState(10);
+  const [invereterKWattage, setInvereterKWattage] = useState(550);
+  const [quantity, setQuantity] = useState(0);
+  const [qty, setQty] = useState(0);
+  const invCapacity = invereterKWattage * qty;
   const systemCapacity = (plateWattage * quantity) / 1000;
 
   const handleAction = (lead, type) => {
@@ -726,6 +743,8 @@ const Leads = () => {
                     installation_type: "",
                     panel_wattage: "",
                     number_of_panels: "",
+                    inverter_kw: "",
+                    number_of_inverters: "",
                   });
                 }}
                 className="hover:bg-white/10 p-2 rounded-full transition-colors"
@@ -844,7 +863,7 @@ const Leads = () => {
               {/* Calculator Panel */}
               <div className="md:col-span-2 bg-blue-50/50 p-4 rounded-3xl border border-blue-100">
                 <div className="flex items-center gap-2 mb-3 text-[#1a5695] font-bold text-[10px] uppercase tracking-widest">
-                  <Calculator size={14} /> Capacity Estimator
+                  <Calculator size={14} /> Panel Capacity Estimator
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
@@ -878,6 +897,48 @@ const Leads = () => {
                   </span>
                   <span className="text-xl font-black text-[#1a5695]">
                     {systemCapacity.toFixed(2)} kW
+                  </span>
+                </div>
+              </div>
+
+              {/* Calculator Panel */}
+              <div className="md:col-span-2 bg-blue-50/50 p-4 rounded-3xl border border-blue-100">
+                <div className="flex items-center gap-2 mb-3 text-[#1a5695] font-bold text-[10px] uppercase tracking-widest">
+                  <Calculator size={14} />
+                  Inverter Capacity Estimator
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase ml-1">
+                      Kilo Wattage (KW)
+                    </span>
+                    <input
+                      {...register("inverter_kw")}
+                      type="number"
+                      value={invereterKWattage}
+                      onChange={(e) => setInvereterKWattage(e.target.value)}
+                      className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[9px] font-bold text-slate-400 uppercase ml-1">
+                      Number of Inverters
+                    </span>
+                    <input
+                      {...register("number_of_inverters")}
+                      type="number"
+                      value={qty}
+                      onChange={(e) => setQty(e.target.value)}
+                      className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
+                    />
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-blue-100 flex justify-between items-center">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">
+                    System Size
+                  </span>
+                  <span className="text-xl font-black text-[#1a5695]">
+                    {invCapacity.toFixed(2)} kW
                   </span>
                 </div>
               </div>
