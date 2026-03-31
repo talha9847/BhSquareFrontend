@@ -476,7 +476,10 @@ const DocumentCollection = () => {
                     value={docInfo.consumer_number}
                     error={errors.consumer_number}
                     onChange={(v) => {
-                      setDocInfo({ ...docInfo, consumer_number: v });
+                      setDocInfo({
+                        ...docInfo,
+                        consumer_number: v.toUpperCase(),
+                      });
                       if (errors.consumer_number)
                         setErrors({ ...errors, consumer_number: null });
                     }}
@@ -487,7 +490,10 @@ const DocumentCollection = () => {
                     value={docInfo.geo_coordinate}
                     error={errors.geo_coordinate}
                     onChange={(v) => {
-                      setDocInfo({ ...docInfo, geo_coordinate: v });
+                      setDocInfo({
+                        ...docInfo,
+                        geo_coordinate: v.toUpperCase(),
+                      });
                       if (errors.geo_coordinate)
                         setErrors({ ...errors, geo_coordinate: null });
                     }}
@@ -498,7 +504,7 @@ const DocumentCollection = () => {
                     value={docInfo.sub_division}
                     error={errors.sub_division}
                     onChange={(v) => {
-                      setDocInfo({ ...docInfo, sub_division: v });
+                      setDocInfo({ ...docInfo, sub_division: v.toUpperCase() });
                       if (errors.sub_division)
                         setErrors({ ...errors, sub_division: null });
                     }}
@@ -508,7 +514,10 @@ const DocumentCollection = () => {
                     value={docInfo.registration_number}
                     error={errors.registration_number}
                     onChange={(v) => {
-                      setDocInfo({ ...docInfo, registration_number: v });
+                      setDocInfo({
+                        ...docInfo,
+                        registration_number: v.toUpperCase(),
+                      });
                       if (errors.registration_number)
                         setErrors({ ...errors, registration_number: null });
                     }}
