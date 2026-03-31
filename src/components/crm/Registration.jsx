@@ -17,6 +17,7 @@ import {
   ClipboardCheck,
   Pencil,
   FileText,
+  ChevronRight,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -233,8 +234,16 @@ const Registration = () => {
         <main className="p-4 lg:p-8">
           <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
-                Portal Registration
+              <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase flex items-center gap-3">
+                PORTAL REGISTRATION
+                <button
+                  onClick={() => {
+                    navigate("/allregistration");
+                  }}
+                  className="flex items-center gap-1 bg-slate-200 text-slate-600 text-[10px] px-2 py-1 rounded-full hover:bg-slate-300 transition-all cursor-pointer"
+                >
+                  SHOW ALL REGISTRATIONS <ChevronRight size={12} />
+                </button>
               </h1>
               <p className="text-sm text-slate-500 font-medium tracking-wide">
                 Manage government portal entries

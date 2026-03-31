@@ -118,8 +118,16 @@ const Customer = () => {
           {/* Header Section */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase">
-                Active Customers
+              <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase flex items-center gap-3">
+                ACTIVE CUSTOMERS
+                <button
+                  onClick={() => {
+                    navigate("/allcustomers");
+                  }}
+                  className="flex items-center gap-1 bg-slate-200 text-slate-600 text-[10px] px-2 py-1 rounded-full hover:bg-slate-300 transition-all cursor-pointer"
+                >
+                  SHOW ALL CUSTOMERS <ChevronRight size={12} />
+                </button>
               </h1>
               <p className="text-sm text-slate-500">
                 Onboarded clients and installation progress

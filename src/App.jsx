@@ -33,6 +33,9 @@ import Drivers from "./components/crm/Driver";
 import Cars from "./components/crm/Cars";
 import FinalStage from "./components/crm/FinalStage";
 import CustomerMaster from "./components/crm/CustomerMaster";
+import AllCustomers from "./components/crm/AllCustomers";
+import RegistrationsManager from "./components/crm/RegistrationsManager";
+import AllKitReady from "./components/crm/AllKitReady";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -55,7 +58,9 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/leads" element={<Leads />} />
           <Route path="/customers" element={<Customer />} />
+          <Route path="/allcustomers" element={<AllCustomers />} />
           <Route path="/kitready" element={<KitReady />} />
+          <Route path="/allkitready" element={<AllKitReady />} />
           <Route path="/loanstep" element={<LoanStep />} />
           <Route path="/inventory" element={<InventoryManager />} />
           <Route path="/brands" element={<BrandManager />} />
@@ -88,6 +93,7 @@ function App() {
             }
           />
           <Route path="/registration" element={<Registration />} />
+          <Route path="/allregistration" element={<RegistrationsManager />} />
         </Routes>
       </BrowserRouter>
     </>
