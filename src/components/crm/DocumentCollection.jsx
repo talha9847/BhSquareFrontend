@@ -165,6 +165,8 @@ const DocumentCollection = () => {
         id: leadsData.id,
         panel_wattage: leadsData.panel_wattage,
         number_of_panels: leadsData.number_of_panels,
+        inverter_kw: leadsData.inverter_kw,
+        number_of_inverters: leadsData.number_of_inverters,
       });
       if (res.status == 200) {
         setUpdateLoading(false);
@@ -420,6 +422,37 @@ const DocumentCollection = () => {
                         (leadsData.panel_wattage * leadsData.number_of_panels) /
                         1000
                       ).toFixed(2)}{" "}
+                      kW
+                    </span>
+                  </div>
+                </div>
+                <div className="space-y-5 mb-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <CustomInput
+                      label="Inverter KW"
+                      placeholder="540"
+                      value={leadsData.inverter_kw}
+                      onChange={(v) =>
+                        setLeadsData({ ...leadsData, inverter_kw: v })
+                      }
+                    />
+                    <CustomInput
+                      label="Total Panels"
+                      placeholder="10"
+                      value={leadsData.number_of_inverters}
+                      onChange={(v) =>
+                        setLeadsData({ ...leadsData, number_of_inverters: v })
+                      }
+                    />
+                  </div>
+                  <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100 flex justify-between items-center">
+                    <span className="text-[10px] font-black text-[#1a5695] uppercase">
+                      Total Capacity
+                    </span>
+                    <span className="text-xl font-black text-[#1a5695]">
+                      {(
+                        leadsData.inverter_kw * leadsData.number_of_inverters
+                      ).toFixed(2)}
                       kW
                     </span>
                   </div>

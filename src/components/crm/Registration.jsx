@@ -122,6 +122,7 @@ const Registration = () => {
         inverter_qty: customer.registration?.inverter_qty,
         panel_qty: panelCount,
         // panel_serials: initialSerials,
+        inverter_capacity: (customer.lead.inverter_capacity / 1).toFixed(2),
       });
 
       setIsModalOpen(true);
@@ -554,8 +555,34 @@ const Registration = () => {
                     <input
                       {...register("inverter_qty", { required: true })}
                       type="number"
+                      readOnly
                       placeholder="1"
-                      className={`w-full pl-11 pr-4 py-4 border rounded-2xl outline-none transition-all font-bold text-slate-700 text-sm ${errors.inverter_qty ? "border-red-200 bg-red-50/30" : "border-slate-100 focus:border-[#1a5695]"}`}
+                      className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-400 text-sm cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <div className="flex justify-between px-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      Inverter Capacity (KW)
+                    </label>
+                    {errors.inverter_qty && (
+                      <span className="text-[9px] text-red-500 font-bold uppercase italic">
+                        Required
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <Box
+                      size={16}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                    />
+                    <input
+                      {...register("inverter_capacity", { required: true })}
+                      type="number"
+                      readOnly
+                      placeholder="1"
+                      className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-400 text-sm cursor-not-allowed"
                     />
                   </div>
                 </div>
