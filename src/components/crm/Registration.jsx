@@ -62,14 +62,14 @@ const Registration = () => {
     watch,
     formState: { errors: errors1 },
   } = useForm();
-  const selectedBrand = watch("panel_brand");
-  const selectedInverterBrand = watch("inverter_brand");
+  const selectedBrand = watch("panel_brand_id");
+  const selectedInverterBrand = watch("inverter_brand_id");
 
   const fileteredPanel = panels.filter(
     (panel) => panel.brand.id === Number(selectedBrand),
   );
   const fileteredInverter = inverters.filter(
-    (inv) => inv.brand.id === Number(selectedBrand),
+    (inv) => inv.brand.id === Number(selectedInverterBrand),
   );
   const { fields } = useFieldArray({
     control,
@@ -139,6 +139,7 @@ const Registration = () => {
     getCustomers();
     getBrands();
     getPanels();
+    getInverters();
   }, []);
 
   const openRegistrationModal = (customer) => {
@@ -197,12 +198,11 @@ const Registration = () => {
       setIsModalOpen(false);
     }
   };
-
   const confirmFinalize = async (data) => {
     try {
       if (rId > 0 && cId > 0 && lId > 0) {
         setLoad(true);
-        console.log(data);
+
         const res = await axios.post(
           `${apiUrl}/api/registrations/markRegistrationAsDone`,
           {
@@ -212,16 +212,25 @@ const Registration = () => {
             leadId: lId,
           },
         );
-        if (res.status == 200) {
+
+        if (res.status === 200) {
           getCustomers();
-          toast.success("Done......");
+          toast.success(res.data.message || "Done");
           setIsFinalizeModalOpen(false);
-          setLoad(false);
         }
       }
     } catch (error) {
-      toast.error("Error......");
-      setIsFinalizeModalOpen(false);
+      console.error("❌ API Error:", error);
+
+      // 🔴 Extract backend message safely
+      const message =
+        error?.response?.data?.message || // your controller sends this
+        error?.response?.data?.error || // fallback
+        error.message || // axios/network error
+        "Something went wrong";
+
+      toast.error(message);
+    } finally {
       setLoad(false);
     }
   };
@@ -773,12 +782,12 @@ const Registration = () => {
                     Panel Brand
                   </label>
                   <select
-                    {...re1("panel_brand", {
+                    {...re1("panel_brand_id", {
                       required: "Panel brand is required",
                     })}
-                    name="panel_brand"
+                    name="panel_brand_id"
                     id=""
-                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel_brand ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
+                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel_brand_id ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
                   >
                     <option value="">--select brand--</option>
                     {brands.map((e) => (
@@ -808,12 +817,12 @@ const Registration = () => {
                   </label>
 
                   <select
-                    {...re1("inverter_brand", {
+                    {...re1("inverter_brand_id", {
                       required: "Panel brand is required",
                     })}
-                    name="inverter_brand"
+                    name="inverter_brand_id"
                     id=""
-                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel_brand ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
+                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.inverter_brand_id ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
                   >
                     <option value="">--select brand--</option>
                     {brands.map((e) => (
@@ -911,7 +920,7 @@ const Registration = () => {
                   </label>
 
                   <select
-                    {...re1("panel", {
+                    {...re1("panel_id", {
                       required: "Panel is required",
                     })}
                     className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
@@ -926,6 +935,30 @@ const Registration = () => {
                   {errors1.panel && (
                     <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
                       {errors1.panel.message}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                    Select Inverter
+                  </label>
+
+                  <select
+                    {...re1("inverter_id", {
+                      required: "Inverter is required",
+                    })}
+                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
+                  >
+                    <option value="">--select panel--</option>
+                    {fileteredInverter.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.name} {e.brand.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors1.inverter && (
+                    <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
+                      {errors1.inverter.message}
                     </p>
                   )}
                 </div>

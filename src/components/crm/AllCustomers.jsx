@@ -71,11 +71,14 @@ const AllCustomers = () => {
   }, [activeTab]); // Refetch whenever the tab changes
 
   // Search logic (Client-side search within the current status)
-  const filteredList = customers.filter(
-    (c) =>
-      c.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.id.toString().includes(searchTerm),
-  );
+  const filteredList = customers.filter((c) => {
+    const search = searchTerm.toLowerCase();
+    return (
+      c.customer_name?.toLowerCase().includes(search) ||
+      c.id?.toString().includes(search) ||
+      c.customer_id?.toString().includes(search) // Just in case you use customer_id
+    );
+  });
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex font-sans text-slate-900">
