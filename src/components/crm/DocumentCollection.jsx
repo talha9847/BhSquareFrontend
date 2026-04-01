@@ -437,7 +437,7 @@ const DocumentCollection = () => {
                       }
                     />
                     <CustomInput
-                      label="Total Panels"
+                      label="Total Inverters"
                       placeholder="10"
                       value={leadsData.number_of_inverters}
                       onChange={(v) =>
