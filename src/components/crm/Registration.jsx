@@ -39,6 +39,8 @@ const Registration = () => {
   const [load, setLoad] = useState(false);
   const [rId, setRId] = useState(0);
   const [dLoad, setDLoad] = useState(false);
+  const [panels, setPanels] = useState([]);
+  const [inverters, setInverters] = useState([]);
 
   const [brands, setBrands] = useState([{}]);
 
@@ -57,9 +59,18 @@ const Registration = () => {
     register: re1,
     handleSubmit: hs1,
     reset: rs1,
+    watch,
     formState: { errors: errors1 },
   } = useForm();
+  const selectedBrand = watch("panel_brand");
+  const selectedInverterBrand = watch("inverter_brand");
 
+  const fileteredPanel = panels.filter(
+    (panel) => panel.brand.id === Number(selectedBrand),
+  );
+  const fileteredInverter = inverters.filter(
+    (inv) => inv.brand.id === Number(selectedBrand),
+  );
   const { fields } = useFieldArray({
     control,
     name: "panel_serials",
@@ -81,6 +92,38 @@ const Registration = () => {
       setLoading(false);
     }
   };
+  const getPanels = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `${apiUrl}/api/registrations/getInventoryByCategory`,
+      );
+      if (res.status === 200) {
+        console.log(res.data.data);
+        setPanels(res.data.data);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const getInverters = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `${apiUrl}/api/registrations/getInventoryByCategoryThree`,
+      );
+      if (res.status === 200) {
+        console.log(res.data.data);
+        setInverters(res.data.data);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getBrands = async () => {
     try {
@@ -95,6 +138,7 @@ const Registration = () => {
   useEffect(() => {
     getCustomers();
     getBrands();
+    getPanels();
   }, []);
 
   const openRegistrationModal = (customer) => {
@@ -379,7 +423,18 @@ const Registration = () => {
                                     setRId(item.registration?.id);
                                     setCId(item.id);
                                     setLId(item.lead?.id);
+                                    console.log(item.lead);
                                     setIsFinalizeModalOpen(true);
+                                    rs1({
+                                      inverter_capacity:
+                                        item.lead.inverter_capacity,
+                                      panel_capacity: (
+                                        item.lead.total_capacity / 1000
+                                      ).toFixed(2),
+                                      panel_qty: item.lead.number_of_panels,
+                                      inverter_qty:
+                                        item.lead.number_of_inverters,
+                                    });
                                   }}
                                   className="px-4 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all flex items-center gap-2 bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg shadow-emerald-900/10"
                                 >
@@ -464,7 +519,7 @@ const Registration = () => {
                 <div className="space-y-1.5">
                   <div className="flex justify-between px-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      Registration No.
+                      Registration Date
                     </label>
                     {errors.registration_date && (
                       <span className="text-[9px] text-red-500 font-bold uppercase italic">
@@ -784,39 +839,93 @@ const Registration = () => {
                 {/* Inverter Capacity */}
                 <div className="space-y-1">
                   <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                    Panel Capacity
+                  </label>
+                  <input
+                    {...re1("panel_capacity", {
+                      required: "Capacity is required",
+                    })}
+                    readOnly
+                    className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-400 text-sm cursor-not-allowed"
+                  />
+                  {/* {errors1.inverter_capacity && (
+                    <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
+                      {errors1.inverter_capacity.message}
+                    </p>
+                  )} */}
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
                     Inverter Capacity
                   </label>
                   <input
                     {...re1("inverter_capacity", {
                       required: "Capacity is required",
                     })}
-                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.inverter_capacity ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
-                    placeholder="e.g. 5kW"
+                    readOnly
+                    className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-400 text-sm cursor-not-allowed"
                   />
-                  {errors1.inverter_capacity && (
+                  {/* {errors1.inverter_capacity && (
                     <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
                       {errors1.inverter_capacity.message}
                     </p>
-                  )}
+                  )} */}
                 </div>
-
-                {/* Inverter Quantity (New Field) */}
-                <div className="space-y-1 md:col-span-2">
+                <div className="space-y-1">
                   <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
                     Inverter Quantity
                   </label>
                   <input
-                    type="number"
                     {...re1("inverter_qty", {
-                      required: "Inverter quantity is required",
-                      min: { value: 1, message: "Min 1 required" },
+                      required: "Capacity is required",
                     })}
-                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.inverter_qty ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
-                    placeholder="Enter number of inverters"
+                    readOnly
+                    className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-400 text-sm cursor-not-allowed"
                   />
-                  {errors1.inverter_qty && (
+                  {/* {errors1.inverter_capacity && (
                     <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
-                      {errors1.inverter_qty.message}
+                      {errors1.inverter_capacity.message}
+                    </p>
+                  )} */}
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                    Panel Quantity
+                  </label>
+                  <input
+                    {...re1("panel_qty", {
+                      required: "Capacity is required",
+                    })}
+                    readOnly
+                    className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-400 text-sm cursor-not-allowed"
+                  />
+                  {/* {errors1.inverter_capacity && (
+                    <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
+                      {errors1.inverter_capacity.message}
+                    </p>
+                  )} */}
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                    Select Panel
+                  </label>
+
+                  <select
+                    {...re1("panel", {
+                      required: "Panel is required",
+                    })}
+                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
+                  >
+                    <option value="">--select panel--</option>
+                    {fileteredPanel.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.name} {e.brand.name}
+                      </option>
+                    ))}
+                  </select>
+                  {errors1.panel && (
+                    <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
+                      {errors1.panel.message}
                     </p>
                   )}
                 </div>
