@@ -4,7 +4,6 @@ import {
   PlusCircle,
   X,
   PackagePlus,
-  Inbox,
   CheckCircle2,
   Loader2,
   Plus,
@@ -60,14 +59,11 @@ const PrepareKit = () => {
       if (res.status === 200) {
         const pQty = parseInt(res.data.data.panel_qty) || 0;
         const iQty = parseInt(res.data.data.inverter_qty) || 0;
-        console.log(res.data.data);
-        if (res.data.data.kit_status == "done") {
+        if (res.data.data.kit_status === "done") {
           setKitStatus(true);
         }
         setPanelQty(pQty);
         setInverterQty(iQty);
-
-        // Pre-initialize the serial arrays
         setPanelSerials(new Array(pQty).fill(""));
         setInverterSerials(new Array(iQty).fill(""));
       }
@@ -77,13 +73,10 @@ const PrepareKit = () => {
   };
 
   const handleOpenDispatch = () => {
-    // Safety check: ensure arrays match the quantities
-    if (panelSerials.length !== panelQty) {
+    if (panelSerials.length !== panelQty)
       setPanelSerials(new Array(panelQty).fill(""));
-    }
-    if (inverterSerials.length !== inverterQty) {
+    if (inverterSerials.length !== inverterQty)
       setInverterSerials(new Array(inverterQty).fill(""));
-    }
     setIsDispatchModalOpen(true);
   };
 
@@ -94,20 +87,19 @@ const PrepareKit = () => {
 
     if (!panelsFilled || !invertersFilled) {
       toast.error("Please fill all serial numbers.");
+      setConfirmLoad(false);
       return;
     }
     try {
       const res = await axios.post(
         `${apiUrl}/api/kitready/addCustomerSerials`,
         {
-          customerId: customerId,
-          panelSerials: panelSerials,
-          inverterSerials: inverterSerials,
+          customerId,
+          panelSerials,
+          inverterSerials,
         },
       );
-      if (res.status == 201) {
-        navigate("/dispatch");
-      }
+      if (res.status === 201) navigate("/dispatch");
     } catch (error) {
       setConfirmLoad(false);
     }
@@ -149,6 +141,16 @@ const PrepareKit = () => {
     () => [...baseKit, ...extraItems],
     [baseKit, extraItems],
   );
+
+  // --- NEW GROUPING LOGIC ---
+  const groupedItems = useMemo(() => {
+    return allItems.reduce((acc, item) => {
+      const categoryName = item.category || "Uncategorized";
+      if (!acc[categoryName]) acc[categoryName] = [];
+      acc[categoryName].push(item);
+      return acc;
+    }, {});
+  }, [allItems]);
 
   const stats = useMemo(() => {
     const total = allItems.length;
@@ -211,13 +213,6 @@ const PrepareKit = () => {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex overflow-x-hidden">
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -263,56 +258,78 @@ const PrepareKit = () => {
                   disabled={stats.progress < 100 || tableLoading || kitStatus}
                   onClick={handleOpenDispatch}
                   className={`px-4 py-3 lg:py-4 rounded-xl lg:rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${
-                    stats.progress === 100
+                    stats.progress === 100 && !kitStatus
                       ? "bg-[#1a5695] text-white shadow-lg cursor-pointer"
                       : "bg-slate-200 text-slate-400 cursor-not-allowed"
                   }`}
                 >
-                  {kitStatus ? "Already Dispatched" : "Confrim Dispatch"}
+                  {kitStatus ? "Already Dispatched" : "Confirm Dispatch"}
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Table Rendering */}
-          <div className="bg-white rounded-3xl lg:rounded-[40px] border border-slate-200 shadow-sm overflow-hidden min-h-[300px]">
+          {/* Grouped Table Rendering */}
+          <div className="space-y-10 min-h-[400px]">
             {tableLoading ? (
-              <div className="flex flex-col items-center justify-center h-[300px] gap-3">
+              <div className="bg-white rounded-[40px] border border-slate-200 flex flex-col items-center justify-center h-[300px] gap-3">
                 <Loader2 className="animate-spin text-[#1a5695]" size={32} />
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">
                   Syncing...
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-separate border-spacing-0">
-                  <thead className="bg-slate-50/50">
-                    <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                      <th className="px-8 py-6">Product</th>
-                      <th className="px-8 py-6 text-center">Warehouse</th>
-                      <th className="px-8 py-6 text-center">Pick Qty</th>
-                      <th className="px-8 py-6 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-50">
-                    {allItems.map((item) => (
-                      <KitRowDesktop
-                        key={item.id}
-                        item={item}
-                        updateQty={updateQty}
-                        toggleVerify={toggleVerify}
-                        isVerifying={verifyingId === item.id}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              Object.entries(groupedItems).map(([categoryName, items]) => (
+                <div
+                  key={categoryName}
+                  className="animate-in fade-in slide-in-from-bottom-2 duration-500"
+                >
+                  <div className="flex items-center gap-3 mb-4 px-2">
+                    <div className="p-1.5 bg-[#1a5695] rounded-lg text-white">
+                      <Layers size={14} />
+                    </div>
+                    <h2 className="text-xs font-[1000] text-slate-800 uppercase tracking-widest italic">
+                      {categoryName}
+                    </h2>
+                    <div className="flex-1 h-[1px] bg-slate-200"></div>
+                    <span className="text-[9px] font-black text-slate-400 uppercase">
+                      {items.length} Products
+                    </span>
+                  </div>
+
+                  <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-separate border-spacing-0">
+                        <thead className="bg-slate-50/50">
+                          <tr className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                            <th className="px-8 py-5">Product</th>
+                            <th className="px-8 py-5 text-center">Warehouse</th>
+                            <th className="px-8 py-5 text-center">Pick Qty</th>
+                            <th className="px-8 py-5 text-right">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                          {items.map((item) => (
+                            <KitRowDesktop
+                              key={item.id}
+                              item={item}
+                              updateQty={updateQty}
+                              toggleVerify={toggleVerify}
+                              isVerifying={verifyingId === item.id}
+                            />
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </main>
       </div>
 
-      {/* INVENTORY MODAL - Same as before */}
+      {/* INVENTORY MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-md rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-2xl">
@@ -359,16 +376,14 @@ const PrepareKit = () => {
         </div>
       )}
 
-      {/* DISPATCH SERIALS MODAL - Updated with Grid Layout */}
+      {/* DISPATCH SERIALS MODAL */}
       {isDispatchModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
           <div className="bg-white w-full max-w-6xl max-h-[90vh] rounded-[32px] overflow-hidden shadow-2xl flex flex-col">
             <div className="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-              <div>
-                <h3 className="font-[1000] uppercase italic text-slate-800 flex items-center gap-2 text-lg">
-                  <CheckCircle2 className="text-emerald-500" /> Final Dispatch
-                </h3>
-              </div>
+              <h3 className="font-[1000] uppercase italic text-slate-800 flex items-center gap-2 text-lg">
+                <CheckCircle2 className="text-emerald-500" /> Final Dispatch
+              </h3>
               <button
                 onClick={() => setIsDispatchModalOpen(false)}
                 className="p-2 hover:bg-slate-200 rounded-full"
@@ -376,9 +391,7 @@ const PrepareKit = () => {
                 <X size={24} />
               </button>
             </div>
-
             <div className="p-8 overflow-y-auto space-y-10">
-              {/* Solar Panels Grid */}
               <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100">
                 <h3 className="text-[10px] font-black text-[#1a5695] uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                   <PenTool size={14} /> Enter {panelQty} Panel Serial Numbers
@@ -405,7 +418,6 @@ const PrepareKit = () => {
                 </div>
               </div>
 
-              {/* Inverters Grid */}
               <div className="bg-slate-50 p-6 rounded-[32px] border border-slate-100">
                 <h3 className="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                   <PenTool size={14} /> Enter {inverterQty} Inverter Serial
@@ -433,7 +445,6 @@ const PrepareKit = () => {
                 </div>
               </div>
             </div>
-
             <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-4">
               <button
                 onClick={() => setIsDispatchModalOpen(false)}
@@ -447,7 +458,7 @@ const PrepareKit = () => {
               >
                 {confirmLoad ? (
                   <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />{" "}
                     Dispatching...
                   </>
                 ) : (
@@ -462,7 +473,6 @@ const PrepareKit = () => {
   );
 };
 
-// KitRowDesktop component
 const KitRowDesktop = ({ item, updateQty, toggleVerify, isVerifying }) => (
   <tr
     className={`group transition-colors ${item.verified ? "bg-emerald-50/20" : "hover:bg-slate-50/50"}`}
