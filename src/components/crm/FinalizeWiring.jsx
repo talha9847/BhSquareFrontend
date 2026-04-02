@@ -25,7 +25,7 @@ const FinalizeWiring = () => {
   const navigate = useNavigate();
   const { selectedWiring } = state || {};
   const apiUrl = import.meta.env.VITE_API_URL;
-
+  console.log(selectedWiring);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [btnLoading, setBtnLoading] = useState({});
@@ -386,7 +386,7 @@ const FinalizeWiring = () => {
         </main>
 
         {/* 3. NEXT STAGE ACTION BAR */}
-        {isEverythingUploaded() && (
+        {isEverythingUploaded() && selectedWiring.wiring_status != "done" && (
           <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white/80 backdrop-blur-md border-t border-slate-200 p-6 flex justify-center animate-in slide-in-from-bottom duration-500">
             <button
               onClick={handleNextStage}
