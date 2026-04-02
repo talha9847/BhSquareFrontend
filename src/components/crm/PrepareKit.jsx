@@ -296,11 +296,18 @@ const PrepareKit = () => {
       setConfirmLoad(false);
       return;
     }
+
+    const panelItem = allItems.find((item) => item.categoryId == 1);
+
+    const inverterItem = allItems.find((item) => item.categoryId === 3);
+    console.log(panelItem);
     try {
       const res = await axios.post(
         `${apiUrl}/api/kitready/addCustomerSerials`,
         {
           customerId,
+          panelId: panelItem.id,
+          inverterId: inverterItem.id,
         },
       );
       if (res.status === 201) navigate("/dispatch");
