@@ -36,7 +36,7 @@ const WiringInventory = () => {
     brand_name: "",
     wire_type: "DC Wire",
     gauge: "",
-    color: "Red",
+    color: "red", // Changed to lowercase to match helper logic
     stock: "",
     price: "0.00",
     tax: "0.00",
@@ -51,7 +51,7 @@ const WiringInventory = () => {
       black: "#0f172a",
       blue: "#3b82f6",
     };
-    return colors[colorName.toLowerCase()] || "#cbd5e1"; // Fallback to slate-300
+    return colors[colorName?.toLowerCase()] || "#cbd5e1"; // Fallback to slate-300
   };
 
   const fetchAll = async () => {
@@ -96,13 +96,17 @@ const WiringInventory = () => {
     if (wire) {
       setEditingWire(wire);
       setFormData(wire);
+      setFormData({
+        ...wire,
+        color: wire.color.toLowerCase(),
+      });
     } else {
       setEditingWire(null);
       setFormData({
         brand_name: "",
         wire_type: "DC Wire",
         gauge: "",
-        color: "Red",
+        color: "red",
         stock: "",
         price: "0.00",
         tax: "0.00",
@@ -343,7 +347,6 @@ const WiringInventory = () => {
         </main>
       </div>
 
-      {/* MODAL SECTION (REMAINS SAME) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
@@ -417,14 +420,19 @@ const WiringInventory = () => {
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1">
                       <Palette size={12} /> Wire Color
                     </label>
-                    <input
-                      className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none"
+                    <select
+                      className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:border-[#1a5695] transition-all"
                       value={formData.color}
                       onChange={(e) =>
                         setFormData({ ...formData, color: e.target.value })
                       }
-                      placeholder="Red, Black, Green..."
-                    />
+                    >
+                      <option value="red">Red</option>
+                      <option value="yellow">Yellow</option>
+                      <option value="green">Green</option>
+                      <option value="black">Black</option>
+                      <option value="blue">Blue</option>
+                    </select>
                   </div>
                 </div>
 

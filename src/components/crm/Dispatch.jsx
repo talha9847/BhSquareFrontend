@@ -376,11 +376,13 @@ const Dispatch = () => {
                     className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#1a5695]/10 outline-none transition-all text-sm font-bold"
                     name=""
                     id=""
+                    required
                     value={formData.driver_id}
                     onChange={(e) => {
                       setFormData({ ...formData, driver_id: e.target.value });
                     }}
                   >
+                    <option value="">--Select Driver--</option>
                     {drivers &&
                       drivers.map((d) => (
                         <option key={d.id} value={d.id}>
@@ -414,11 +416,13 @@ const Dispatch = () => {
                     className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#1a5695]/10 outline-none transition-all text-sm font-bold uppercase"
                     name=""
                     id=""
+                    required
                     value={formData.car_id}
                     onChange={(e) => {
                       setFormData({ ...formData, car_id: e.target.value });
                     }}
                   >
+                    <option value="">--Select Car--</option>
                     {cars.map((e) => (
                       <option value={e.id}>
                         {e.name} - {e.number}

@@ -290,11 +290,9 @@ const PrepareKit = () => {
 
   const handleFinalDispatch = async () => {
     setConfirmLoad(true);
-    const panelsFilled = panelSerials.every((s) => s.trim() !== "");
-    const invertersFilled = inverterSerials.every((s) => s.trim() !== "");
 
-    if (!panelsFilled || !invertersFilled) {
-      toast.error("Please fill all serial numbers.");
+    if (!customerId) {
+      toast.error("customer not found.");
       setConfirmLoad(false);
       return;
     }
@@ -303,8 +301,6 @@ const PrepareKit = () => {
         `${apiUrl}/api/kitready/addCustomerSerials`,
         {
           customerId,
-          panelSerials,
-          inverterSerials,
         },
       );
       if (res.status === 201) navigate("/dispatch");
@@ -590,9 +586,7 @@ const PrepareKit = () => {
                 <X size={24} />
               </button>
             </div>
-            <div className="p-8 overflow-y-auto space-y-10">
-              {/* Serial Inputs (Preserved Logic) */}
-            </div>
+
             <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-4">
               <button
                 onClick={() => setIsDispatchModalOpen(false)}
