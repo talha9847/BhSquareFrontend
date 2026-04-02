@@ -1,221 +1,262 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  CheckCircle2,
-  XCircle,
-  FileText,
   Search,
-  Gift,
-  BadgeDollarSign,
-  Save,
   Loader2,
-  AlertCircle,
+  ShieldCheck,
+  Upload,
+  ClipboardCheck,
+  Gift,
+  Banknote,
+  Save,
+  CheckCircle,
 } from "lucide-react";
-import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
+import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const FinalStage = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const apiUrl = import.meta.env.VITE_API_URL;
 
-  // State for the 4 stages from your notes
-  const [data, setData] = useState({
-    9: { title: "File Uploaded", status: null, loading: false }, // Stage 9
-    10: { title: "In Inspection", status: null, loading: false }, // Stage 10
-    11: { title: "Redeem", status: null, loading: false, note: "Ignore" }, // Stage 11
-    12: { title: "Disbursal", status: null, loading: false }, // Stage 12
-  });
+  // UI States
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [tableLoading, setTableLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [finalLogs, setFinalLogs] = useState([]);
 
-  const handleToggle = (stageId, value) => {
-    setData((prev) => ({
-      ...prev,
-      [stageId]: { ...prev[stageId], status: value },
-    }));
-  };
-
-  const saveStage = async (stageId) => {
-    const stage = data[stageId];
-    if (stage.status === null)
-      return toast.warning(`Please select Yes/No for ${stage.title}`);
-
-    setData((prev) => ({
-      ...prev,
-      [stageId]: { ...prev[stageId], loading: true },
-    }));
-
+  const getFinalStageData = async () => {
+    setTableLoading(true);
     try {
-      // Replace with your actual endpoint logic
-      // await axios.post(`${apiUrl}/api/project/updateStage`, { stageId, status: stage.status });
-
-      setTimeout(() => {
-        toast.success(`${stage.title} status saved!`);
-        setData((prev) => ({
-          ...prev,
-          [stageId]: { ...prev[stageId], loading: false },
-        }));
-      }, 800);
+      const res = await axios.get(
+        `${apiUrl}/api/sources/getFinalStageCustomers`,
+      );
+      if (res.status === 200) {
+        setFinalLogs(res.data.data || []);
+      }
     } catch (error) {
-      toast.error("Failed to save status");
-      setData((prev) => ({
-        ...prev,
-        [stageId]: { ...prev[stageId], loading: false },
-      }));
+      toast.error("Failed to load records");
+    } finally {
+      setTableLoading(false);
     }
   };
 
+  useEffect(() => {
+    getFinalStageData();
+  }, []);
+
+  // --- ONE-WAY TOGGLE LOGIC ---
+  const handleToggle = async (id, field, currentStatus, label) => {
+    // 1. Block if already true (No Revert)
+    if (currentStatus === true) {
+      toast.warning(`${label} is already finalized and cannot be changed.`);
+      return;
+    }
+
+    // 2. Show Confirmation for first-time completion
+    const result = await Swal.fire({
+      title: "Confirm Completion",
+      text: `Mark "${label}" as Complete? This action cannot be undone.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#1a5695",
+      cancelButtonColor: "#f1f5f9",
+      confirmButtonText: `Yes, Finalize`,
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      customClass: {
+        popup: "rounded-[32px] font-sans",
+        confirmButton:
+          "rounded-xl px-6 py-3 text-[10px] font-black uppercase tracking-wider",
+        cancelButton:
+          "rounded-xl px-6 py-3 text-[10px] font-black uppercase tracking-wider text-slate-500",
+      },
+    });
+
+    if (result.isConfirmed) {
+      setFinalLogs((prev) =>
+        prev.map((item) =>
+          item.final_stage_id === id ? { ...item, [field]: true } : item,
+        ),
+      );
+      toast.success(`${label} updated successfully.`);
+    }
+  };
+
+  const handleUpdate = (item) => {
+    // This handles the final submission of the row
+    console.log("Updated Stage Data for Database:", item);
+    toast.success(`Records updated for ${item.customer_name}`);
+  };
+
+  const filteredItems = finalLogs.filter((item) =>
+    item.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  // --- INTERACTIVE BADGE COMPONENT ---
+  const InteractiveBadge = ({ id, label, field, active, icon: Icon }) => (
+    <button
+      onClick={() => handleToggle(id, field, active, label)}
+      className={`flex flex-col items-center gap-1.5 p-3 w-24 rounded-3xl border transition-all duration-200 ${
+        active
+          ? "bg-emerald-50 border-emerald-200 text-emerald-600 shadow-inner cursor-not-allowed"
+          : "bg-slate-50 border-slate-100 text-slate-300 hover:border-slate-200 hover:text-slate-400 active:scale-90"
+      }`}
+    >
+      <Icon size={16} strokeWidth={active ? 3 : 2} />
+      <span className="text-[8px] font-black uppercase tracking-tighter text-center leading-none">
+        {label}
+      </span>
+      <div
+        className={`w-1.5 h-1.5 rounded-full transition-all ${
+          active ? "bg-emerald-500 scale-110" : "bg-slate-200"
+        }`}
+      ></div>
+    </button>
+  );
+
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50 flex font-sans">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        activePage="Final Stage"
+        activePage="FinalStage"
       />
 
       <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8 max-w-4xl mx-auto w-full">
-          <div className="mb-10 text-center sm:text-left">
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase flex items-center justify-center sm:justify-start gap-3">
-              <div className="w-10 h-10 bg-[#1a5695] rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
-                <CheckCircle2 size={22} />
-              </div>
-              Final Project Verification
+        <main className="p-4 lg:p-8">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase flex items-center gap-3">
+              <ShieldCheck className="text-[#1a5695]" size={28} />
+              Final Stage Management
             </h1>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-3 ml-1">
-              Confirm the final processing steps below
-            </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            {/* STAGE 09 */}
-            <StageRow
-              id="09"
-              icon={<FileText size={18} />}
-              title={data[9].title}
-              status={data[9].status}
-              loading={data[9].loading}
-              onToggle={(val) => handleToggle(9, val)}
-              onSave={() => saveStage(9)}
-            />
+          {/* Search */}
+          <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 shadow-sm">
+            <div className="relative">
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                size={18}
+              />
+              <input
+                type="text"
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold placeholder:text-slate-300"
+                placeholder="Search customer name..."
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
 
-            {/* STAGE 10 */}
-            <StageRow
-              id="10"
-              icon={<Search size={18} />}
-              title={data[10].title}
-              status={data[10].status}
-              loading={data[10].loading}
-              onToggle={(val) => handleToggle(10, val)}
-              onSave={() => saveStage(10)}
-            />
-
-            {/* STAGE 11 */}
-            <StageRow
-              id="11"
-              icon={<Gift size={18} />}
-              title={data[11].title}
-              status={data[11].status}
-              loading={data[11].loading}
-              onToggle={(val) => handleToggle(11, val)}
-              onSave={() => saveStage(11)}
-              extra={
-                <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-50 rounded-lg border border-amber-100 text-[8px] font-black text-amber-600 uppercase tracking-widest ml-2">
-                  <AlertCircle size={10} /> {data[11].note}
-                </div>
-              }
-            />
-
-            {/* STAGE 12 */}
-            <StageRow
-              id="12"
-              icon={<BadgeDollarSign size={18} />}
-              title={data[12].title}
-              status={data[12].status}
-              loading={data[12].loading}
-              onToggle={(val) => handleToggle(12, val)}
-              onSave={() => saveStage(12)}
-            />
+          {/* Table Container */}
+          <div className="bg-white rounded-[40px] border border-slate-200 overflow-hidden shadow-sm relative min-h-[450px]">
+            {tableLoading ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 backdrop-blur-[2px]">
+                <Loader2
+                  className="animate-spin text-[#1a5695] mb-2"
+                  size={32}
+                />
+                <span className="text-[10px] font-black uppercase text-slate-400">
+                  Syncing Stages...
+                </span>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-separate border-spacing-0">
+                  <thead className="bg-slate-50/50">
+                    <tr>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase text-center w-20">
+                        ID
+                      </th>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase">
+                        Customer Information
+                      </th>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase text-center">
+                        Workflow Checklist
+                      </th>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase text-right">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {filteredItems.map((item) => (
+                      <tr
+                        key={item.final_stage_id}
+                        className="hover:bg-slate-50/50 transition-colors"
+                      >
+                        <td className="px-6 py-4 text-center font-black text-slate-300 text-[11px]">
+                          #{item.final_stage_id}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-slate-800 text-sm uppercase leading-tight">
+                            {item.customer_name}
+                          </div>
+                          <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1.5 mt-1">
+                            <span className="text-[#1a5695]">
+                              {item.contact_number}
+                            </span>
+                            <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                            <span className="uppercase">{item.address}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center justify-center gap-2">
+                            <InteractiveBadge
+                              id={item.final_stage_id}
+                              label="File Up"
+                              field="file_uploaded"
+                              active={item.file_uploaded}
+                              icon={Upload}
+                            />
+                            <InteractiveBadge
+                              id={item.final_stage_id}
+                              label="Approved"
+                              field="file_approved"
+                              active={item.file_approved}
+                              icon={CheckCircle}
+                            />
+                            <InteractiveBadge
+                              id={item.final_stage_id}
+                              label="Inspection"
+                              field="inspection"
+                              active={item.inspection}
+                              icon={ClipboardCheck}
+                            />
+                            <InteractiveBadge
+                              id={item.final_stage_id}
+                              label="Redeem"
+                              field="redeem"
+                              active={item.redeem}
+                              icon={Gift}
+                            />
+                            <InteractiveBadge
+                              id={item.final_stage_id}
+                              label="Disbursal"
+                              field="disbursal"
+                              active={item.disbursal}
+                              icon={Banknote}
+                            />
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={() => handleUpdate(item)}
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a5695] text-white text-[10px] font-black uppercase rounded-2xl hover:bg-[#15467a] shadow-lg shadow-blue-100 active:scale-95 transition-all"
+                          >
+                            <Save size={14} /> Update Record
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </main>
-      </div>
-    </div>
-  );
-};
-
-// Internal Row Component
-const StageRow = ({
-  id,
-  icon,
-  title,
-  status,
-  loading,
-  onToggle,
-  onSave,
-  extra,
-}) => {
-  return (
-    <div className="bg-white rounded-[28px] border border-slate-200 p-5 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 transition-all hover:border-[#1a5695]/30">
-      <div className="flex items-center gap-5 flex-1 w-full sm:w-auto">
-        <div className="text-xl font-black text-slate-100 italic select-none">
-          {id}
-        </div>
-        <div className="flex items-center gap-3 text-[#1a5695]">
-          <div className="w-9 h-9 bg-slate-50 rounded-xl flex items-center justify-center">
-            {icon}
-          </div>
-          <div className="flex items-center">
-            <h3 className="font-black text-[12px] uppercase tracking-tight text-slate-800">
-              {title}
-            </h3>
-            {extra}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-        {/* Toggle Yes/No */}
-        <div className="flex p-1 bg-slate-50 rounded-2xl border border-slate-100">
-          <button
-            onClick={() => onToggle("yes")}
-            className={`px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-              status === "yes"
-                ? "bg-emerald-500 text-white shadow-md"
-                : "text-slate-400 hover:text-slate-600"
-            }`}
-          >
-            Yes
-          </button>
-          <button
-            onClick={() => onToggle("no")}
-            className={`px-5 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${
-              status === "no"
-                ? "bg-red-500 text-white shadow-md"
-                : "text-slate-400 hover:text-slate-600"
-            }`}
-          >
-            No
-          </button>
-        </div>
-
-        {/* Save Button */}
-        <button
-          onClick={onSave}
-          disabled={loading}
-          className="h-11 w-11 sm:w-auto sm:px-6 bg-[#1a5695] text-white rounded-2xl flex items-center justify-center gap-2 hover:bg-[#15467a] active:scale-95 transition-all shadow-lg shadow-blue-50 disabled:opacity-50"
-        >
-          {loading ? (
-            <Loader2 className="animate-spin" size={16} />
-          ) : (
-            <>
-              <Save size={16} />
-              <span className="hidden sm:inline text-[9px] font-black uppercase tracking-[0.1em]">
-                Save
-              </span>
-            </>
-          )}
-        </button>
       </div>
     </div>
   );
