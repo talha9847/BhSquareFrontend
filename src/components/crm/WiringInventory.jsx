@@ -9,7 +9,6 @@ import {
   Layers,
   Palette,
   Minus,
-  ArrowRight,
   TrendingUp,
   Percent,
   Calculator,
@@ -24,6 +23,7 @@ const WiringInventory = () => {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isTableLoading, setIsTableLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingWire, setEditingWire] = useState(null);
@@ -42,7 +42,20 @@ const WiringInventory = () => {
     tax: "0.00",
   });
 
+  // Helper to get Dot Color
+  const getColorDot = (colorName) => {
+    const colors = {
+      red: "#ef4444",
+      yellow: "#eab308",
+      green: "#22c55e",
+      black: "#0f172a",
+      blue: "#3b82f6",
+    };
+    return colors[colorName.toLowerCase()] || "#cbd5e1"; // Fallback to slate-300
+  };
+
   const fetchAll = async () => {
+    setIsTableLoading(true);
     try {
       const res = await axios.get(`${apiUrl}/api/wiring/fetchAllWireInventory`);
       if (res.status === 200) {
@@ -50,6 +63,9 @@ const WiringInventory = () => {
       }
     } catch (error) {
       console.error("Fetch Error:", error);
+      toast.error("Failed to load inventory");
+    } finally {
+      setIsTableLoading(false);
     }
   };
 
@@ -150,7 +166,6 @@ const WiringInventory = () => {
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="p-4 lg:p-8">
-          {/* Header & Valuation Cards */}
           <div className="flex flex-col xl:flex-row justify-between items-start gap-6 mb-8">
             <div>
               <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase flex items-center gap-3">
@@ -191,7 +206,6 @@ const WiringInventory = () => {
             </div>
           </div>
 
-          {/* Search */}
           <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
             <div className="flex-1 relative">
               <Search
@@ -208,8 +222,7 @@ const WiringInventory = () => {
             </div>
           </div>
 
-          {/* TABLE VIEW */}
-          <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden min-h-[400px]">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
@@ -237,59 +250,92 @@ const WiringInventory = () => {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredInventory.map((item) => {
-                    const subTotal = Number(item.price) * Number(item.stock);
-                    const taxAmt = subTotal * (Number(item.tax) / 100);
-                    return (
-                      <tr
-                        key={item.id}
-                        className="hover:bg-slate-50/50 transition-colors"
-                      >
-                        <td className="px-6 py-5">
-                          <div className="flex flex-col">
-                            <span className="text-[10px] font-black text-[#1a5695] uppercase">
-                              {item.brand_name}
-                            </span>
-                            <span className="text-sm font-bold text-slate-700 uppercase">
-                              {item.wire_type}
-                            </span>
-                            <span className="text-[9px] font-bold text-slate-400 uppercase mt-1">
-                              {item.gauge} sqmm • {item.color}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-5 text-center">
-                          <span
-                            className={`inline-block px-3 py-1 rounded-lg text-xs font-black ${Number(item.stock) < 50 ? "bg-rose-50 text-rose-600" : "bg-slate-100 text-slate-600"}`}
-                          >
-                            {item.stock}
+                <tbody className="divide-y divide-slate-100 relative">
+                  {isTableLoading ? (
+                    <tr>
+                      <td colSpan="7" className="py-24 text-center">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                          <Loader2
+                            className="animate-spin text-[#1a5695]"
+                            size={36}
+                          />
+                          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest animate-pulse">
+                            Fetching Live Inventory...
                           </span>
-                        </td>
-                        <td className="px-6 py-5 text-sm font-bold text-slate-600">
-                          ₹{Number(item.price).toFixed(2)}
-                        </td>
-                        <td className="px-6 py-5 text-sm font-bold text-slate-600">
-                          ₹{subTotal.toFixed(2)}
-                        </td>
-                        <td className="px-6 py-5 text-sm font-bold text-slate-400">
-                          ₹{taxAmt.toFixed(2)}{" "}
-                          <span className="text-[9px]">({item.tax}%)</span>
-                        </td>
-                        <td className="px-6 py-5 text-sm font-black text-[#1a5695]">
-                          ₹{(subTotal + taxAmt).toFixed(2)}
-                        </td>
-                        <td className="px-6 py-5 text-right">
-                          <button
-                            onClick={() => handleOpenModal(item)}
-                            className="p-2 text-slate-300 hover:text-[#1a5695] transition-all"
-                          >
-                            <Edit3 size={16} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredInventory.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan="7"
+                        className="py-20 text-center text-slate-400 font-bold uppercase text-xs tracking-widest"
+                      >
+                        No records found
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredInventory.map((item) => {
+                      const subTotal = Number(item.price) * Number(item.stock);
+                      const taxAmt = subTotal * (Number(item.tax) / 100);
+                      return (
+                        <tr
+                          key={item.id}
+                          className="hover:bg-slate-50/50 transition-colors"
+                        >
+                          <td className="px-6 py-5">
+                            <div className="flex flex-col">
+                              <span className="text-[10px] font-black text-[#1a5695] uppercase">
+                                {item.brand_name}
+                              </span>
+                              <span className="text-sm font-bold text-slate-700 uppercase">
+                                {item.wire_type}
+                              </span>
+                              <div className="flex items-center gap-2 mt-1">
+                                <div
+                                  className="w-2 h-2 rounded-full shadow-sm"
+                                  style={{
+                                    backgroundColor: getColorDot(item.color),
+                                  }}
+                                ></div>
+                                <span className="text-[9px] font-bold text-slate-400 uppercase">
+                                  {item.gauge} sqmm • {item.color}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-5 text-center">
+                            <span
+                              className={`inline-block px-3 py-1 rounded-lg text-xs font-black ${Number(item.stock) < 50 ? "bg-rose-50 text-rose-600" : "bg-slate-100 text-slate-600"}`}
+                            >
+                              {item.stock}
+                            </span>
+                          </td>
+                          <td className="px-6 py-5 text-sm font-bold text-slate-600">
+                            ₹{Number(item.price).toFixed(2)}
+                          </td>
+                          <td className="px-6 py-5 text-sm font-bold text-slate-600">
+                            ₹{subTotal.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-5 text-sm font-bold text-slate-400">
+                            ₹{taxAmt.toFixed(2)}{" "}
+                            <span className="text-[9px]">({item.tax}%)</span>
+                          </td>
+                          <td className="px-6 py-5 text-sm font-black text-[#1a5695]">
+                            ₹{(subTotal + taxAmt).toFixed(2)}
+                          </td>
+                          <td className="px-6 py-5 text-right">
+                            <button
+                              onClick={() => handleOpenModal(item)}
+                              className="p-2 text-slate-300 hover:text-[#1a5695] transition-all"
+                            >
+                              <Edit3 size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -297,7 +343,7 @@ const WiringInventory = () => {
         </main>
       </div>
 
-      {/* RE-CONFIGURED MODAL */}
+      {/* MODAL SECTION (REMAINS SAME) */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-xl rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
@@ -320,7 +366,6 @@ const WiringInventory = () => {
 
             <div className="overflow-y-auto p-8 custom-scrollbar">
               <form onSubmit={handleSave} className="space-y-6">
-                {/* 1. Brand & Type */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-1">
@@ -354,7 +399,6 @@ const WiringInventory = () => {
                   </div>
                 </div>
 
-                {/* 2. Gauge & Color (ADDED BACK) */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1">
@@ -384,7 +428,6 @@ const WiringInventory = () => {
                   </div>
                 </div>
 
-                {/* 3. Pricing & Tax */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-1 flex items-center gap-1">
@@ -415,7 +458,6 @@ const WiringInventory = () => {
                   </div>
                 </div>
 
-                {/* 4. Stock Adjustment */}
                 <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200">
                   <label className="text-[10px] font-black uppercase text-[#1a5695] mb-4 block">
                     {editingWire
