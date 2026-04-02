@@ -13,6 +13,7 @@ import {
   Tags,
   Eye,
   Layers,
+  DollarSign,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -24,9 +25,6 @@ const InventoryManager = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isBrandModalOpen, setIsBrandModalOpen] = useState(false);
-  const [brandName, setBrandName] = useState("");
-
   const [loading, setLoading] = useState(false);
   const [tableLoading, setTableLoading] = useState(true);
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -37,11 +35,14 @@ const InventoryManager = () => {
   const [isIncrement, setIsIncrement] = useState(true);
   const [editingId, setEditingId] = useState(null);
   const [categories, setCategories] = useState([]);
+
+  // 1. Added price to formData
   const [formData, setFormData] = useState({
     name: "",
     brand_id: "",
     category_id: "",
     qty: "",
+    price: "",
   });
 
   const getAllInve = async () => {
@@ -70,9 +71,6 @@ const InventoryManager = () => {
       const res = await axios.get(`${apiUrl}/api/kitready/getAllBrands`);
       if (res.status === 200) {
         setBrands(res.data.data);
-        if (res.data.data.length > 0 && !formData.brand_id) {
-          setFormData((prev) => ({ ...prev, brand_id: res.data.data[0].id }));
-        }
       }
     } catch (error) {
       console.error("Fetch Brands Error:", error);
@@ -85,7 +83,6 @@ const InventoryManager = () => {
     getAllCategories();
   }, []);
 
-  // Logic to group the filtered items by category name
   const groupedInventory = inventory
     .filter((item) =>
       item.name?.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -103,7 +100,8 @@ const InventoryManager = () => {
       name: item.name,
       brand_id: item.brand_id,
       category_id: item.category_id || "",
-      qty: Math.abs(item.qty),
+      qty: 0,
+      price: item.price || "", // Populate price on edit
     });
     setIsIncrement(true);
     setIsModalOpen(true);
@@ -134,6 +132,13 @@ const InventoryManager = () => {
     }
   };
 
+  // Helper for currency formatting
+  const formatCurrency = (num) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+    }).format(num);
+
   return (
     <div className="min-h-screen bg-slate-50 flex">
       <Sidebar
@@ -146,6 +151,7 @@ const InventoryManager = () => {
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="p-4 lg:p-8">
+          {/* Header Section */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase">
               Stock Inventory
@@ -153,28 +159,30 @@ const InventoryManager = () => {
             <div className="flex gap-3">
               <button
                 onClick={() => navigate("/brands")}
-                className="flex items-center gap-2 px-5 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-95"
+                className="flex items-center gap-2 px-5 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
               >
                 <Eye size={16} /> View Brands
               </button>
               <button
-                onClick={() => navigate("/category")}
-                className="flex items-center gap-2 px-5 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm active:scale-95"
-              >
-                <Eye size={16} /> View Category
-              </button>
-              <button
                 onClick={() => {
                   setEditingId(null);
+                  setFormData({
+                    name: "",
+                    brand_id: "",
+                    category_id: "",
+                    qty: "",
+                    price: "",
+                  });
                   setIsModalOpen(true);
                 }}
-                className="flex items-center gap-2 px-6 py-3 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg active:scale-95"
+                className="flex items-center gap-2 px-6 py-3 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg"
               >
                 <Plus size={16} /> Add Product
               </button>
             </div>
           </div>
 
+          {/* Search Bar */}
           <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-8 flex items-center gap-3 shadow-sm">
             <div className="flex-1 relative">
               <Search
@@ -199,97 +207,144 @@ const InventoryManager = () => {
             </div>
           ) : (
             <div className="space-y-10">
-              {Object.entries(groupedInventory).map(([category, items]) => (
-                <div
-                  key={category}
-                  className="group animate-in fade-in slide-in-from-bottom-4 duration-500"
-                >
-                  <div className="flex items-center gap-4 mb-4 px-2">
-                    <div className="p-2 bg-[#1a5695] rounded-xl text-white shadow-md">
-                      <Layers size={18} />
-                    </div>
-                    <div>
-                      <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">
-                        {category}
-                      </h2>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase">
-                        {items.length} Products in stock
-                      </p>
-                    </div>
-                    <div className="flex-1 h-[1px] bg-slate-200 ml-2"></div>
-                  </div>
+              {Object.entries(groupedInventory).map(([category, items]) => {
+                // Calculate Group Totals
+                const groupTotalBase = items.reduce(
+                  (sum, item) => sum + parseFloat(item.price || 0) * item.qty,
+                  0,
+                );
+                const groupTotalTax = groupTotalBase * 0.18;
+                const groupGrandTotal = groupTotalBase + groupTotalTax;
 
-                  <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                    <table className="w-full text-left border-separate border-spacing-0">
-                      <thead className="bg-slate-50/50">
-                        <tr>
-                          <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            No.
-                          </th>
-                          <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            Product Name
-                          </th>
-                          <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                            Brand
-                          </th>
-                          <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">
-                            Qty
-                          </th>
-                          <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-50">
-                        {items.map((item, index) => (
-                          <tr
-                            key={item.id}
-                            className="hover:bg-slate-50/80 transition-colors"
-                          >
-                            <td className="px-6 py-4 text-xs font-black text-slate-400">
-                              #{index + 1}
-                            </td>
-                            <td className="px-6 py-4 font-bold text-slate-800 text-sm">
-                              {item.name}
-                            </td>
-                            <td className="px-6 py-4">
-                              <span className="px-3 py-1 bg-blue-50 text-[#1a5695] rounded-lg font-black uppercase text-[9px] tracking-widest border border-blue-100">
-                                {item.brand_name || "Generic"}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 text-center">
-                              <span
-                                className={`text-sm font-black px-4 py-1.5 rounded-xl ${item.qty < 10 ? "text-red-600 bg-red-50 animate-pulse" : "text-slate-700 bg-slate-100"}`}
+                return (
+                  <div
+                    key={category}
+                    className="group animate-in fade-in slide-in-from-bottom-4 duration-500"
+                  >
+                    <div className="flex items-center gap-4 mb-4 px-2">
+                      <div className="p-2 bg-[#1a5695] rounded-xl text-white shadow-md">
+                        <Layers size={18} />
+                      </div>
+                      <div>
+                        <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">
+                          {category}
+                        </h2>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase">
+                          {items.length} Products
+                        </p>
+                      </div>
+                      <div className="flex-1 h-[1px] bg-slate-200 ml-2"></div>
+                    </div>
+
+                    <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
+                      <table className="w-full text-left border-separate border-spacing-0">
+                        <thead className="bg-slate-50/50">
+                          <tr>
+                            <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              No.
+                            </th>
+                            <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              Product
+                            </th>
+                            <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">
+                              Qty
+                            </th>
+                            <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              Unit Price
+                            </th>
+                            <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              Subtotal
+                            </th>
+                            <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                              GST (18%)
+                            </th>
+                            <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                          {items.map((item, index) => {
+                            const subtotal =
+                              parseFloat(item.price || 0) * item.qty;
+                            const tax = subtotal * 0.18;
+                            return (
+                              <tr
+                                key={item.id}
+                                className="hover:bg-slate-50/80 transition-colors"
                               >
-                                {item.qty}
-                              </span>
+                                <td className="px-6 py-4 text-xs font-black text-slate-400">
+                                  #{index + 1}
+                                </td>
+                                <td className="px-6 py-4">
+                                  <div className="font-bold text-slate-800 text-sm">
+                                    {item.name}
+                                  </div>
+                                  <div className="text-[9px] font-black text-[#1a5695] uppercase tracking-tighter">
+                                    {item.brand_name || "Generic"}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-4 text-center">
+                                  <span
+                                    className={`text-sm font-black px-3 py-1 rounded-lg ${item.qty < 10 ? "text-red-600 bg-red-50" : "text-slate-700 bg-slate-100"}`}
+                                  >
+                                    {item.qty}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-4 font-bold text-slate-600 text-sm">
+                                  {formatCurrency(item.price || 0)}
+                                </td>
+                                <td className="px-6 py-4 font-bold text-slate-800 text-sm">
+                                  {formatCurrency(subtotal)}
+                                </td>
+                                <td className="px-6 py-4 font-bold text-slate-400 text-xs">
+                                  {formatCurrency(tax)}
+                                </td>
+                                <td className="px-6 py-4 text-right">
+                                  <div className="flex justify-end gap-2">
+                                    <button
+                                      onClick={() => handleEditClick(item)}
+                                      className="p-2 bg-white text-slate-400 hover:text-[#1a5695] border border-slate-200 rounded-xl transition-all"
+                                    >
+                                      <Edit3 size={14} />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                        {/* Group Summary Footer */}
+                        <tfoot className="bg-slate-50/80">
+                          <tr>
+                            <td
+                              colSpan="4"
+                              className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right"
+                            >
+                              Category Totals:
                             </td>
-                            <td className="px-6 py-4 text-right">
-                              <div className="flex justify-end gap-2">
-                                <button
-                                  onClick={() => handleEditClick(item)}
-                                  className="p-2.5 bg-white text-slate-400 hover:text-[#1a5695] hover:border-[#1a5695] rounded-xl transition-all border border-slate-200"
-                                >
-                                  <Edit3 size={16} />
-                                </button>
-                                <button className="p-2.5 bg-white text-slate-400 hover:text-red-600 hover:border-red-200 rounded-xl transition-all border border-slate-200">
-                                  <Trash2 size={16} />
-                                </button>
-                              </div>
+                            <td className="px-6 py-4 font-black text-slate-800 text-sm border-t border-slate-200">
+                              {formatCurrency(groupTotalBase)}
+                            </td>
+                            <td className="px-6 py-4 font-black text-slate-500 text-xs border-t border-slate-200">
+                              {formatCurrency(groupTotalTax)}
+                            </td>
+                            <td className="px-6 py-4 font-black text-[#1a5695] text-sm border-t border-slate-200 text-right">
+                              {formatCurrency(groupGrandTotal)}
                             </td>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </tfoot>
+                      </table>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </main>
       </div>
 
-      {/* REUSE MODALS - Keeping all logic and themes identical */}
+      {/* MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden border border-white/20">
@@ -311,7 +366,8 @@ const InventoryManager = () => {
                 <X size={24} />
               </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-8 space-y-5">
+
+            <form onSubmit={handleSubmit} className="p-8 space-y-4">
               <div>
                 <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
                   Product Name
@@ -319,7 +375,7 @@ const InventoryManager = () => {
                 <input
                   required
                   type="text"
-                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none text-sm font-bold"
+                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold"
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({
@@ -329,6 +385,7 @@ const InventoryManager = () => {
                   }
                 />
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
@@ -373,37 +430,57 @@ const InventoryManager = () => {
                   </select>
                 </div>
               </div>
-              <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
-                  Quantity
-                </label>
-                <div className="flex items-center bg-slate-50 border border-slate-100 rounded-2xl mt-1 overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setIsIncrement(!isIncrement)}
-                    className={`p-4 transition-colors ${isIncrement ? "text-green-600 bg-green-50" : "text-red-600 bg-red-50"}`}
-                  >
-                    {isIncrement ? (
-                      <Plus size={16} strokeWidth={3} />
-                    ) : (
-                      <Minus size={16} strokeWidth={3} />
-                    )}
-                  </button>
+
+              {/* Price and Quantity Side by Side */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
+                    Unit Price (₹)
+                  </label>
                   <input
                     required
                     type="number"
-                    className="w-full p-4 bg-transparent outline-none text-sm font-bold"
-                    value={formData.qty}
+                    step="0.01"
+                    className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold"
+                    value={formData.price}
                     onChange={(e) =>
-                      setFormData({ ...formData, qty: e.target.value })
+                      setFormData({ ...formData, price: e.target.value })
                     }
                   />
                 </div>
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
+                    Quantity
+                  </label>
+                  <div className="flex items-center bg-slate-50 border border-slate-100 rounded-2xl mt-1 overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setIsIncrement(!isIncrement)}
+                      className={`p-4 transition-colors ${isIncrement ? "text-green-600 bg-green-50" : "text-red-600 bg-red-50"}`}
+                    >
+                      {isIncrement ? (
+                        <Plus size={14} strokeWidth={3} />
+                      ) : (
+                        <Minus size={14} strokeWidth={3} />
+                      )}
+                    </button>
+                    <input
+                      required
+                      type="number"
+                      className="w-full p-2 bg-transparent outline-none text-sm font-bold"
+                      value={formData.qty}
+                      onChange={(e) =>
+                        setFormData({ ...formData, qty: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
               </div>
+
               <button
                 disabled={loading}
                 type="submit"
-                className={`w-full py-4 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-3 ${editingId ? "bg-amber-500 hover:bg-amber-600" : "bg-[#1a5695] hover:bg-[#15467a]"}`}
+                className={`w-full py-4 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-3 ${editingId ? "bg-amber-500" : "bg-[#1a5695]"}`}
               >
                 {loading ? (
                   <Loader2 className="animate-spin" size={18} />
