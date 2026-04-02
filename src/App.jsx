@@ -38,6 +38,7 @@ import RegistrationsManager from "./components/crm/RegistrationsManager";
 import AllKitReady from "./components/crm/AllKitReady";
 import AllDispatch from "./components/crm/AllDispatch";
 import CategoryManager from "./components/crm/CategoryManager";
+import FinalizeWiring from "./components/crm/FinalizeWiring";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -76,6 +77,7 @@ function App() {
           <Route path="/technicians" element={<TechnicianManager />} />
           <Route path="/winventory" element={<WiringInventory />} />
           <Route path="/updatewiring" element={<UpdateWiringLog />} />
+          <Route path="/finalizewiring" element={<FinalizeWiring />} />
           <Route path="/drivers" element={<Drivers />} />
           <Route path="/cars" element={<Cars />} />
           <Route path="/finalstage" element={<FinalStage />} />

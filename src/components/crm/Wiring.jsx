@@ -262,8 +262,10 @@ const Wiring = () => {
                           ) : (
                             <button
                               onClick={() => {
-                                setSelectedWiring(item);
-                                setIsModalOpen(true);
+                                // REPLACE MODAL LOGIC WITH NAVIGATION
+                                navigate("/finalizewiring", {
+                                  state: { selectedWiring: item },
+                                });
                               }}
                               className="p-2.5 bg-[#1a5695] text-white hover:bg-[#15467a] rounded-xl shadow-lg shadow-blue-100 transition-all"
                             >
