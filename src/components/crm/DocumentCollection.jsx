@@ -75,8 +75,8 @@ const DocumentCollection = () => {
         tempErrors.geo_coordinate = "Coordinates required";
       if (!docInfo.sub_division?.trim())
         tempErrors.sub_division = "Sub division required";
-      if (!docInfo.registration_number?.trim())
-        tempErrors.registration_number = "Registration ID required";
+      // if (!docInfo.registration_number?.trim())
+      //   tempErrors.registration_number = "Registration ID required";
     }
 
     setErrors(tempErrors);
@@ -542,7 +542,7 @@ const DocumentCollection = () => {
                         setErrors({ ...errors, sub_division: null });
                     }}
                   />
-                  <CustomInput
+                  {/* <CustomInput
                     label="Registration ID"
                     value={docInfo.registration_number}
                     error={errors.registration_number}
@@ -554,7 +554,7 @@ const DocumentCollection = () => {
                       if (errors.registration_number)
                         setErrors({ ...errors, registration_number: null });
                     }}
-                  />
+                  /> */}
                 </div>
               </div>
 

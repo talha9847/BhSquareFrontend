@@ -789,7 +789,7 @@ const Registration = () => {
                     id=""
                     className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel_brand_id ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
                   >
-                    <option value="">--select brand--</option>
+                    <option value="">-- Select Panel Brand --</option>
                     {brands.map((e) => (
                       <option key={e.id} value={e.id}>
                         {e.name}
@@ -824,7 +824,7 @@ const Registration = () => {
                     id=""
                     className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.inverter_brand_id ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
                   >
-                    <option value="">--select brand--</option>
+                    <option value="">-- Select Inverter Brand --</option>
                     {brands.map((e) => (
                       <option key={e.id} value={e.id}>
                         {e.name}
@@ -841,6 +841,58 @@ const Registration = () => {
                   {errors1.inverter_brand && (
                     <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
                       {errors1.inverter_brand.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                    Select Panel
+                  </label>
+
+                  <select
+                    name="panel_id"
+                    {...re1("panel_id", {
+                      required: "Panel is required",
+                    })}
+                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
+                  >
+                    <option value="">-- Select Panel --</option>
+                    {fileteredPanel.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.name} {e.brand.name} ({e.qty})
+                      </option>
+                    ))}
+                  </select>
+                  {errors1.panel_id && (
+                    <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
+                      {errors1.panel_id.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
+                    Select Inverter
+                  </label>
+
+                  <select
+                    {...re1("inverter_id", {
+                      required: "Inverter is required",
+                    })}
+                    name="inverter_id"
+                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
+                  >
+                    <option value="">-- Select Inveter --</option>
+                    {fileteredInverter.map((e) => (
+                      <option key={e.id} value={e.id}>
+                        {e.name} {e.brand.name} ({e.qty})
+                      </option>
+                    ))}
+                  </select>
+                  {errors1.inverter_id && (
+                    <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
+                      {errors1.inverter_id.message}
                     </p>
                   )}
                 </div>
@@ -913,54 +965,6 @@ const Registration = () => {
                       {errors1.inverter_capacity.message}
                     </p>
                   )} */}
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
-                    Select Panel
-                  </label>
-
-                  <select
-                    {...re1("panel_id", {
-                      required: "Panel is required",
-                    })}
-                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
-                  >
-                    <option value="">--select panel--</option>
-                    {fileteredPanel.map((e) => (
-                      <option key={e.id} value={e.id}>
-                        {e.name} {e.brand.name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors1.panel && (
-                    <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
-                      {errors1.panel.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
-                    Select Inverter
-                  </label>
-
-                  <select
-                    {...re1("inverter_id", {
-                      required: "Inverter is required",
-                    })}
-                    className={`w-full px-4 py-3.5 bg-slate-50 border rounded-2xl font-bold text-sm outline-none transition-all ${errors1.panel ? "border-red-200 bg-red-50" : "border-slate-100 focus:border-[#1a5695] focus:bg-white"}`}
-                  >
-                    <option value="">--select panel--</option>
-                    {fileteredInverter.map((e) => (
-                      <option key={e.id} value={e.id}>
-                        {e.name} {e.brand.name}
-                      </option>
-                    ))}
-                  </select>
-                  {errors1.inverter && (
-                    <p className="text-[9px] text-red-500 font-bold italic ml-1 uppercase">
-                      {errors1.inverter.message}
-                    </p>
-                  )}
                 </div>
               </div>
 
