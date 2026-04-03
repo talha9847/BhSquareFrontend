@@ -52,6 +52,7 @@ const Wiring = () => {
     try {
       const res = await axios.get(
         `${apiUrl}/api/wiring/fetchWiringCustomerDetails`,
+        { withCredentials: true },
       );
       if (res.status === 200) setWiringLogs(res.data.data);
     } catch (error) {
@@ -112,6 +113,7 @@ const Wiring = () => {
       const res = await axios.post(
         `${apiUrl}/api/wiring/uploadWiringDocs`,
         formData,
+        { withCredentials: true },
       );
       if (res.status === 200 || res.status === 201) {
         toast.success("Documentation submitted successfully!");

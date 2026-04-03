@@ -40,6 +40,7 @@ const KitReady = () => {
       setPageLoading(true);
       const res = await axios.get(
         `${apiUrl}/api/kitready/fetchKitReadyCustomers`,
+        { withCredentials: true },
       );
       if (res.status === 200) {
         setCustomers(res.data.data);
@@ -56,9 +57,13 @@ const KitReady = () => {
       setNaviLoad(true);
       console.log("Hello i am hjererer");
 
-      const res = await axios.post(`${apiUrl}/api/kitready/addKitItems`, {
-        customerId,
-      });
+      const res = await axios.post(
+        `${apiUrl}/api/kitready/addKitItems`,
+        {
+          customerId,
+        },
+        { withCredentials: true },
+      );
       if (res.status == 200 || res.status == 210) {
         setNaviLoad(false);
         navigate(loan_status === "required" ? "/loanstep" : "/preparekit", {
@@ -80,10 +85,14 @@ const KitReady = () => {
   const handleUpdateStatus = async () => {
     setLoading(true);
     try {
-      const res = await axios.post(`${apiUrl}/api/kitready/updateLoan`, {
-        customerId: selectedCustomer.customer.id,
-        loanRequired: loanRequired,
-      });
+      const res = await axios.post(
+        `${apiUrl}/api/kitready/updateLoan`,
+        {
+          customerId: selectedCustomer.customer.id,
+          loanRequired: loanRequired,
+        },
+        { withCredentials: true },
+      );
       if (res.status === 200) {
         getCustomers();
         toast.success("Status updated successfully");

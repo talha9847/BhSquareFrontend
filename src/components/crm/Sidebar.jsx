@@ -136,6 +136,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     try {
       const result = await axios.get(
         `${apiUrl}/api/leads/fetchPendingLeadsCount`,
+        { withCredentials: true },
       );
       setLeadCount(result.data.count);
     } catch (error) {

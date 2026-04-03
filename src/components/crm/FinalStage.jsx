@@ -30,6 +30,7 @@ const FinalStage = () => {
     try {
       const res = await axios.get(
         `${apiUrl}/api/sources/getFinalStageCustomers`,
+        { withCredentials: true },
       );
       if (res.status === 200) {
         setFinalLogs(res.data.data || []);
@@ -72,6 +73,7 @@ const FinalStage = () => {
                 customerId: item.customer_id,
                 flag: !currentStatus,
               },
+              { withCredentials: true },
             );
             return res;
           }
@@ -83,6 +85,7 @@ const FinalStage = () => {
                 customerId: item.customer_id,
                 flag: !currentStatus,
               },
+              { withCredentials: true },
             );
             return res;
           }
@@ -94,6 +97,7 @@ const FinalStage = () => {
                 customerId: item.customer_id,
                 flag: !currentStatus,
               },
+              { withCredentials: true },
             );
             return res;
           }
@@ -105,6 +109,7 @@ const FinalStage = () => {
                 customerId: item.customer_id,
                 flag: !currentStatus,
               },
+              { withCredentials: true },
             );
             return res;
           }

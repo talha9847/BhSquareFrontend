@@ -49,9 +49,16 @@ const UpdateWiringLog = () => {
     setPageLoading(true);
     try {
       const [invRes, techRes, issuedRes] = await Promise.all([
-        axios.get(`${apiUrl}/api/wiring/getAvailableWireInventory/${wiringId}`),
-        axios.get(`${apiUrl}/api/wiring/fetchTechnicians`),
-        axios.get(`${apiUrl}/api/wiring/fetchIssuedWires/${wiringId}`),
+        axios.get(
+          `${apiUrl}/api/wiring/getAvailableWireInventory/${wiringId}`,
+          { withCredentials: true },
+        ),
+        axios.get(`${apiUrl}/api/wiring/fetchTechnicians`, {
+          withCredentials: true,
+        }),
+        axios.get(`${apiUrl}/api/wiring/fetchIssuedWires/${wiringId}`, {
+          withCredentials: true,
+        }),
       ]);
 
       setInventory(invRes.data.data || []);
@@ -87,6 +94,7 @@ const UpdateWiringLog = () => {
         {
           technician_id: selectedTechnician,
         },
+        { withCredentials: true },
       );
       if (res.status === 200) toast.success("Technician Assigned");
     } catch (error) {
@@ -106,11 +114,15 @@ const UpdateWiringLog = () => {
       return;
     setActionLoading(true);
     try {
-      const res = await axios.post(`${apiUrl}/api/wiring/createWiringItem`, {
-        wiring_id: wiringId,
-        wire_inventory_id: Number(wireSelection.inventory_id),
-        qty: Number(wireSelection.length),
-      });
+      const res = await axios.post(
+        `${apiUrl}/api/wiring/createWiringItem`,
+        {
+          wiring_id: wiringId,
+          wire_inventory_id: Number(wireSelection.inventory_id),
+          qty: Number(wireSelection.length),
+        },
+        { withCredentials: true },
+      );
 
       if (res.status === 200 || res.status === 201) {
         toast.success("Wire Issued");
@@ -132,6 +144,7 @@ const UpdateWiringLog = () => {
       console.log(wiringId);
       const res = await axios.put(
         `${apiUrl}/api/wiring/updateInventoryStatus/${wiringId}`,
+        { withCredentials: true },
       );
       if (res.status == 200) {
         navigate("/wiring");

@@ -42,7 +42,9 @@ const Fabrication = () => {
 
   const getFabricators = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/api/dispatch/fetchFabricators`);
+      const res = await axios.get(`${apiUrl}/api/dispatch/fetchFabricators`, {
+        withCredentials: true,
+      });
       if (res.status === 200) setFabricators(res.data.data || []);
     } catch (error) {
       console.error("Error fetching fabricators:", error);
@@ -52,7 +54,9 @@ const Fabrication = () => {
   const fetchFabrications = async () => {
     setTableLoading(true);
     try {
-      const res = await axios.get(`${apiUrl}/api/dispatch/fetchFabrications`);
+      const res = await axios.get(`${apiUrl}/api/dispatch/fetchFabrications`, {
+        withCredentials: true,
+      });
       if (res.status === 200) setFabrications(res.data.data || []);
     } catch (error) {
       toast.error("Failed to load fabrication logs");
@@ -104,6 +108,7 @@ const Fabrication = () => {
         const res = await axios.put(
           `${apiUrl}/api/dispatch/updateFabricatorViaId`,
           payload,
+          { withCredentials: true },
         );
         if (res.status === 200) {
           toast.success(
@@ -117,6 +122,7 @@ const Fabrication = () => {
         const res = await axios.put(
           `${apiUrl}/api/dispatch/updateFabrication`,
           payload,
+          { withCredentials: true },
         );
 
         if (res.status === 200) {

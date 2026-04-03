@@ -53,6 +53,7 @@ const AllCustomers = () => {
           `${apiUrl}/api/customers/fetchCustomersByStatus`,
           {
             params: { status: activeTab },
+            withCredentials: true,
           },
         );
 

@@ -90,12 +90,16 @@ const DocumentCollection = () => {
     }
     try {
       setLoading(true);
-      const res = await axios.post(`${apiUrl}/api/leads/updateLead`, {
-        id: leadsData.id,
-        customer_name: leadsData.customer_name,
-        contact_number: leadsData.contact_number,
-        address: leadsData.address,
-      });
+      const res = await axios.post(
+        `${apiUrl}/api/leads/updateLead`,
+        {
+          id: leadsData.id,
+          customer_name: leadsData.customer_name,
+          contact_number: leadsData.contact_number,
+          address: leadsData.address,
+        },
+        { withCredentials: true },
+      );
 
       if (res.status == 200) {
         setLoading(false);
@@ -112,6 +116,7 @@ const DocumentCollection = () => {
     try {
       const res = await axios.get(
         `${apiUrl}/api/docs/getCustomerDocumentByCustomerId/${customerId}`,
+        { withCredentials: true },
       );
       if (res.data.data) {
         setDocInfo(res.data.data);
@@ -143,6 +148,7 @@ const DocumentCollection = () => {
       const res = await axios.put(
         `${apiUrl}/api/docs/upsertCustomerDocument`,
         docInfo,
+        { withCredentials: true },
       );
       if (res.status == 200) {
         getDocInfo();
@@ -161,13 +167,17 @@ const DocumentCollection = () => {
   const updateCapacity = async () => {
     try {
       setUpdateLoading(true);
-      const res = await axios.post(`${apiUrl}/api/leads/updateLead`, {
-        id: leadsData.id,
-        panel_wattage: leadsData.panel_wattage,
-        number_of_panels: leadsData.number_of_panels,
-        inverter_kw: leadsData.inverter_kw,
-        number_of_inverters: leadsData.number_of_inverters,
-      });
+      const res = await axios.post(
+        `${apiUrl}/api/leads/updateLead`,
+        {
+          id: leadsData.id,
+          panel_wattage: leadsData.panel_wattage,
+          number_of_panels: leadsData.number_of_panels,
+          inverter_kw: leadsData.inverter_kw,
+          number_of_inverters: leadsData.number_of_inverters,
+        },
+        { withCredentials: true },
+      );
       if (res.status == 200) {
         setUpdateLoading(false);
         getLeadsData();
@@ -207,6 +217,7 @@ const DocumentCollection = () => {
       const res = await axios.post(
         `${apiUrl}/api/docs/uploadDocsToDrive`,
         formData,
+        { withCredentials: true },
       );
       if (res.status == 200) {
         console.log(res.data);
@@ -230,6 +241,7 @@ const DocumentCollection = () => {
     try {
       const res = await axios.get(
         `${apiUrl}/api/docs/getLeadDetailFromCustomerId/${customerId}`,
+        { withCredentials: true },
       );
       if (res.status === 200) {
         setLeadsData(res.data.data);
@@ -276,6 +288,7 @@ const DocumentCollection = () => {
         {
           customer_id: customerId,
         },
+        { withCredentials: true },
       );
 
       if (res.status == 201) {

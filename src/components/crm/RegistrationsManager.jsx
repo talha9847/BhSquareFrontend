@@ -35,7 +35,7 @@ const RegistrationsManager = () => {
       try {
         const res = await axios.get(
           `${apiUrl}/api/registrations/fetchCustomersByStatus`,
-          { params: { status: activeTab } },
+          { params: { status: activeTab }, withCredentials: true },
         );
         // Based on your JSON: res.data.data
         if (res.status === 200) {
@@ -66,6 +66,7 @@ const RegistrationsManager = () => {
             Accept:
               "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
           },
+          withCredentials: true,
         },
       );
 

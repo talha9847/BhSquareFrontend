@@ -64,6 +64,7 @@ const Customer = () => {
       const res = await axios.post(
         `${apiUrl}/api/customers/updateCustomerNameChange`,
         { id: id, name_change: nameChange },
+        { withCredentials: true },
       );
 
       if (res.status == 200) {
@@ -81,7 +82,9 @@ const Customer = () => {
   const getCustomers = async () => {
     try {
       setPageLoading(true);
-      const res = await axios.get(`${apiUrl}/api/customers/getCustomers`);
+      const res = await axios.get(`${apiUrl}/api/customers/getCustomers`, {
+        withCredentials: true,
+      });
       setCustomer(res.data.data);
     } catch (error) {
       console.log(error);

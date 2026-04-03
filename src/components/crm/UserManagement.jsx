@@ -91,7 +91,9 @@ const UserManagement = () => {
     try {
       const endpoint =
         modalType === "create" ? "/api/users/createUser" : "/api/users/update";
-      const res = await axios.post(`${apiUrl}${endpoint}`, formData);
+      const res = await axios.post(`${apiUrl}${endpoint}`, formData, {
+        withCredentials: true,
+      });
 
       if (res.status === 200 || res.status === 201) {
         toast.success(

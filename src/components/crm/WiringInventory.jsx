@@ -57,7 +57,10 @@ const WiringInventory = () => {
   const fetchAll = async () => {
     setIsTableLoading(true);
     try {
-      const res = await axios.get(`${apiUrl}/api/wiring/fetchAllWireInventory`);
+      const res = await axios.get(
+        `${apiUrl}/api/wiring/fetchAllWireInventory`,
+        { withCredentials: true },
+      );
       if (res.status === 200) {
         setInventory(res.data.data);
       }
@@ -134,6 +137,7 @@ const WiringInventory = () => {
         const res = await axios.put(
           `${apiUrl}/api/wiring/updateWireInventory/${formData.id}`,
           payload,
+          { withCredentials: true },
         );
         if (res.status === 200) {
           fetchAll();
@@ -144,6 +148,7 @@ const WiringInventory = () => {
         const res = await axios.post(
           `${apiUrl}/api/wiring/createWireInventory`,
           payload,
+          { withCredentials: true },
         );
         if (res.status === 201) {
           fetchAll();

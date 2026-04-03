@@ -49,6 +49,7 @@ const FinalizeWiring = () => {
       setInitialLoading(true);
       const res = await axios.get(
         `${apiUrl}/api/wiring/getWiringDocs/${selectedWiring.wiring_id}`,
+        { withCredentials: true },
       );
 
       if (res.status === 200 && res.data.data) {
@@ -94,6 +95,7 @@ const FinalizeWiring = () => {
           const res = await axios.post(
             `${apiUrl}/api/wiring/moveToFinalStage`,
             { customerId: selectedWiring.customer_id },
+            { withCredentials: true },
           );
 
           if (res.status == 200) {
@@ -133,6 +135,7 @@ const FinalizeWiring = () => {
       const res = await axios.post(
         `${apiUrl}/api/wiring/uploadWiringDocs`,
         formData,
+        { withCredentials: true },
       );
       if (res.status === 200 || res.status === 201) {
         toast.success(`${doc.docName.replace("_", " ")} uploaded!`);

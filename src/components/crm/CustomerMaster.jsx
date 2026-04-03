@@ -93,6 +93,7 @@ const LoanModule = ({ customerId }) => {
       try {
         const res = await axios.get(
           `${apiUrl}/api/loan/fetchCustomerLoan/${customerId}`,
+          { withCredentials: true },
         );
         if (res.status === 200) setLoan(res.data.data);
       } catch (err) {
@@ -184,6 +185,7 @@ const TechnicalModule = ({ customerId }) => {
       try {
         const res = await axios.get(
           `${apiUrl}/api/docs/fetchCustomerDocuments/${customerId}`,
+          { withCredentials: true },
         );
         if (res.status === 200) setTech(res.data.data);
       } catch (err) {
@@ -274,6 +276,7 @@ const KitModule = ({ customerId }) => {
       try {
         const res = await axios.get(
           `${apiUrl}/api/kitready/fetchKitItemsbyCustomer/${customerId}`,
+          { withCredentials: true },
         );
         if (res.status === 200) setKitData(res.data.data);
       } catch (err) {
@@ -427,6 +430,7 @@ const CustomerMaster = () => {
           }),
           axios.get(
             `${apiUrl}/api/customers/fetchCustomerStages/${customerId}`,
+            { withCredentials: true },
           ),
         ]);
         setLead(lRes.data?.data);

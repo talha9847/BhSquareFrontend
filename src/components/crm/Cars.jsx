@@ -32,7 +32,9 @@ const Cars = () => {
   const fetchCars = async () => {
     try {
       setPageLoading(true);
-      const res = await axios.get(`${apiUrl}/api/dispatch/fetchCars`);
+      const res = await axios.get(`${apiUrl}/api/dispatch/fetchCars`, {
+        withCredentials: true,
+      });
       if (res.status === 200) {
         setCars(res.data.data);
       }
@@ -71,6 +73,7 @@ const Cars = () => {
         const res = await axios.put(
           `${apiUrl}/api/dispatch/updateCar/${editingCar.id}`,
           formData,
+          { withCredentials: true },
         );
         if (res.status === 200) {
           toast.success("Vehicle updated successfully");
@@ -82,6 +85,7 @@ const Cars = () => {
         const res = await axios.post(
           `${apiUrl}/api/dispatch/createCar`,
           formData,
+          { withCredentials: true },
         );
         if (res.status === 200 || res.status === 201) {
           toast.success("Vehicle registered successfully");

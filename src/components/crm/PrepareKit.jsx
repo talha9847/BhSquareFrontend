@@ -65,6 +65,7 @@ const PrepareKit = () => {
     try {
       const res = await axios.get(
         `${apiUrl}/api/kitready/fetchKitItems/${customerId}`,
+        { withCredentials: true },
       );
       if (res.status === 200) {
         const data = res.data.data || [];
@@ -82,6 +83,7 @@ const PrepareKit = () => {
     try {
       const res = await axios.get(
         `${apiUrl}/api/kitready/getPanelAndInventer/${customerId}`,
+        { withCredentials: true },
       );
       if (res.status === 200) {
         const pQty = parseInt(res.data.data.panel_qty) || 0;
@@ -121,6 +123,7 @@ const PrepareKit = () => {
         try {
           const response = await axios.delete(
             `${apiUrl}/api/dispatch/deleteKitItem/${item.id}`,
+            { withCredentials: true },
           );
           return response;
         } catch (error) {
@@ -170,10 +173,14 @@ const PrepareKit = () => {
     setModalLoading(true);
     console.log(deltaValue);
     try {
-      const res = await axios.put(`${apiUrl}/api/dispatch/updateKitItemQty`, {
-        kitItemId: editingItem.id,
-        qty: deltaValue,
-      });
+      const res = await axios.put(
+        `${apiUrl}/api/dispatch/updateKitItemQty`,
+        {
+          kitItemId: editingItem.id,
+          qty: deltaValue,
+        },
+        { withCredentials: true },
+      );
 
       if (res.status === 200) {
         toast.success(
@@ -210,10 +217,14 @@ const PrepareKit = () => {
     if (item.verified || item.qty <= 0) return;
     setVerifyingId(id);
     try {
-      const res = await axios.post(`${apiUrl}/api/kitready/allocateItem`, {
-        kit_item_id: item.id,
-        qty: item.qty,
-      });
+      const res = await axios.post(
+        `${apiUrl}/api/kitready/allocateItem`,
+        {
+          kit_item_id: item.id,
+          qty: item.qty,
+        },
+        { withCredentials: true },
+      );
       if (res.status === 200) {
         toast.success("Verified and allocated.");
         await fetchMainData();
@@ -255,6 +266,7 @@ const PrepareKit = () => {
     try {
       const res = await axios.get(
         `${apiUrl}/api/kitready/fetchAvailableProducts/${customerId}`,
+        { withCredentials: true },
       );
       if (res.status === 200) setInventoryLookup(res.data.data || []);
     } catch (error) {
@@ -267,10 +279,14 @@ const PrepareKit = () => {
   const addItemToKit = async (product) => {
     try {
       setIsModalOpen(false);
-      const res = await axios.post(`${apiUrl}/api/kitready/addItem`, {
-        kit_id: product.kit_id,
-        inventory_id: product.id,
-      });
+      const res = await axios.post(
+        `${apiUrl}/api/kitready/addItem`,
+        {
+          kit_id: product.kit_id,
+          inventory_id: product.id,
+        },
+        { withCredentials: true },
+      );
       if (res.status === 201) {
         toast.success("Added to kit");
         fetchMainData();
@@ -309,6 +325,7 @@ const PrepareKit = () => {
           panelId: panelItem.id,
           inverterId: inverterItem.id,
         },
+        { withCredentials: true },
       );
       if (res.status === 201) navigate("/dispatch");
     } catch (error) {

@@ -44,7 +44,9 @@ const InventoryManager = () => {
   const getAllInve = async () => {
     setTableLoading(true);
     try {
-      const res = await axios.get(`${apiUrl}/api/kitready/getAllInventory`);
+      const res = await axios.get(`${apiUrl}/api/kitready/getAllInventory`, {
+        withCredentials: true,
+      });
       if (res.status === 200) setInventory(res.data.data);
     } catch (error) {
       console.error(error);
@@ -55,7 +57,9 @@ const InventoryManager = () => {
 
   const getBrands = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/api/kitready/getAllBrands`);
+      const res = await axios.get(`${apiUrl}/api/kitready/getAllBrands`, {
+        withCredentials: true,
+      });
       if (res.status === 200) setBrands(res.data.data);
     } catch (error) {
       console.error(error);
@@ -64,7 +68,9 @@ const InventoryManager = () => {
 
   const getAllCategories = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/api/kitready/getCategories`);
+      const res = await axios.get(`${apiUrl}/api/kitready/getCategories`, {
+        withCredentials: true,
+      });
       if (res.status === 200) setCategories(res.data.data);
     } catch (error) {
       console.error(error);
@@ -101,8 +107,11 @@ const InventoryManager = () => {
         ? await axios.put(
             `${apiUrl}/api/kitready/updateInventory/${editingId}`,
             payload,
+            { withCredentials: true },
           )
-        : await axios.post(`${apiUrl}/api/kitready/createInventory`, payload);
+        : await axios.post(`${apiUrl}/api/kitready/createInventory`, payload, {
+            withCredentials: true,
+          });
 
       if (res.status === 200 || res.status === 201) {
         toast.success(editingId ? "Stock updated!" : "Product added!");

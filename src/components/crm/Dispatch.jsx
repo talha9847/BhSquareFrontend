@@ -51,7 +51,9 @@ const Dispatch = () => {
   const getDispatch = async () => {
     try {
       setPageLoading(true);
-      const res = await axios.get(`${apiUrl}/api/dispatch/fetchDispatches`);
+      const res = await axios.get(`${apiUrl}/api/dispatch/fetchDispatches`, {
+        withCredentials: true,
+      });
       if (res.status === 200) {
         setDispatches(res.data.data);
       }
@@ -65,7 +67,9 @@ const Dispatch = () => {
   const fetchCars = async () => {
     try {
       setPageLoading(true);
-      const res = await axios.get(`${apiUrl}/api/dispatch/fetchCars`);
+      const res = await axios.get(`${apiUrl}/api/dispatch/fetchCars`, {
+        withCredentials: true,
+      });
       if (res.status === 200) {
         setCars(res.data.data);
       }
@@ -81,7 +85,9 @@ const Dispatch = () => {
   const fetchDrivers = async () => {
     try {
       setPageLoading(true);
-      const res = await axios.get(`${apiUrl}/api/dispatch/fetchDrivers`);
+      const res = await axios.get(`${apiUrl}/api/dispatch/fetchDrivers`, {
+        withCredentials: true,
+      });
       if (res.status === 200) {
         setDrivers(res.data.data);
       }
@@ -115,10 +121,14 @@ const Dispatch = () => {
     }
     try {
       setLoading(true);
-      const res = await axios.post(`${apiUrl}/api/dispatch/updateDispatch`, {
-        customer_id: selectedDispatch.customer_id,
-        ...formData,
-      });
+      const res = await axios.post(
+        `${apiUrl}/api/dispatch/updateDispatch`,
+        {
+          customer_id: selectedDispatch.customer_id,
+          ...formData,
+        },
+        { withCredentials: true },
+      );
 
       if (res.status === 200) {
         toast.success("Shipment Dispatched!");

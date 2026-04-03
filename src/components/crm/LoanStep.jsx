@@ -107,6 +107,7 @@ const LoanStep = () => {
       const res = await axios.post(
         `${apiUrl}/api/loan/uploadLoanDocuments`,
         formData,
+        { withCredentials: true },
       );
     } catch (error) {}
     console.log(
@@ -126,6 +127,7 @@ const LoanStep = () => {
     try {
       const res = await axios.put(
         `${apiUrl}/api/loan/completeLoanAndMoveToKitReady/${customerId}`,
+        { withCredentials: true },
       );
       if (res.status == 200) {
         navigate("/kitready");
@@ -138,6 +140,7 @@ const LoanStep = () => {
     try {
       const res = await axios.get(
         `${apiUrl}/api/loan/getLoanByCustomerId/${customerId}`,
+        { withCredentials: true },
       );
       console.log(res.data.data);
       const data = res.data.data;
@@ -161,6 +164,7 @@ const LoanStep = () => {
     try {
       const res = await axios.patch(
         `${apiUrl}/api/loan/approveLoan/${customerId}`,
+        { withCredentials: true },
       );
 
       if (res.status == 200) {
@@ -186,6 +190,7 @@ const LoanStep = () => {
       const res = await axios.put(
         `${apiUrl}/api/loan/updateLoan/${customerId}`,
         body,
+        { withCredentials: true },
       );
 
       if (res.status == 200) {

@@ -81,6 +81,7 @@ const Registration = () => {
     try {
       const res = await axios.get(
         `${apiUrl}/api/registrations/getCustomersWithSummary`,
+        { withCredentials: true },
       );
       if (res.status === 200) {
         setCustomers(res.data.data || []);
@@ -97,6 +98,7 @@ const Registration = () => {
     try {
       const res = await axios.get(
         `${apiUrl}/api/registrations/getInventoryByCategory`,
+        { withCredentials: true },
       );
       if (res.status === 200) {
         console.log(res.data.data);
@@ -113,6 +115,7 @@ const Registration = () => {
     try {
       const res = await axios.get(
         `${apiUrl}/api/registrations/getInventoryByCategoryThree`,
+        { withCredentials: true },
       );
       if (res.status === 200) {
         console.log(res.data.data);
@@ -127,7 +130,9 @@ const Registration = () => {
 
   const getBrands = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/api/kitready/getAllBrands`);
+      const res = await axios.get(`${apiUrl}/api/kitready/getAllBrands`, {
+        withCredentials: true,
+      });
       if (res.status == 200) {
         console.log(res.data.data);
         setBrands(res.data.data);
@@ -178,11 +183,15 @@ const Registration = () => {
     try {
       setLoad(true);
       console.log(data);
-      const res = await axios.post(`${apiUrl}/api/registrations/registration`, {
-        data: data,
-        leadId: lId,
-        customerId: cId,
-      });
+      const res = await axios.post(
+        `${apiUrl}/api/registrations/registration`,
+        {
+          data: data,
+          leadId: lId,
+          customerId: cId,
+        },
+        { withCredentials: true },
+      );
 
       if (res.status == 201) {
         getCustomers();
@@ -211,6 +220,7 @@ const Registration = () => {
             customerId: cId,
             leadId: lId,
           },
+          { withCredentials: true },
         );
 
         if (res.status === 200) {
@@ -243,7 +253,7 @@ const Registration = () => {
         const result = await axios.post(
           `${apiUrl}/api/registrations/getFileGeneration`,
           { registrationId: item.registration.id },
-          { responseType: "blob" }, // ← tells axios to treat response as binary file
+          { responseType: "blob", withCredentials: true }, // ← tells axios to treat response as binary file
         );
 
         const url = window.URL.createObjectURL(new Blob([result.data]));

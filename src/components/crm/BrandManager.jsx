@@ -31,7 +31,9 @@ const BrandManager = () => {
   const getAllBrands = async () => {
     setTableLoading(true);
     try {
-      const res = await axios.get(`${apiUrl}/api/kitready/getAllBrands`);
+      const res = await axios.get(`${apiUrl}/api/kitready/getAllBrands`, {
+        withCredentials: true,
+      });
       if (res.status === 200) {
         setBrands(res.data.data);
       }
@@ -68,6 +70,7 @@ const BrandManager = () => {
       try {
         const res = await axios.delete(
           `${apiUrl}/api/kitready/deleteBrand/${id}`,
+          { withCredentials: true },
         );
         if (res.status === 200) {
           toast.success("Brand deleted successfully");
@@ -89,9 +92,12 @@ const BrandManager = () => {
         res = await axios.put(
           `${apiUrl}/api/kitready/updateBrand/${editingId}`,
           formData,
+          { withCredentials: true },
         );
       } else {
-        res = await axios.post(`${apiUrl}/api/kitready/createBrand`, formData);
+        res = await axios.post(`${apiUrl}/api/kitready/createBrand`, formData, {
+          withCredentials: true,
+        });
       }
 
       if (res.status === 200 || res.status === 201) {

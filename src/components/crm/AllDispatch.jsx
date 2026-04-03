@@ -38,6 +38,7 @@ const AllDispatch = () => {
         `${apiUrl}/api/dispatch/fetchDispatchesByStatus`,
         {
           params: { status: activeTab },
+          withCredentials: true,
         },
       );
 
@@ -274,4 +275,4 @@ const AllDispatch = () => {
   );
 };
 
-export default AllDispatch; 
+export default AllDispatch;

@@ -31,7 +31,7 @@ const AllKitReady = () => {
       setPageLoading(true);
       const res = await axios.get(
         `${apiUrl}/api/kitready/fetchKitReadyCustomersByStatus`,
-        { params: { status: activeTab } },
+        { params: { status: activeTab }, withCredentials: true },
       );
       if (res.status === 200) {
         setCustomers(res.data.data || []);
