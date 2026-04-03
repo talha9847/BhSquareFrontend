@@ -40,10 +40,14 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const result = await axios.post(`${apiUrl}/api/users/login`, {
-        email: form.email,
-        pass: form.password,
-      });
+      const result = await axios.post(
+        `${apiUrl}/api/users/login`,
+        {
+          email: form.email,
+          pass: form.password,
+        },
+        { withCredentials: true },
+      );
 
       if (result.status == 200) {
         console.log(result.data);

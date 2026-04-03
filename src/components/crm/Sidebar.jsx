@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   FileSignal,
+  Users2,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -106,6 +107,12 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <FileSignal size={18} />,
       type: "Operations",
       path: "finalstage",
+    },
+    {
+      name: "Users",
+      icon: <Users2 size={18} />,
+      type: "Operations",
+      path: "users",
     },
     {
       name: "Inventory",

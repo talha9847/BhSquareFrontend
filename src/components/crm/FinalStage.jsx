@@ -15,11 +15,11 @@ import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const FinalStage = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
-
-  // UI States
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tableLoading, setTableLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,25 +45,80 @@ const FinalStage = () => {
     getFinalStageData();
   }, []);
 
-  // --- ONE-WAY TOGGLE LOGIC ---
-  const handleToggle = async (id, field, currentStatus, label) => {
-    // 1. Block if already true (No Revert)
-    if (currentStatus === true) {
-      toast.warning(`${label} is already finalized and cannot be changed.`);
-      return;
-    }
+  const handleToggle = async (id, field, currentStatus, label, item) => {
+    const isReverting = currentStatus === true;
 
-    // 2. Show Confirmation for first-time completion
     const result = await Swal.fire({
-      title: "Confirm Completion",
-      text: `Mark "${label}" as Complete? This action cannot be undone.`,
-      icon: "warning",
+      title: isReverting ? "Revert Completion?" : "Confirm Completion",
+      text: isReverting
+        ? `Do you want to mark "${label}" as Incomplete?`
+        : `Mark "${label}" as Complete? This will move the process forward.`,
+      icon: isReverting ? "question" : "warning",
       showCancelButton: true,
-      confirmButtonColor: "#1a5695",
+      confirmButtonColor: isReverting ? "#64748b" : "#1a5695",
       cancelButtonColor: "#f1f5f9",
-      confirmButtonText: `Yes, Finalize`,
+      confirmButtonText: isReverting ? `Yes, Revert` : `Yes, Finalize`,
       cancelButtonText: "Cancel",
       reverseButtons: true,
+      showLoaderOnConfirm: true,
+      allowOutsideClick: () => !Swal.isLoading(),
+      preConfirm: async () => {
+        try {
+          console.log(item);
+          if (field === "file_approved") {
+            const res = await axios.post(
+              `${apiUrl}/api/sources/updateStage10`,
+              {
+                customerId: item.customer_id,
+                flag: !currentStatus,
+              },
+            );
+            return res;
+          }
+
+          if (field === "file_uploaded") {
+            const res = await axios.post(
+              `${apiUrl}/api/sources/updateStage11`,
+              {
+                customerId: item.customer_id,
+                flag: !currentStatus,
+              },
+            );
+            return res;
+          }
+
+          if (field === "inspection") {
+            const res = await axios.post(
+              `${apiUrl}/api/sources/updateStage12`,
+              {
+                customerId: item.customer_id,
+                flag: !currentStatus,
+              },
+            );
+            return res;
+          }
+
+          if (field === "redeem") {
+            const res = await axios.post(
+              `${apiUrl}/api/sources/updateStage13`,
+              {
+                customerId: item.customer_id,
+                flag: !currentStatus,
+              },
+            );
+            return res;
+          }
+
+          if (field === "disbursal") {
+            console.log(field, !currentStatus);
+            await new Promise((resolve) => setTimeout(resolve, 500));
+          }
+
+          return true;
+        } catch (error) {
+          Swal.showValidationMessage(`Request failed: ${error.message}`);
+        }
+      },
       customClass: {
         popup: "rounded-[32px] font-sans",
         confirmButton:
@@ -74,17 +129,32 @@ const FinalStage = () => {
     });
 
     if (result.isConfirmed) {
-      setFinalLogs((prev) =>
-        prev.map((item) =>
-          item.final_stage_id === id ? { ...item, [field]: true } : item,
-        ),
-      );
-      toast.success(`${label} updated successfully.`);
+      if (
+        field === "file_approved" ||
+        field === "file_uploaded" ||
+        field == "inspection" ||
+        field == "redeem"
+      ) {
+        getFinalStageData();
+      } else {
+        setFinalLogs((prev) =>
+          prev.map((log) =>
+            log.final_stage_id === id
+              ? { ...log, [field]: !currentStatus }
+              : log,
+          ),
+        );
+      }
+
+      if (isReverting) {
+        toast.info(`${label} has been reset.`);
+      } else {
+        toast.success(`${label} updated successfully.`);
+      }
     }
   };
 
   const handleUpdate = (item) => {
-    // This handles the final submission of the row
     console.log("Updated Stage Data for Database:", item);
     toast.success(`Records updated for ${item.customer_name}`);
   };
@@ -93,10 +163,9 @@ const FinalStage = () => {
     item.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  // --- INTERACTIVE BADGE COMPONENT ---
-  const InteractiveBadge = ({ id, label, field, active, icon: Icon }) => (
+  const InteractiveBadge = ({ id, label, field, active, icon: Icon, item }) => (
     <button
-      onClick={() => handleToggle(id, field, active, label)}
+      onClick={() => handleToggle(id, field, active, label, item)}
       className={`flex flex-col items-center gap-1.5 p-3 w-24 rounded-3xl border transition-all duration-200 ${
         active
           ? "bg-emerald-50 border-emerald-200 text-emerald-600 shadow-inner cursor-not-allowed"
@@ -191,7 +260,18 @@ const FinalStage = () => {
                           #{item.final_stage_id}
                         </td>
                         <td className="px-6 py-4">
-                          <div className="font-bold text-slate-800 text-sm uppercase leading-tight">
+                          <div
+                            onClick={() => {
+                              console.log(item);
+                              navigate("/master", {
+                                state: {
+                                  customerId: item.customer_id,
+                                  leadId: item.lead_id,
+                                },
+                              });
+                            }}
+                            className="font-bold text-slate-800 text-sm uppercase leading-tight cursor-pointer"
+                          >
                             {item.customer_name}
                           </div>
                           <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1.5 mt-1">
@@ -206,24 +286,29 @@ const FinalStage = () => {
                           <div className="flex items-center justify-center gap-2">
                             <InteractiveBadge
                               id={item.final_stage_id}
-                              label="File Up"
-                              field="file_uploaded"
-                              active={item.file_uploaded}
-                              icon={Upload}
-                            />
-                            <InteractiveBadge
-                              id={item.final_stage_id}
                               label="Approved"
                               field="file_approved"
                               active={item.file_approved}
                               icon={CheckCircle}
+                              item={item}
                             />
+
+                            <InteractiveBadge
+                              id={item.final_stage_id}
+                              label="File Up"
+                              field="file_uploaded"
+                              active={item.file_uploaded}
+                              icon={Upload}
+                              item={item}
+                            />
+
                             <InteractiveBadge
                               id={item.final_stage_id}
                               label="Inspection"
                               field="inspection"
                               active={item.inspection}
                               icon={ClipboardCheck}
+                              item={item}
                             />
                             <InteractiveBadge
                               id={item.final_stage_id}
@@ -231,6 +316,7 @@ const FinalStage = () => {
                               field="redeem"
                               active={item.redeem}
                               icon={Gift}
+                              item={item}
                             />
                             <InteractiveBadge
                               id={item.final_stage_id}
@@ -238,6 +324,7 @@ const FinalStage = () => {
                               field="disbursal"
                               active={item.disbursal}
                               icon={Banknote}
+                              item={item}
                             />
                           </div>
                         </td>

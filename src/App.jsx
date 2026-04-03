@@ -39,6 +39,7 @@ import AllKitReady from "./components/crm/AllKitReady";
 import AllDispatch from "./components/crm/AllDispatch";
 import CategoryManager from "./components/crm/CategoryManager";
 import FinalizeWiring from "./components/crm/FinalizeWiring";
+import UserManagement from "./components/crm/UserManagement";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -82,6 +83,7 @@ function App() {
           <Route path="/cars" element={<Cars />} />
           <Route path="/finalstage" element={<FinalStage />} />
           <Route path="/master" element={<CustomerMaster />} />
+          <Route path="/users" element={<UserManagement />} />
           <Route
             path="/namechange"
             element={
