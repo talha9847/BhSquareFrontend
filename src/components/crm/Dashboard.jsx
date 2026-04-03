@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
+import { useAuth } from "../../context/authContext";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
+  const { user } = useAuth();
+  console.log(user);
   const stats = [
     {
       label: "Total Leads",

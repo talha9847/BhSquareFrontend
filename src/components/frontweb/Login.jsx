@@ -13,8 +13,10 @@ import {
   Leaf,
 } from "lucide-react";
 import axios from "axios";
+import { useAuth } from "../../context/authContext";
 
 export default function Login() {
+  const { login } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
@@ -52,7 +54,7 @@ export default function Login() {
 
       if (result.status == 200) {
         navigate("/dashboard");
-        
+        login(result.data.data);
         console.log(result.data);
         setLoading(false);
       }

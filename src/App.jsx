@@ -40,6 +40,8 @@ import AllDispatch from "./components/crm/AllDispatch";
 import CategoryManager from "./components/crm/CategoryManager";
 import FinalizeWiring from "./components/crm/FinalizeWiring";
 import UserManagement from "./components/crm/UserManagement";
+import ProtectedRoute from "./Guards/ProtectedRoute";
+import NotFound from "./Guards/NotFound";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -59,49 +61,244 @@ function App() {
         <Routes>
           <Route path="/" element={<FrontWeb />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/leads" element={<Leads />} />
-          <Route path="/customers" element={<Customer />} />
-          <Route path="/allcustomers" element={<AllCustomers />} />
-          <Route path="/kitready" element={<KitReady />} />
-          <Route path="/allkitready" element={<AllKitReady />} />
-          <Route path="/loanstep" element={<LoanStep />} />
-          <Route path="/inventory" element={<InventoryManager />} />
-          <Route path="/brands" element={<BrandManager />} />
-          <Route path="/category" element={<CategoryManager />} />
-          <Route path="/preparekit" element={<PrepareKit />} />
-          <Route path="/dispatch" element={<Dispatch />} />
-          <Route path="/alldispatch" element={<AllDispatch />} />
-          <Route path="/fabrication" element={<Fabrication />} />
-          <Route path="/fabricators" element={<FabricatorManager />} />
-          <Route path="/wiring" element={<Wiring />} />
-          <Route path="/technicians" element={<TechnicianManager />} />
-          <Route path="/winventory" element={<WiringInventory />} />
-          <Route path="/updatewiring" element={<UpdateWiringLog />} />
-          <Route path="/finalizewiring" element={<FinalizeWiring />} />
-          <Route path="/drivers" element={<Drivers />} />
-          <Route path="/cars" element={<Cars />} />
-          <Route path="/finalstage" element={<FinalStage />} />
-          <Route path="/master" element={<CustomerMaster />} />
-          <Route path="/users" element={<UserManagement />} />
+
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/leads"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Leads />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/customers"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Customer />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/allcustomers"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AllCustomers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/kitready"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <KitReady />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/allkitready"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AllKitReady />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/loanstep"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <LoanStep />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/inventory"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <InventoryManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/brands"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <BrandManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/category"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <CategoryManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/preparekit"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <PrepareKit />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dispatch"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Dispatch />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/alldispatch"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AllDispatch />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/fabrication"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Fabrication />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/fabricators"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <FabricatorManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/wiring"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Wiring />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/technicians"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <TechnicianManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/winventory"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <WiringInventory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/updatewiring"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <UpdateWiringLog />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/finalizewiring"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <FinalizeWiring />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/drivers"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Drivers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/cars"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Cars />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/finalstage"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <FinalStage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/master"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <CustomerMaster />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <UserManagement />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/namechange"
             element={
-              <NameChangeGuard>
-                <NameChange />
-              </NameChangeGuard>
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <NameChangeGuard>
+                  <NameChange />
+                </NameChangeGuard>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/documentcollection"
             element={
-              <DocumentCollectionGuard>
-                <DocumentCollection />
-              </DocumentCollectionGuard>
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <DocumentCollectionGuard>
+                  <DocumentCollection />
+                </DocumentCollectionGuard>
+              </ProtectedRoute>
             }
           />
-          <Route path="/registration" element={<Registration />} />
-          <Route path="/allregistration" element={<RegistrationsManager />} />
+          <Route
+            path="/registration"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Registration />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/allregistration"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <RegistrationsManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </>
