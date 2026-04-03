@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Sun,
   Mail,
@@ -15,6 +15,7 @@ import {
 import axios from "axios";
 
 export default function Login() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -50,6 +51,8 @@ export default function Login() {
       );
 
       if (result.status == 200) {
+        navigate("/dashboard");
+        
         console.log(result.data);
         setLoading(false);
       }
