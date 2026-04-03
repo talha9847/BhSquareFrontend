@@ -84,9 +84,13 @@ const Leads = () => {
   const addSource = async () => {
     try {
       setLoadSaveLead(true);
-      const res = await axios.post(`${apiUrl}/api/sources/addSource`, {
-        source_name: sourceName,
-      });
+      const res = await axios.post(
+        `${apiUrl}/api/sources/addSource`,
+        {
+          source_name: sourceName,
+        },
+        { withCredentials: true },
+      );
 
       if (res.status == 201) {
         getSources();
@@ -144,7 +148,9 @@ const Leads = () => {
 
   const getSources = async () => {
     try {
-      const result = await axios.get(`${apiUrl}/api/sources/fetchSources`);
+      const result = await axios.get(`${apiUrl}/api/sources/fetchSources`, {
+        withCredentials: true,
+      });
 
       setSources(result.data.data);
 
@@ -161,6 +167,7 @@ const Leads = () => {
     try {
       const result = await axios.get(`${apiUrl}/api/leads/fetchLeadsByStatus`, {
         params: { status: status },
+        withCredentials: true, // ✅ send cookies
       });
 
       console.log(result.data);
@@ -221,20 +228,24 @@ const Leads = () => {
         }
         setLoadSaveLead(true);
         console.log(data);
-        const res = await axios.post(`${apiUrl}/api/leads/updateLead`, {
-          id: editId,
-          customer_name: data.customer_name,
-          contact_number: data.contact_number,
-          site_visit_date: data.site_visit_date,
-          source_id: data.source_id,
-          address: data.address,
-          notes: data.notes,
-          panel_wattage: Number(data.panel_wattage), // cast to number
-          number_of_panels: Number(data.number_of_panels),
-          inverter_kw: Number(data.inverter_kw), // cast to number
-          number_of_inverters: Number(data.number_of_inverters),
-          installation_type: data.installation_type,
-        });
+        const res = await axios.post(
+          `${apiUrl}/api/leads/updateLead`,
+          {
+            id: editId,
+            customer_name: data.customer_name,
+            contact_number: data.contact_number,
+            site_visit_date: data.site_visit_date,
+            source_id: data.source_id,
+            address: data.address,
+            notes: data.notes,
+            panel_wattage: Number(data.panel_wattage), // cast to number
+            number_of_panels: Number(data.number_of_panels),
+            inverter_kw: Number(data.inverter_kw), // cast to number
+            number_of_inverters: Number(data.number_of_inverters),
+            installation_type: data.installation_type,
+          },
+          { withCredentials: true },
+        );
 
         if (res.status == 200) {
           toast.success("Lead edited successfully");
@@ -266,20 +277,24 @@ const Leads = () => {
       try {
         setLoadSaveLead(true);
         console.log(data);
-        const res = await axios.post(`${apiUrl}/api/leads/addLead`, {
-          customer_name: data.customer_name,
-          contact_number: data.contact_number,
-          site_visit_date: data.site_visit_date,
-          source_id: data.source_id,
-          address: data.address,
-          notes: data.notes,
-          panel_wattage: data.panel_wattage,
-          number_of_panels: data.number_of_panels,
-          inverter_kw: data.inverter_kw,
-          number_of_inverters: data.number_of_inverters,
-          status: "pending",
-          installation_type: data.installation_type,
-        });
+        const res = await axios.post(
+          `${apiUrl}/api/leads/addLead`,
+          {
+            customer_name: data.customer_name,
+            contact_number: data.contact_number,
+            site_visit_date: data.site_visit_date,
+            source_id: data.source_id,
+            address: data.address,
+            notes: data.notes,
+            panel_wattage: data.panel_wattage,
+            number_of_panels: data.number_of_panels,
+            inverter_kw: data.inverter_kw,
+            number_of_inverters: data.number_of_inverters,
+            status: "pending",
+            installation_type: data.installation_type,
+          },
+          { withCredentials: true },
+        );
 
         if (res.status == 201) {
           toast.success("Lead save successfully");
@@ -321,9 +336,13 @@ const Leads = () => {
     try {
       setConvertPendingLoader(true);
       console.log("convert to pending");
-      const res = await axios.post(`${apiUrl}/api/leads/delayToPending`, {
-        lead_id: convertPendingModal.lead.id,
-      });
+      const res = await axios.post(
+        `${apiUrl}/api/leads/delayToPending`,
+        {
+          lead_id: convertPendingModal.lead.id,
+        },
+        { withCredentials: true },
+      );
 
       if (res.status == 200) {
         getLeadsByStatus(activeTab);
@@ -349,11 +368,15 @@ const Leads = () => {
       if (!followUpDate || !remark) return;
 
       try {
-        const res = await axios.post(`${apiUrl}/api/leads/delayLead`, {
-          lead_id: disPositionId,
-          next_visit_date: followUpDate,
-          note: remark,
-        });
+        const res = await axios.post(
+          `${apiUrl}/api/leads/delayLead`,
+          {
+            lead_id: disPositionId,
+            next_visit_date: followUpDate,
+            note: remark,
+          },
+          { withCredentials: true },
+        );
         if (res.status == 201) {
           getLeadsByStatus(activeTab);
           toast.success("Lead dealyed successfully");
@@ -377,9 +400,13 @@ const Leads = () => {
       }
 
       try {
-        const res = await axios.post(`${apiUrl}/api/leads/convertToCustomer`, {
-          lead_id: disPositionId,
-        });
+        const res = await axios.post(
+          `${apiUrl}/api/leads/convertToCustomer`,
+          {
+            lead_id: disPositionId,
+          },
+          { withCredentials: true },
+        );
 
         if (res.status == 200) {
           toast.success("Lead converted to customer successfully");
@@ -407,9 +434,13 @@ const Leads = () => {
         return;
       }
       try {
-        const res = await axios.post(`${apiUrl}/api/leads/cancelLead`, {
-          lead_id: disPositionId,
-        });
+        const res = await axios.post(
+          `${apiUrl}/api/leads/cancelLead`,
+          {
+            lead_id: disPositionId,
+          },
+          { withCredentials: true },
+        );
 
         if (res.status == 200) {
           getLeadsByStatus(activeTab);

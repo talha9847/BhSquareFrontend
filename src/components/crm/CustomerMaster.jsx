@@ -422,7 +422,9 @@ const CustomerMaster = () => {
     const fetchCore = async () => {
       try {
         const [lRes, sRes] = await Promise.all([
-          axios.get(`${apiUrl}/api/leads/fetchLeadById/${leadId}`),
+          axios.get(`${apiUrl}/api/leads/fetchLeadById/${leadId}`, {
+            withCredentials: true,
+          }),
           axios.get(
             `${apiUrl}/api/customers/fetchCustomerStages/${customerId}`,
           ),
