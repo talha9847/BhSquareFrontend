@@ -2,7 +2,6 @@ export default async function handler(req, res) {
   try {
     const path = req.query.path?.join("/") || "";
 
-    // 🔥 include query params
     const query = req.url.split("?")[1];
     const url = `https://bhsquarebackend.onrender.com/${path}${
       query ? `?${query}` : ""
@@ -11,8 +10,8 @@ export default async function handler(req, res) {
     const response = await fetch(url, {
       method: req.method,
       headers: {
-        ...req.headers, // ✅ forward ALL headers
-        host: undefined, // ❗ prevent host conflict
+        "content-type": "application/json",
+        cookie: req.headers.cookie || "", // 🔥 explicitly forward cookie
       },
       body:
         req.method !== "GET" && req.method !== "HEAD"
@@ -20,16 +19,15 @@ export default async function handler(req, res) {
           : undefined,
     });
 
-    const data = await response.text();
-
-    // 🔥 Forward cookies properly
-    const setCookie = response.headers.get("set-cookie");
+    // 🔥 VERY IMPORTANT: forward ALL cookies
+    const setCookie = response.headers.raw()["set-cookie"];
     if (setCookie) {
       res.setHeader("Set-Cookie", setCookie);
     }
 
-    // 🔥 Forward status + response
-    res.status(response.status).send(data);
+    // ✅ send JSON properly
+    const data = await response.json();
+    res.status(response.status).json(data);
   } catch (err) {
     console.error("Proxy error:", err);
     res.status(500).json({ error: "Proxy error" });
