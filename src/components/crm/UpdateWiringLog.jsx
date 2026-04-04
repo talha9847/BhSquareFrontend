@@ -118,6 +118,7 @@ const UpdateWiringLog = () => {
       console.log(wiringId);
       const res = await axios.put(
         `${apiUrl}/api/wiring/updateInventoryStatus/${wiringId}`,
+        {},
         { withCredentials: true },
       );
       if (res.status == 200) {
