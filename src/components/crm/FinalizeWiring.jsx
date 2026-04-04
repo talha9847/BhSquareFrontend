@@ -19,10 +19,14 @@ import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import { useAuth } from "../../context/authContext";
 
 const FinalizeWiring = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  console.log(user);
   const { selectedWiring } = state || {};
   const apiUrl = import.meta.env.VITE_API_URL;
   console.log(selectedWiring);
@@ -389,16 +393,18 @@ const FinalizeWiring = () => {
         </main>
 
         {/* 3. NEXT STAGE ACTION BAR */}
-        {isEverythingUploaded() && selectedWiring.wiring_status != "done" && (
-          <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white/80 backdrop-blur-md border-t border-slate-200 p-6 flex justify-center animate-in slide-in-from-bottom duration-500">
-            <button
-              onClick={handleNextStage}
-              className="max-w-md w-full bg-emerald-500 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-100 hover:bg-emerald-600 transition-all flex items-center justify-center gap-3"
-            >
-              Move to Next Stage <ChevronRight size={18} />
-            </button>
-          </div>
-        )}
+        {isEverythingUploaded() &&
+          selectedWiring.wiring_status != "done" &&
+          user.role == "admin" && (
+            <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white/80 backdrop-blur-md border-t border-slate-200 p-6 flex justify-center animate-in slide-in-from-bottom duration-500">
+              <button
+                onClick={handleNextStage}
+                className="max-w-md w-full bg-emerald-500 text-white py-4 rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-100 hover:bg-emerald-600 transition-all flex items-center justify-center gap-3"
+              >
+                Move to Next Stage <ChevronRight size={18} />
+              </button>
+            </div>
+          )}
       </div>
     </div>
   );
