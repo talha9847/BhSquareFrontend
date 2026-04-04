@@ -12,13 +12,12 @@ import {
   Edit3,
   Trash2,
   CheckCircle2,
-  AlertCircle,
+  Layers,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
 import axios from "axios";
-import Swal from "sweetalert2";
 
 const UserManagement = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -29,17 +28,26 @@ const UserManagement = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState([]);
 
+  // Master Data State
+  const [masterData, setMasterData] = useState({
+    technicians: [],
+    fabricators: [],
+    sources: [],
+  });
+
   // Modal States
-  const [modalType, setModalType] = useState(null); // 'create' or 'edit'
+  const [modalType, setModalType] = useState(null);
   const [formData, setFormData] = useState({
     email: "",
     role: "technician",
+    role_id: "", // To store the selected ID from master list
     password: "",
     confirmPassword: "",
   });
   const [modalLoading, setModalLoading] = useState(false);
 
-  const roles = ["admin", "driver", "fabricator", "technician"];
+  // Updated roles to match your master data keys
+  const roles = ["admin", "technician", "fabricator", "source"];
 
   const getUsers = async () => {
     setTableLoading(true);
@@ -48,7 +56,7 @@ const UserManagement = () => {
         withCredentials: true,
       });
       if (res.status === 200) {
-        setUsers(res.data.data || []); // Adjusted to your array structure
+        setUsers(res.data.data || []);
       }
     } catch (error) {
       toast.error("Failed to load users");
@@ -57,8 +65,27 @@ const UserManagement = () => {
     }
   };
 
+  const getAllMaster = async () => {
+    try {
+      const res = await axios.get(`${apiUrl}/api/sources/getAllMasters`, {
+        withCredentials: true,
+      });
+      if (res.status === 200) {
+        // Mapping the response to state
+        setMasterData({
+          technicians: res.data.data.technicians || [],
+          fabricators: res.data.data.fabricators || [],
+          sources: res.data.data.sources || [],
+        });
+      }
+    } catch (error) {
+      console.error("Master data fetch error", error);
+    }
+  };
+
   useEffect(() => {
     getUsers();
+    getAllMaster();
   }, []);
 
   const openModal = (type, user = null) => {
@@ -67,7 +94,8 @@ const UserManagement = () => {
       setFormData({
         id: user.id,
         email: user.email,
-        role: user.role,
+        role: user.role || "technician",
+        role_id: user.role_id || "",
         password: "",
         confirmPassword: "",
       });
@@ -75,6 +103,7 @@ const UserManagement = () => {
       setFormData({
         email: "",
         role: "technician",
+        role_id: "",
         password: "",
         confirmPassword: "",
       });
@@ -88,9 +117,10 @@ const UserManagement = () => {
     }
 
     setModalLoading(true);
+    console.log(formData);
     try {
       const endpoint =
-        modalType === "create" ? "/api/users/createUser" : "/api/users/update";
+        modalType === "create" ? "/api/users/createUser" : "/api/users/updateUser";
       const res = await axios.post(`${apiUrl}${endpoint}`, formData, {
         withCredentials: true,
       });
@@ -113,8 +143,16 @@ const UserManagement = () => {
     u.email?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  // Helper to get the correct list based on selected role
+  const getReferenceList = () => {
+    if (formData.role === "technician") return masterData.technicians;
+    if (formData.role === "fabricator") return masterData.fabricators;
+    if (formData.role === "source") return masterData.sources;
+    return [];
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
@@ -265,6 +303,7 @@ const UserManagement = () => {
               </div>
 
               <form onSubmit={handleAction} className="space-y-4">
+                {/* Email Field */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1">
                     Email Address
@@ -291,9 +330,10 @@ const UserManagement = () => {
                   </div>
                 </div>
 
+                {/* Role Select */}
                 <div className="space-y-1">
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1">
-                    Department Role
+                    System Role
                   </label>
                   <div className="relative">
                     <ShieldAlert
@@ -304,7 +344,11 @@ const UserManagement = () => {
                       className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold appearance-none focus:border-[#1a5695]"
                       value={formData.role}
                       onChange={(e) =>
-                        setFormData({ ...formData, role: e.target.value })
+                        setFormData({
+                          ...formData,
+                          role: e.target.value,
+                          role_id: "",
+                        })
                       }
                     >
                       {roles.map((r) => (
@@ -315,6 +359,39 @@ const UserManagement = () => {
                     </select>
                   </div>
                 </div>
+
+                {/* DYNAMIC MASTER LIST SELECT */}
+                {formData.role !== "admin" && (
+                  <div className="space-y-1 animate-in slide-in-from-top-2 duration-300">
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1">
+                      Link to {formData.role}
+                    </label>
+                    <div className="relative">
+                      <Layers
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                        size={16}
+                      />
+                      <select
+                        required
+                        className="w-full pl-12 pr-4 py-3 bg-blue-50/50 border border-blue-100 rounded-2xl outline-none text-sm font-bold appearance-none focus:border-[#1a5695]"
+                        value={formData.role_id}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            role_id: e.target.value,
+                          })
+                        }
+                      >
+                        <option value="">Select {formData.role} Name</option>
+                        {getReferenceList().map((item) => (
+                          <option key={item.id} value={item.id}>
+                            {item.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">

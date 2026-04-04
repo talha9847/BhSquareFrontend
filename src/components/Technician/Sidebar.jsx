@@ -34,100 +34,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   const menuItems = [
     {
-      name: "Dashboard",
-      icon: <LayoutDashboard size={18} />,
-      type: "Operations",
-      path: "dashboard",
-      activePaths: ["/dashboard"], // highlight for both
-    },
-    {
-      name: "Leads",
-      icon: <Users size={18} />,
-      count: leadCount,
-      type: "Operations",
-      path: "leads",
-      activePaths: ["/leads"], // highlight for both
-    },
-    {
-      name: "Customers",
-      icon: <Compass size={18} />,
-      count: 5,
-      type: "Operations",
-      path: "customers",
-      activePaths: [
-        "/customers",
-        "/documentcollection",
-        "/namechange",
-        "/allcustomers",
-        "/master",
-      ], // highlight for both
-    },
-    // {
-    //   name: "Doc Collection",
-    //   icon: <FolderOpen size={18} />,
-    //   count: 8,
-    //   type: "Operations",
-    //   path: "documentcollection",
-    // },
-    {
-      name: "Registration",
-      icon: <Box size={18} />,
-      type: "Operations",
-      path: "registration",
-      activePaths: ["/registration", "/allregistration"],
-    },
-    {
-      name: "Kit Ready",
-      icon: <Box size={18} />,
-      type: "Operations",
-      path: "kitready",
-      activePaths: ["/loanstep", "/kitready", "/brands", "/preparekit"], // highlight for both
-    },
-    {
-      name: "Dispatch",
-      icon: <Box size={18} />,
-      type: "Operations",
-      path: "dispatch",
-      activePaths: ["/dispatch", "/drivers", "/cars"], // highlight for both
-    },
-    {
-      name: "Fabricatoin",
-      icon: <FaBridgeCircleExclamation size={18} />,
-      type: "Operations",
-      path: "fabrication",
-    },
-    {
       name: "Wiring",
-      icon: <WiRefresh size={18} />,
-      type: "Operations",
-      path: "wiring",
-      activePaths: ["/wiring", "/technicians"],
-    },
-    {
-      name: "Final Stage",
-      icon: <FileSignal size={18} />,
-      type: "Operations",
-      path: "finalstage",
-    },
-    {
-      name: "Users",
-      icon: <Users2 size={18} />,
-      type: "Operations",
-      path: "users",
-    },
-    {
-      name: "Inventory",
       icon: <HardHat size={18} />,
       type: "Installation",
-      path: "/inventory",
-      activePaths: ["/inventory"],
-    },
-    {
-      name: "Wiring Inventory",
-      icon: <HardHat size={18} />,
-      type: "Installation",
-      path: "/winventory",
-      activePaths: ["/winventory"],
+      path: "/technician/wiring",
+      activePaths: ["/technician/wiring"],
     },
 
     { name: "AMC & Service", icon: <Wrench size={18} />, type: "After Sales" },

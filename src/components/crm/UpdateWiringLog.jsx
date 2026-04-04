@@ -28,13 +28,10 @@ const UpdateWiringLog = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [l, setL] = useState(false);
   const [uL, setUL] = useState(false);
 
   // Data States
   const [inventory, setInventory] = useState([]);
-  const [technicians, setTechnicians] = useState([]);
-  const [selectedTechnician, setSelectedTechnician] = useState("");
   const [wireSelection, setWireSelection] = useState({
     inventory_id: "",
     length: "",
@@ -48,23 +45,19 @@ const UpdateWiringLog = () => {
   const fetchData = useCallback(async () => {
     setPageLoading(true);
     try {
-      const [invRes, techRes, issuedRes] = await Promise.all([
+      const [invRes, issuedRes] = await Promise.all([
         axios.get(
           `${apiUrl}/api/wiring/getAvailableWireInventory/${wiringId}`,
           { withCredentials: true },
         ),
-        axios.get(`${apiUrl}/api/wiring/fetchTechnicians`, {
-          withCredentials: true,
-        }),
+
         axios.get(`${apiUrl}/api/wiring/fetchIssuedWires/${wiringId}`, {
           withCredentials: true,
         }),
       ]);
 
       setInventory(invRes.data.data || []);
-      setTechnicians(techRes.data.data || []);
       setLocalLog(issuedRes.data.data || []);
-      setSelectedTechnician(issuedRes.data.extraData.technician_id || "");
       setDone(issuedRes.data.extraData.inventory_status);
     } catch (error) {
       console.error(error);
@@ -84,25 +77,6 @@ const UpdateWiringLog = () => {
   );
   const isOverLimit =
     selectedWire && Number(wireSelection.length) > selectedWire.stock;
-
-  const saveTechnician = async () => {
-    if (!isEditable) return;
-    setL(true);
-    try {
-      const res = await axios.put(
-        `${apiUrl}/api/wiring/updateTechni/${wiringId}`,
-        {
-          technician_id: selectedTechnician,
-        },
-        { withCredentials: true },
-      );
-      if (res.status === 200) toast.success("Technician Assigned");
-    } catch (error) {
-      toast.error("Update failed");
-    } finally {
-      setL(false);
-    }
-  };
 
   const saveWireToStore = async () => {
     if (
@@ -195,38 +169,6 @@ const UpdateWiringLog = () => {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* BOX 1: TECHNICIAN */}
-                <div
-                  className={`bg-white rounded-[32px] p-6 border border-slate-200 shadow-sm flex flex-col ${!isEditable && "opacity-60"}`}
-                >
-                  <div className="flex items-center gap-3 mb-6">
-                    <User size={18} className="text-[#1a5695]" />
-                    <h3 className="font-black text-slate-800 uppercase text-[10px] tracking-widest">
-                      Technician
-                    </h3>
-                  </div>
-                  <select
-                    disabled={!isEditable}
-                    className="w-full p-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-xs outline-none focus:border-[#1a5695] disabled:cursor-not-allowed"
-                    value={selectedTechnician}
-                    onChange={(e) => setSelectedTechnician(e.target.value)}
-                  >
-                    <option value="">Select Staff...</option>
-                    {technicians.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
-                  <button
-                    disabled={!isEditable || l}
-                    onClick={saveTechnician}
-                    className="mt-4 w-full py-4 bg-slate-800 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-black transition-all disabled:bg-slate-200 disabled:text-slate-400"
-                  >
-                    {l ? "Updating..." : "Update Technician"}
-                  </button>
-                </div>
-
                 {/* BOX 2: SINGLE WIRE SAVE */}
                 <div
                   className={`bg-white rounded-[32px] p-6 border border-slate-200 shadow-sm ${!isEditable && "opacity-60"}`}

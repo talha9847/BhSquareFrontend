@@ -42,6 +42,7 @@ import FinalizeWiring from "./components/crm/FinalizeWiring";
 import UserManagement from "./components/crm/UserManagement";
 import ProtectedRoute from "./Guards/ProtectedRoute";
 import NotFound from "./Guards/NotFound";
+import TWiring from "./components/Technician/TWiring";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -191,6 +192,14 @@ function App() {
             }
           />
           <Route
+            path="/technician/wiring"
+            element={
+              <ProtectedRoute allowedRoles={["technician"]}>
+                <TWiring />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/technicians"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
@@ -209,7 +218,7 @@ function App() {
           <Route
             path="/updatewiring"
             element={
-              <ProtectedRoute allowedRoles={["admin"]}>
+              <ProtectedRoute allowedRoles={["admin", "technician"]}>
                 <UpdateWiringLog />
               </ProtectedRoute>
             }

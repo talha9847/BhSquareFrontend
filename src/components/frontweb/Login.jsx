@@ -53,7 +53,12 @@ export default function Login() {
       );
 
       if (result.status == 200) {
-        navigate("/dashboard");
+        if (result.data.data.role == "technician") {
+          navigate("/technician/wiring");
+        }
+        if (result.data.data.role == "admin") {
+          navigate("/dashboard");
+        }
         login(result.data.data);
         console.log(result.data);
         setLoading(false);
