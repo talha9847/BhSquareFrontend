@@ -41,7 +41,7 @@ const TWiring = () => {
       );
       if (res.status === 200) setWiringLogs(res.data.data);
     } catch (error) {
-      toast.error("Failed to load records");
+      toast.error(error);
     } finally {
       setTableLoading(false);
     }
