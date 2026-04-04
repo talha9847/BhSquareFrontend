@@ -31,7 +31,6 @@ const TWiring = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [wiringLogs, setWiringLogs] = useState([]);
-
   const getWiring = async () => {
     setTableLoading(true);
     try {
@@ -39,9 +38,20 @@ const TWiring = () => {
         `${apiUrl}/api/wiring/getWiringCustomerDetailsById`,
         { withCredentials: true },
       );
-      if (res.status === 200) setWiringLogs(res.data.data);
+
+      if (res.status === 200) {
+        setWiringLogs(res.data.data);
+      }
     } catch (error) {
-      toast.error(error);
+      console.error(error);
+
+      // Extract proper error message
+      const message =
+        error.response?.data?.message || // backend error message
+        error.message || // axios/general error
+        "Something went wrong";
+
+      toast.error(message);
     } finally {
       setTableLoading(false);
     }
