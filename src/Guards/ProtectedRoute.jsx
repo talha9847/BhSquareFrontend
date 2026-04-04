@@ -4,9 +4,11 @@ import AccessControl from "./AccessControl";
 import { useEffect } from "react";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   console.log(user);
-
+  if (loading) {
+    return <div>Loading...</div>;
+  }
   // If user is not logged in
   if (!user) {
     return <AccessControl type="login" />;

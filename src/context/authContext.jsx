@@ -7,16 +7,26 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const apiUrl = import.meta.env.VITE_API_URL;
   const [user, setUser] = useState(null);
+
+  const [loading, setLoading] = useState(true);
+
   // user = { email, role }
   const data = async () => {
-    const res = await axios.get(`${apiUrl}/api/users/me`, {
-      withCredentials: true,
-    });
+    try {
+      const res = await axios.get(`${apiUrl}/api/users/me`, {
+        withCredentials: true,
+      });
 
-    if (res.status == 200) {
-      setUser(res.data);
+      if (res.status === 200) {
+        setUser(res.data);
+      }
+    } catch (err) {
+      setUser(null);
+    } finally {
+      setLoading(false); 
     }
   };
+
   useEffect(() => {
     data();
   }, []);
