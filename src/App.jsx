@@ -226,7 +226,7 @@ function App() {
           <Route
             path="/finalizewiring"
             element={
-              <ProtectedRoute allowedRoles={["admin"]}>
+              <ProtectedRoute allowedRoles={["admin", "technician"]}>
                 <FinalizeWiring />
               </ProtectedRoute>
             }
