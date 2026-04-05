@@ -35,7 +35,7 @@ const TWiring = () => {
     setTableLoading(true);
     try {
       const res = await axios.get(
-        `${apiUrl}/api/wiring/getWiringCustomerDetailsById`,
+        `/api/wiring/getWiringCustomerDetailsById`,
         { withCredentials: true },
       );
 
