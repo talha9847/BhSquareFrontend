@@ -5,7 +5,7 @@
       "destination": "https://bhsquarebackend.onrender.com/:path*"
     },
     {
-      "source": "/(.*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
