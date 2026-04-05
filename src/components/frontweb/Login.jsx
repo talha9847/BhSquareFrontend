@@ -53,8 +53,8 @@ export default function Login() {
       );
 
       if (result.status == 200) {
-        conso
-        
+        console.log(result.data);
+
         if (result.data.data.role == "technician") {
           navigate("/technician/wiring");
         }
