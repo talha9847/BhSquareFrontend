@@ -44,7 +44,7 @@ export default function Login() {
 
     try {
       const result = await axios.post(
-        `${apiUrl}/api/users/login`,
+        `/api/users/login`,
         {
           email: form.email,
           pass: form.password,
