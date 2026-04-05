@@ -24,7 +24,7 @@ const NameChangeGuard = ({ children }) => {
       try {
         // FIX 2: pass customerId to backend
         const res = await axios.get(
-          `${apiUrl}/api/docs/checkDocAccess/${customerId}`,
+          `/api/docs/checkDocAccess/${customerId}`,
           { withCredentials: true },
         );
 

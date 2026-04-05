@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
   // user = { email, role }
   const data = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/api/users/me`, {
+      const res = await axios.get(`/api/users/me`, {
         withCredentials: true,
       });
 

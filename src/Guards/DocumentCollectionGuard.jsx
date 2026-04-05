@@ -24,7 +24,7 @@ const DocumentCollectionGuard = ({ children }) => {
       try {
         // FIX 2: pass customerId to backend
         const res = await axios.get(
-          `${apiUrl}/api/docs/checkDocumentCollectionAccess/${customerId}`,
+          `/api/docs/checkDocumentCollectionAccess/${customerId}`,
           { withCredentials: true },
         );
 
