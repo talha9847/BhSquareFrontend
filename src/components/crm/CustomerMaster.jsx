@@ -92,7 +92,7 @@ const LoanModule = ({ customerId }) => {
     const fetchLoan = async () => {
       try {
         const res = await axios.get(
-          `${apiUrl}/api/loan/fetchCustomerLoan/${customerId}`,
+          `/api/loan/fetchCustomerLoan/${customerId}`,
           { withCredentials: true },
         );
         if (res.status === 200) setLoan(res.data.data);
@@ -184,7 +184,7 @@ const TechnicalModule = ({ customerId }) => {
     const fetchTech = async () => {
       try {
         const res = await axios.get(
-          `${apiUrl}/api/docs/fetchCustomerDocuments/${customerId}`,
+          `/api/docs/fetchCustomerDocuments/${customerId}`,
           { withCredentials: true },
         );
         if (res.status === 200) setTech(res.data.data);
@@ -275,7 +275,7 @@ const KitModule = ({ customerId }) => {
     const fetchKit = async () => {
       try {
         const res = await axios.get(
-          `${apiUrl}/api/kitready/fetchKitItemsbyCustomer/${customerId}`,
+          `/api/kitready/fetchKitItemsbyCustomer/${customerId}`,
           { withCredentials: true },
         );
         if (res.status === 200) setKitData(res.data.data);
@@ -425,11 +425,11 @@ const CustomerMaster = () => {
     const fetchCore = async () => {
       try {
         const [lRes, sRes] = await Promise.all([
-          axios.get(`${apiUrl}/api/leads/fetchLeadById/${leadId}`, {
+          axios.get(`/api/leads/fetchLeadById/${leadId}`, {
             withCredentials: true,
           }),
           axios.get(
-            `${apiUrl}/api/customers/fetchCustomerStages/${customerId}`,
+            `/api/customers/fetchCustomerStages/${customerId}`,
             { withCredentials: true },
           ),
         ]);

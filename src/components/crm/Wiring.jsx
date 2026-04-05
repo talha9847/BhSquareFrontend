@@ -39,7 +39,7 @@ const Wiring = () => {
     setTableLoading(true);
     try {
       const res = await axios.get(
-        `${apiUrl}/api/wiring/fetchWiringCustomerDetails`,
+        `/api/wiring/fetchWiringCustomerDetails`,
         { withCredentials: true },
       );
       if (res.status === 200) setWiringLogs(res.data.data);
@@ -52,7 +52,7 @@ const Wiring = () => {
 
   const getAllTechnicians = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/api/wiring/fetchTechnicians`, {
+      const res = await axios.get(`/api/wiring/fetchTechnicians`, {
         withCredentials: true,
       });
       if (res.status === 200) setTechnicians(res.data.data || []);
@@ -84,7 +84,7 @@ const Wiring = () => {
     setBtnLoading(true);
     try {
       const res = await axios.put(
-        `${apiUrl}/api/wiring/updateTechni/${activeItem.wiring_id}`,
+        `/api/wiring/updateTechni/${activeItem.wiring_id}`,
         {
           technician_id: selectedTechId,
         },

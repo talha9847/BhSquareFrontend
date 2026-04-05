@@ -105,7 +105,7 @@ const LoanStep = () => {
     });
     try {
       const res = await axios.post(
-        `${apiUrl}/api/loan/uploadLoanDocuments`,
+        `/api/loan/uploadLoanDocuments`,
         formData,
         { withCredentials: true },
       );
@@ -126,7 +126,7 @@ const LoanStep = () => {
 
     try {
       const res = await axios.put(
-        `${apiUrl}/api/loan/completeLoanAndMoveToKitReady/${customerId}`,
+        `/api/loan/completeLoanAndMoveToKitReady/${customerId}`,
         { withCredentials: true },
       );
       if (res.status == 200) {
@@ -139,7 +139,7 @@ const LoanStep = () => {
   const getLoan = async () => {
     try {
       const res = await axios.get(
-        `${apiUrl}/api/loan/getLoanByCustomerId/${customerId}`,
+        `/api/loan/getLoanByCustomerId/${customerId}`,
         { withCredentials: true },
       );
       console.log(res.data.data);
@@ -163,7 +163,7 @@ const LoanStep = () => {
   const approveLoan = async () => {
     try {
       const res = await axios.patch(
-        `${apiUrl}/api/loan/approveLoan/${customerId}`,
+        `/api/loan/approveLoan/${customerId}`,
         { withCredentials: true },
       );
 
@@ -188,7 +188,7 @@ const LoanStep = () => {
         is_approved: loanData.isApproved,
       };
       const res = await axios.put(
-        `${apiUrl}/api/loan/updateLoan/${customerId}`,
+        `/api/loan/updateLoan/${customerId}`,
         body,
         { withCredentials: true },
       );

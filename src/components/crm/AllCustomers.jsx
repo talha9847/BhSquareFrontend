@@ -50,7 +50,7 @@ const AllCustomers = () => {
       try {
         // Calling your new Node route: /api/customers/fetchByStatus?status=pending
         const res = await axios.get(
-          `${apiUrl}/api/customers/fetchCustomersByStatus`,
+          `/api/customers/fetchCustomersByStatus`,
           {
             params: { status: activeTab },
             withCredentials: true,

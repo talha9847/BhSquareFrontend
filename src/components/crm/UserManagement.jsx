@@ -52,7 +52,7 @@ const UserManagement = () => {
   const getUsers = async () => {
     setTableLoading(true);
     try {
-      const res = await axios.get(`${apiUrl}/api/users/getAllUsers`, {
+      const res = await axios.get(`/api/users/getAllUsers`, {
         withCredentials: true,
       });
       if (res.status === 200) {
@@ -67,7 +67,7 @@ const UserManagement = () => {
 
   const getAllMaster = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/api/sources/getAllMasters`, {
+      const res = await axios.get(`/api/sources/getAllMasters`, {
         withCredentials: true,
       });
       if (res.status === 200) {
@@ -121,7 +121,7 @@ const UserManagement = () => {
     try {
       const endpoint =
         modalType === "create" ? "/api/users/createUser" : "/api/users/updateUser";
-      const res = await axios.post(`${apiUrl}${endpoint}`, formData, {
+      const res = await axios.post(`${endpoint}`, formData, {
         withCredentials: true,
       });
 

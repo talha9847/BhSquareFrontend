@@ -64,7 +64,7 @@ const PrepareKit = () => {
     setTableLoading(true);
     try {
       const res = await axios.get(
-        `${apiUrl}/api/kitready/fetchKitItems/${customerId}`,
+        `/api/kitready/fetchKitItems/${customerId}`,
         { withCredentials: true },
       );
       if (res.status === 200) {
@@ -82,7 +82,7 @@ const PrepareKit = () => {
   const fetchPanelAndInverterQuantities = async () => {
     try {
       const res = await axios.get(
-        `${apiUrl}/api/kitready/getPanelAndInventer/${customerId}`,
+        `/api/kitready/getPanelAndInventer/${customerId}`,
         { withCredentials: true },
       );
       if (res.status === 200) {
@@ -122,7 +122,7 @@ const PrepareKit = () => {
       preConfirm: async () => {
         try {
           const response = await axios.delete(
-            `${apiUrl}/api/dispatch/deleteKitItem/${item.id}`,
+            `/api/dispatch/deleteKitItem/${item.id}`,
             { withCredentials: true },
           );
           return response;
@@ -174,7 +174,7 @@ const PrepareKit = () => {
     console.log(deltaValue);
     try {
       const res = await axios.put(
-        `${apiUrl}/api/dispatch/updateKitItemQty`,
+        `/api/dispatch/updateKitItemQty`,
         {
           kitItemId: editingItem.id,
           qty: deltaValue,
@@ -218,7 +218,7 @@ const PrepareKit = () => {
     setVerifyingId(id);
     try {
       const res = await axios.post(
-        `${apiUrl}/api/kitready/allocateItem`,
+        `/api/kitready/allocateItem`,
         {
           kit_item_id: item.id,
           qty: item.qty,
@@ -265,7 +265,7 @@ const PrepareKit = () => {
     setModalLoading(true);
     try {
       const res = await axios.get(
-        `${apiUrl}/api/kitready/fetchAvailableProducts/${customerId}`,
+        `/api/kitready/fetchAvailableProducts/${customerId}`,
         { withCredentials: true },
       );
       if (res.status === 200) setInventoryLookup(res.data.data || []);
@@ -280,7 +280,7 @@ const PrepareKit = () => {
     try {
       setIsModalOpen(false);
       const res = await axios.post(
-        `${apiUrl}/api/kitready/addItem`,
+        `/api/kitready/addItem`,
         {
           kit_id: product.kit_id,
           inventory_id: product.id,
@@ -319,7 +319,7 @@ const PrepareKit = () => {
     console.log(panelItem);
     try {
       const res = await axios.post(
-        `${apiUrl}/api/kitready/addCustomerSerials`,
+        `/api/kitready/addCustomerSerials`,
         {
           customerId,
           panelId: panelItem.id,

@@ -31,7 +31,7 @@ const Drivers = () => {
   const fetchDrivers = async () => {
     try {
       setPageLoading(true);
-      const res = await axios.get(`${apiUrl}/api/dispatch/fetchDrivers`, {
+      const res = await axios.get(`/api/dispatch/fetchDrivers`, {
         withCredentials: true,
       });
       if (res.status === 200) {
@@ -71,7 +71,7 @@ const Drivers = () => {
     try {
       if (editingDriver) {
         const res = await axios.put(
-          `${apiUrl}/api/dispatch/updateDriver/${editId}`,
+          `/api/dispatch/updateDriver/${editId}`,
           formData,
           { withCredentials: true },
         );
@@ -82,7 +82,7 @@ const Drivers = () => {
         }
       } else {
         const res = await axios.post(
-          `${apiUrl}/api/dispatch/createDriver`,
+          `/api/dispatch/createDriver`,
           formData,
           { withCredentials: true },
         );

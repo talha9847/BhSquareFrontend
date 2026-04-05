@@ -44,7 +44,7 @@ const CategoryManager = () => {
   const getAllCategories = async () => {
     setTableLoading(true);
     try {
-      const res = await axios.get(`${apiUrl}/api/kitready/getCategories`, {
+      const res = await axios.get(`/api/kitready/getCategories`, {
         withCredentials: true,
       });
       if (res.status == 200) {
@@ -87,7 +87,7 @@ const CategoryManager = () => {
     try {
       if (editingId) {
         const res = await axios.put(
-          `${apiUrl}/api/kitready/updateCategory/${editingId}`,
+          `/api/kitready/updateCategory/${editingId}`,
           formData,
           { withCredentials: true },
         );
@@ -98,7 +98,7 @@ const CategoryManager = () => {
       } else {
         console.log(formData);
         const res = await axios.post(
-          `${apiUrl}/api/kitready/createCategory`,
+          `/api/kitready/createCategory`,
           formData,
           { withCredentials: true },
         );

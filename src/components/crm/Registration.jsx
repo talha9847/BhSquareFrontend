@@ -80,7 +80,7 @@ const Registration = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${apiUrl}/api/registrations/getCustomersWithSummary`,
+        `/api/registrations/getCustomersWithSummary`,
         { withCredentials: true },
       );
       if (res.status === 200) {
@@ -97,7 +97,7 @@ const Registration = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${apiUrl}/api/registrations/getInventoryByCategory`,
+        `/api/registrations/getInventoryByCategory`,
         { withCredentials: true },
       );
       if (res.status === 200) {
@@ -114,7 +114,7 @@ const Registration = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `${apiUrl}/api/registrations/getInventoryByCategoryThree`,
+        `/api/registrations/getInventoryByCategoryThree`,
         { withCredentials: true },
       );
       if (res.status === 200) {
@@ -130,7 +130,7 @@ const Registration = () => {
 
   const getBrands = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/api/kitready/getAllBrands`, {
+      const res = await axios.get(`/api/kitready/getAllBrands`, {
         withCredentials: true,
       });
       if (res.status == 200) {
@@ -184,7 +184,7 @@ const Registration = () => {
       setLoad(true);
       console.log(data);
       const res = await axios.post(
-        `${apiUrl}/api/registrations/registration`,
+        `/api/registrations/registration`,
         {
           data: data,
           leadId: lId,
@@ -213,7 +213,7 @@ const Registration = () => {
         setLoad(true);
 
         const res = await axios.post(
-          `${apiUrl}/api/registrations/markRegistrationAsDone`,
+          `/api/registrations/markRegistrationAsDone`,
           {
             registrationId: rId,
             data: data,
@@ -251,7 +251,7 @@ const Registration = () => {
         setDLoad(true);
         console.log(customers);
         const result = await axios.post(
-          `${apiUrl}/api/registrations/getFileGeneration`,
+          `/api/registrations/getFileGeneration`,
           { registrationId: item.registration.id },
           { responseType: "blob", withCredentials: true }, // ← tells axios to treat response as binary file
         );

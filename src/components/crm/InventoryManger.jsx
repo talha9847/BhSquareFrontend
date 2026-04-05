@@ -44,7 +44,7 @@ const InventoryManager = () => {
   const getAllInve = async () => {
     setTableLoading(true);
     try {
-      const res = await axios.get(`${apiUrl}/api/kitready/getAllInventory`, {
+      const res = await axios.get(`/api/kitready/getAllInventory`, {
         withCredentials: true,
       });
       if (res.status === 200) setInventory(res.data.data);
@@ -57,7 +57,7 @@ const InventoryManager = () => {
 
   const getBrands = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/api/kitready/getAllBrands`, {
+      const res = await axios.get(`/api/kitready/getAllBrands`, {
         withCredentials: true,
       });
       if (res.status === 200) setBrands(res.data.data);
@@ -68,7 +68,7 @@ const InventoryManager = () => {
 
   const getAllCategories = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/api/kitready/getCategories`, {
+      const res = await axios.get(`/api/kitready/getCategories`, {
         withCredentials: true,
       });
       if (res.status === 200) setCategories(res.data.data);
@@ -105,11 +105,11 @@ const InventoryManager = () => {
     try {
       let res = editingId
         ? await axios.put(
-            `${apiUrl}/api/kitready/updateInventory/${editingId}`,
+            `/api/kitready/updateInventory/${editingId}`,
             payload,
             { withCredentials: true },
           )
-        : await axios.post(`${apiUrl}/api/kitready/createInventory`, payload, {
+        : await axios.post(`/api/kitready/createInventory`, payload, {
             withCredentials: true,
           });
 

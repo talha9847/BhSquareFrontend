@@ -30,7 +30,7 @@ const AllKitReady = () => {
     try {
       setPageLoading(true);
       const res = await axios.get(
-        `${apiUrl}/api/kitready/fetchKitReadyCustomersByStatus`,
+        `/api/kitready/fetchKitReadyCustomersByStatus`,
         { params: { status: activeTab }, withCredentials: true },
       );
       if (res.status === 200) {

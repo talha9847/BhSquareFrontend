@@ -42,7 +42,7 @@ const Fabrication = () => {
 
   const getFabricators = async () => {
     try {
-      const res = await axios.get(`${apiUrl}/api/dispatch/fetchFabricators`, {
+      const res = await axios.get(`/api/dispatch/fetchFabricators`, {
         withCredentials: true,
       });
       if (res.status === 200) setFabricators(res.data.data || []);
@@ -54,7 +54,7 @@ const Fabrication = () => {
   const fetchFabrications = async () => {
     setTableLoading(true);
     try {
-      const res = await axios.get(`${apiUrl}/api/dispatch/fetchFabrications`, {
+      const res = await axios.get(`/api/dispatch/fetchFabrications`, {
         withCredentials: true,
       });
       if (res.status === 200) setFabrications(res.data.data || []);
@@ -106,7 +106,7 @@ const Fabrication = () => {
 
       if (type == "fab") {
         const res = await axios.put(
-          `${apiUrl}/api/dispatch/updateFabricatorViaId`,
+          `/api/dispatch/updateFabricatorViaId`,
           payload,
           { withCredentials: true },
         );
@@ -120,7 +120,7 @@ const Fabrication = () => {
         }
       } else {
         const res = await axios.put(
-          `${apiUrl}/api/dispatch/updateFabrication`,
+          `/api/dispatch/updateFabrication`,
           payload,
           { withCredentials: true },
         );

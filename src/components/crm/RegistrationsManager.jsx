@@ -34,7 +34,7 @@ const RegistrationsManager = () => {
       setLoading(true);
       try {
         const res = await axios.get(
-          `${apiUrl}/api/registrations/fetchCustomersByStatus`,
+          `/api/registrations/fetchCustomersByStatus`,
           { params: { status: activeTab }, withCredentials: true },
         );
         // Based on your JSON: res.data.data
@@ -58,7 +58,7 @@ const RegistrationsManager = () => {
     try {
       setDLoad(true);
       const result = await axios.post(
-        `${apiUrl}/api/registrations/getFileGeneration`,
+        `/api/registrations/getFileGeneration`,
         { registrationId: item.registration_id },
         {
           responseType: "blob",

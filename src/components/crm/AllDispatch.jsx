@@ -35,7 +35,7 @@ const AllDispatch = () => {
     try {
       setPageLoading(true);
       const res = await axios.get(
-        `${apiUrl}/api/dispatch/fetchDispatchesByStatus`,
+        `/api/dispatch/fetchDispatchesByStatus`,
         {
           params: { status: activeTab },
           withCredentials: true,

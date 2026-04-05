@@ -31,7 +31,7 @@ const TechnicianManager = () => {
   const getAllTechnicians = async () => {
     setTableLoading(true);
     try {
-      const res = await axios.get(`${apiUrl}/api/wiring/fetchTechnicians`, {
+      const res = await axios.get(`/api/wiring/fetchTechnicians`, {
         withCredentials: true,
       });
       if (res.status === 200) {
@@ -69,13 +69,13 @@ const TechnicianManager = () => {
       let res;
       if (editingId) {
         res = await axios.put(
-          `${apiUrl}/api/wiring/updateTechnician/${editingId}`,
+          `/api/wiring/updateTechnician/${editingId}`,
           formData,
           { withCredentials: true },
         );
       } else {
         res = await axios.post(
-          `${apiUrl}/api/wiring/createTechnician`,
+          `/api/wiring/createTechnician`,
           formData,
           { withCredentials: true },
         );

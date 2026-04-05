@@ -32,7 +32,7 @@ const Cars = () => {
   const fetchCars = async () => {
     try {
       setPageLoading(true);
-      const res = await axios.get(`${apiUrl}/api/dispatch/fetchCars`, {
+      const res = await axios.get(`/api/dispatch/fetchCars`, {
         withCredentials: true,
       });
       if (res.status === 200) {
@@ -71,7 +71,7 @@ const Cars = () => {
       if (editingCar) {
         // Update Logic
         const res = await axios.put(
-          `${apiUrl}/api/dispatch/updateCar/${editingCar.id}`,
+          `/api/dispatch/updateCar/${editingCar.id}`,
           formData,
           { withCredentials: true },
         );
@@ -83,7 +83,7 @@ const Cars = () => {
       } else {
         // Create Logic
         const res = await axios.post(
-          `${apiUrl}/api/dispatch/createCar`,
+          `/api/dispatch/createCar`,
           formData,
           { withCredentials: true },
         );

@@ -91,7 +91,7 @@ const DocumentCollection = () => {
     try {
       setLoading(true);
       const res = await axios.post(
-        `${apiUrl}/api/leads/updateLead`,
+        `/api/leads/updateLead`,
         {
           id: leadsData.id,
           customer_name: leadsData.customer_name,
@@ -115,7 +115,7 @@ const DocumentCollection = () => {
   const getDocInfo = async () => {
     try {
       const res = await axios.get(
-        `${apiUrl}/api/docs/getCustomerDocumentByCustomerId/${customerId}`,
+        `/api/docs/getCustomerDocumentByCustomerId/${customerId}`,
         { withCredentials: true },
       );
       if (res.data.data) {
@@ -146,7 +146,7 @@ const DocumentCollection = () => {
     try {
       setRegLoading(true);
       const res = await axios.put(
-        `${apiUrl}/api/docs/upsertCustomerDocument`,
+        `/api/docs/upsertCustomerDocument`,
         docInfo,
         { withCredentials: true },
       );
@@ -168,7 +168,7 @@ const DocumentCollection = () => {
     try {
       setUpdateLoading(true);
       const res = await axios.post(
-        `${apiUrl}/api/leads/updateLead`,
+        `/api/leads/updateLead`,
         {
           id: leadsData.id,
           panel_wattage: leadsData.panel_wattage,
@@ -215,7 +215,7 @@ const DocumentCollection = () => {
       });
 
       const res = await axios.post(
-        `${apiUrl}/api/docs/uploadDocsToDrive`,
+        `/api/docs/uploadDocsToDrive`,
         formData,
         { withCredentials: true },
       );
@@ -240,7 +240,7 @@ const DocumentCollection = () => {
   const getLeadsData = async () => {
     try {
       const res = await axios.get(
-        `${apiUrl}/api/docs/getLeadDetailFromCustomerId/${customerId}`,
+        `/api/docs/getLeadDetailFromCustomerId/${customerId}`,
         { withCredentials: true },
       );
       if (res.status === 200) {
@@ -284,7 +284,7 @@ const DocumentCollection = () => {
     setNextLoad(true);
     try {
       const res = await axios.post(
-        `${apiUrl}/api/docs/completeStageAndPrepareNext`,
+        `/api/docs/completeStageAndPrepareNext`,
         {
           customer_id: customerId,
         },

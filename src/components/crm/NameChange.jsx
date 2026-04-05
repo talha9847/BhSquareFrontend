@@ -72,7 +72,7 @@ const NameChange = () => {
   const getStatus = async () => {
     try {
       const res = await axios.post(
-        `${apiUrl}/api/namechange/checkReady`,
+        `/api/namechange/checkReady`,
         {
           customerId: customerId,
         },
@@ -112,7 +112,7 @@ const NameChange = () => {
       });
 
       const res = await axios.post(
-        `${apiUrl}/api/namechange/uploadNameChangeFiles`,
+        `/api/namechange/uploadNameChangeFiles`,
         formData,
         { withCredentials: true },
       );
@@ -136,7 +136,7 @@ const NameChange = () => {
       setNextLoad(true);
       // Add your transition API logic here
       const res = await axios.post(
-        `${apiUrl}/api/namechange/goToStageThree`,
+        `/api/namechange/goToStageThree`,
         {
           customerId: customerId,
         },

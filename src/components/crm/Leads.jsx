@@ -85,7 +85,7 @@ const Leads = () => {
     try {
       setLoadSaveLead(true);
       const res = await axios.post(
-        `${apiUrl}/api/sources/addSource`,
+        `/api/sources/addSource`,
         {
           source_name: sourceName,
         },
@@ -148,7 +148,7 @@ const Leads = () => {
 
   const getSources = async () => {
     try {
-      const result = await axios.get(`${apiUrl}/api/sources/fetchSources`, {
+      const result = await axios.get(`/api/sources/fetchSources`, {
         withCredentials: true,
       });
 
@@ -165,7 +165,7 @@ const Leads = () => {
   const getLeadsByStatus = async (status) => {
     setPageLoading(true);
     try {
-      const result = await axios.get(`${apiUrl}/api/leads/fetchLeadsByStatus`, {
+      const result = await axios.get(`/api/leads/fetchLeadsByStatus`, {
         params: { status: status },
         withCredentials: true, // ✅ send cookies
       });
@@ -229,7 +229,7 @@ const Leads = () => {
         setLoadSaveLead(true);
         console.log(data);
         const res = await axios.post(
-          `${apiUrl}/api/leads/updateLead`,
+          `/api/leads/updateLead`,
           {
             id: editId,
             customer_name: data.customer_name,
@@ -278,7 +278,7 @@ const Leads = () => {
         setLoadSaveLead(true);
         console.log(data);
         const res = await axios.post(
-          `${apiUrl}/api/leads/addLead`,
+          `/api/leads/addLead`,
           {
             customer_name: data.customer_name,
             contact_number: data.contact_number,
@@ -337,7 +337,7 @@ const Leads = () => {
       setConvertPendingLoader(true);
       console.log("convert to pending");
       const res = await axios.post(
-        `${apiUrl}/api/leads/delayToPending`,
+        `/api/leads/delayToPending`,
         {
           lead_id: convertPendingModal.lead.id,
         },
@@ -369,7 +369,7 @@ const Leads = () => {
 
       try {
         const res = await axios.post(
-          `${apiUrl}/api/leads/delayLead`,
+          `/api/leads/delayLead`,
           {
             lead_id: disPositionId,
             next_visit_date: followUpDate,
@@ -401,7 +401,7 @@ const Leads = () => {
 
       try {
         const res = await axios.post(
-          `${apiUrl}/api/leads/convertToCustomer`,
+          `/api/leads/convertToCustomer`,
           {
             lead_id: disPositionId,
           },
@@ -435,7 +435,7 @@ const Leads = () => {
       }
       try {
         const res = await axios.post(
-          `${apiUrl}/api/leads/cancelLead`,
+          `/api/leads/cancelLead`,
           {
             lead_id: disPositionId,
           },

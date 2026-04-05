@@ -39,7 +39,7 @@ const KitReady = () => {
     try {
       setPageLoading(true);
       const res = await axios.get(
-        `${apiUrl}/api/kitready/fetchKitReadyCustomers`,
+        `/api/kitready/fetchKitReadyCustomers`,
         { withCredentials: true },
       );
       if (res.status === 200) {
@@ -58,7 +58,7 @@ const KitReady = () => {
       console.log("Hello i am hjererer");
 
       const res = await axios.post(
-        `${apiUrl}/api/kitready/addKitItems`,
+        `/api/kitready/addKitItems`,
         {
           customerId,
         },
@@ -86,7 +86,7 @@ const KitReady = () => {
     setLoading(true);
     try {
       const res = await axios.post(
-        `${apiUrl}/api/kitready/updateLoan`,
+        `/api/kitready/updateLoan`,
         {
           customerId: selectedCustomer.customer.id,
           loanRequired: loanRequired,

@@ -29,7 +29,7 @@ const FinalStage = () => {
     setTableLoading(true);
     try {
       const res = await axios.get(
-        `${apiUrl}/api/sources/getFinalStageCustomers`,
+        `/api/sources/getFinalStageCustomers`,
         { withCredentials: true },
       );
       if (res.status === 200) {
@@ -68,7 +68,7 @@ const FinalStage = () => {
           console.log(item);
           if (field === "file_approved") {
             const res = await axios.post(
-              `${apiUrl}/api/sources/updateStage10`,
+              `/api/sources/updateStage10`,
               {
                 customerId: item.customer_id,
                 flag: !currentStatus,
@@ -80,7 +80,7 @@ const FinalStage = () => {
 
           if (field === "file_uploaded") {
             const res = await axios.post(
-              `${apiUrl}/api/sources/updateStage11`,
+              `/api/sources/updateStage11`,
               {
                 customerId: item.customer_id,
                 flag: !currentStatus,
@@ -92,7 +92,7 @@ const FinalStage = () => {
 
           if (field === "inspection") {
             const res = await axios.post(
-              `${apiUrl}/api/sources/updateStage12`,
+              `/api/sources/updateStage12`,
               {
                 customerId: item.customer_id,
                 flag: !currentStatus,
@@ -104,7 +104,7 @@ const FinalStage = () => {
 
           if (field === "redeem") {
             const res = await axios.post(
-              `${apiUrl}/api/sources/updateStage13`,
+              `/api/sources/updateStage13`,
               {
                 customerId: item.customer_id,
                 flag: !currentStatus,

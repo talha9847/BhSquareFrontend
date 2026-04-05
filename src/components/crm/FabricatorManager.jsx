@@ -31,7 +31,7 @@ const FabricatorManager = () => {
     setTableLoading(true);
     try {
       // Assuming your endpoint follows the same pattern as brands
-      const res = await axios.get(`${apiUrl}/api/dispatch/fetchFabricators`, {
+      const res = await axios.get(`/api/dispatch/fetchFabricators`, {
         withCredentials: true,
       });
       if (res.status === 200) {
@@ -69,7 +69,7 @@ const FabricatorManager = () => {
     ) {
       try {
         const res = await axios.delete(
-          `${apiUrl}/api/kitready/deleteFabricator/${id}`,
+          `/api/kitready/deleteFabricator/${id}`,
           { withCredentials: true },
         );
         if (res.status === 200) {
@@ -90,13 +90,13 @@ const FabricatorManager = () => {
       let res;
       if (editingId) {
         res = await axios.put(
-          `${apiUrl}/api/dispatch/updateFabricator/${editingId}`,
+          `/api/dispatch/updateFabricator/${editingId}`,
           formData,
           { withCredentials: true },
         );
       } else {
         res = await axios.post(
-          `${apiUrl}/api/dispatch/createFabricator`,
+          `/api/dispatch/createFabricator`,
           formData,
           { withCredentials: true },
         );

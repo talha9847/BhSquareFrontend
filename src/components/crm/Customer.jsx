@@ -62,7 +62,7 @@ const Customer = () => {
       }
 
       const res = await axios.post(
-        `${apiUrl}/api/customers/updateCustomerNameChange`,
+        `/api/customers/updateCustomerNameChange`,
         { id: id, name_change: nameChange },
         { withCredentials: true },
       );
@@ -82,7 +82,7 @@ const Customer = () => {
   const getCustomers = async () => {
     try {
       setPageLoading(true);
-      const res = await axios.get(`${apiUrl}/api/customers/getCustomers`, {
+      const res = await axios.get(`/api/customers/getCustomers`, {
         withCredentials: true,
       });
       setCustomer(res.data.data);

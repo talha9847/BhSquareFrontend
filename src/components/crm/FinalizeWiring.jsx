@@ -52,7 +52,7 @@ const FinalizeWiring = () => {
     try {
       setInitialLoading(true);
       const res = await axios.get(
-        `${apiUrl}/api/wiring/getWiringDocs/${selectedWiring.wiring_id}`,
+        `/api/wiring/getWiringDocs/${selectedWiring.wiring_id}`,
         { withCredentials: true },
       );
 
@@ -94,10 +94,10 @@ const FinalizeWiring = () => {
       preConfirm: async () => {
         try {
           // Replace this with your actual Stage Update API call
-          // await axios.post(`${apiUrl}/api/wiring/updateStage`, { id: selectedWiring.wiring_id });
+          // await axios.post(`/api/wiring/updateStage`, { id: selectedWiring.wiring_id });
           console.log(selectedWiring);
           const res = await axios.post(
-            `${apiUrl}/api/wiring/moveToFinalStage`,
+            `/api/wiring/moveToFinalStage`,
             { customerId: selectedWiring.customer_id },
             { withCredentials: true },
           );
@@ -137,7 +137,7 @@ const FinalizeWiring = () => {
 
     try {
       const res = await axios.post(
-        `${apiUrl}/api/wiring/uploadWiringDocs`,
+        `/api/wiring/uploadWiringDocs`,
         formData,
         { withCredentials: true },
       );
