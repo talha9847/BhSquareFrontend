@@ -58,7 +58,11 @@ const Sources = () => {
 
   const handleEditClick = (fab) => {
     setEditingId(fab.id);
-    setFormData({ name: fab.name });
+    setFormData({
+      name: fab.name,
+      commercial_commission: fab.commercial_commission,
+      residential_commission: fab.residential_commission,
+    });
     setIsModalOpen(true);
   };
 
@@ -173,6 +177,12 @@ const Sources = () => {
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         Source Name
                       </th>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Commercial Commission
+                      </th>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Residential Commission
+                      </th>
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">
                         Actions
                       </th>
@@ -195,6 +205,26 @@ const Sources = () => {
                               </div>
                               <p className="font-bold text-slate-800 text-sm uppercase tracking-tight">
                                 {fab.name}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center border border-blue-100">
+                                <Hammer size={14} />
+                              </div>
+                              <p className="font-bold text-slate-800 text-sm uppercase tracking-tight">
+                                {fab.commercial_commission}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center border border-blue-100">
+                                <Hammer size={14} />
+                              </div>
+                              <p className="font-bold text-slate-800 text-sm uppercase tracking-tight">
+                                {fab.residential_commission}
                               </p>
                             </div>
                           </td>
@@ -271,6 +301,54 @@ const Sources = () => {
                     value={formData.name}
                     onChange={(e) =>
                       setFormData({ name: e.target.value.toLocaleUpperCase() })
+                    }
+                  />
+                  <UserCheck
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"
+                    size={18}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
+                  Commercial Commision
+                </label>
+                <div className="relative">
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. John Doe, Apex Industries..."
+                    className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none text-sm font-bold"
+                    value={formData.commercial_commission}
+                    onChange={(e) =>
+                      setFormData({
+                        commercial_commission:
+                          e.target.value.toLocaleUpperCase(),
+                      })
+                    }
+                  />
+                  <UserCheck
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"
+                    size={18}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
+                  Residental Commision
+                </label>
+                <div className="relative">
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. John Doe, Apex Industries..."
+                    className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none text-sm font-bold"
+                    value={formData.residential_commission}
+                    onChange={(e) =>
+                      setFormData({
+                        residential_commission:
+                          e.target.value.toLocaleUpperCase(),
+                      })
                     }
                   />
                   <UserCheck
