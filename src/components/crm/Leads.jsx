@@ -155,7 +155,7 @@ const Leads = () => {
       setSources(result.data.data);
 
       result.data.data.map((v) => {
-        sourceMap[v.id] = v.source_name;
+        sourceMap[v.id] = v.name;
       });
 
       console.log(sourceMap[1]);
@@ -838,7 +838,7 @@ const Leads = () => {
                 >
                   {sources.map((v, i) => (
                     <option key={i} value={v.id}>
-                      {v.source_name}
+                      {v.name}
                     </option>
                   ))}
                 </select>

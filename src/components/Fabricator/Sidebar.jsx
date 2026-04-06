@@ -20,7 +20,9 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-
+import { FaBridgeCircleExclamation } from "react-icons/fa6";
+import { WiRefresh } from "react-icons/wi";
+import { FiExternalLink } from "react-icons/fi";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [active, setActive] = useState("dashboard");
@@ -32,11 +34,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   const menuItems = [
     {
-      name: "Wiring",
+      name: "Sites",
       icon: <HardHat size={18} />,
       type: "Installation",
       path: "/technician/wiring",
-      activePaths: ["/fabricator/fabrication/"],
+      activePaths: ["/fabricator/fabrication"],
     },
   ];
 

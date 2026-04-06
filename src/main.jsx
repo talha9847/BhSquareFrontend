@@ -11,3 +11,19 @@ createRoot(document.getElementById("root")).render(
     </AuthProvider>
   </StrictMode>,
 );
+
+
+// {
+//   "rewrites": [
+//     {
+//       "source": "/api/:path*",
+//       "destination": "https://bhsquarebackend.onrender.com/api/:path*"
+//     },
+//     {
+//       "source": "/:path*",
+//       "destination": "/index.html"
+//     }
+//   ]
+// }
+
+

@@ -63,10 +63,9 @@ const PrepareKit = () => {
   const fetchMainData = async () => {
     setTableLoading(true);
     try {
-      const res = await axios.get(
-        `/api/kitready/fetchKitItems/${customerId}`,
-        { withCredentials: true },
-      );
+      const res = await axios.get(`/api/kitready/fetchKitItems/${customerId}`, {
+        withCredentials: true,
+      });
       if (res.status === 200) {
         const data = res.data.data || [];
         setBaseKit(data.filter((item) => !item.is_extra));
@@ -88,7 +87,10 @@ const PrepareKit = () => {
       if (res.status === 200) {
         const pQty = parseInt(res.data.data.panel_qty) || 0;
         const iQty = parseInt(res.data.data.inverter_qty) || 0;
-        if (res.data.data.kit_status === "done") setKitStatus(true);
+        if (res.data.data.kit_status === "done") {
+          setKitStatus(true);
+          console.log(res.data.data);
+        }
         setPanelQty(pQty);
         setInverterQty(iQty);
         setPanelSerials(new Array(pQty).fill(""));
@@ -439,6 +441,7 @@ const PrepareKit = () => {
                               isVerifying={verifyingId === item.id}
                               onRemove={handleRemoveProduct}
                               onEdit={openEditModal}
+                              status={kitStatus}
                             />
                           ))}
                         </tbody>
@@ -646,6 +649,7 @@ const KitRowDesktop = ({
   isVerifying,
   onRemove,
   onEdit,
+  status,
 }) => (
   <tr
     className={`group transition-all duration-300 ${item.verified ? "bg-emerald-50/20" : "hover:bg-slate-50/50"}`}
@@ -703,7 +707,7 @@ const KitRowDesktop = ({
         )}
 
         {/* If item IS verified, show the Edit/Pen icon to modify quantity */}
-        {item.verified && (
+        {item.verified && !status && (
           <button
             onClick={() => onEdit(item)}
             className="w-10 h-10 rounded-xl border border-slate-200 text-slate-400 hover:border-amber-400 hover:text-amber-600 hover:bg-amber-50 transition-all flex items-center justify-center bg-white"
@@ -714,7 +718,7 @@ const KitRowDesktop = ({
 
         {/* Action / Verify Button */}
         <button
-          disabled={item.verified || isVerifying}
+          disabled={item.verified || isVerifying || status}
           onClick={() => toggleVerify(item.id, item.is_extra, item)}
           className={`w-10 h-10 rounded-xl border-2 inline-flex items-center justify-center transition-all ${
             item.verified

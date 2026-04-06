@@ -43,6 +43,7 @@ import UserManagement from "./components/crm/UserManagement";
 import ProtectedRoute from "./Guards/ProtectedRoute";
 import NotFound from "./Guards/NotFound";
 import TWiring from "./components/Technician/TWiring";
+import FFabrication from "./components/Fabricator/FFabrication";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -172,6 +173,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Fabrication />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/fabricator/fabrication"
+            element={
+              <ProtectedRoute allowedRoles={["fabricator"]}>
+                <FFabrication />
               </ProtectedRoute>
             }
           />

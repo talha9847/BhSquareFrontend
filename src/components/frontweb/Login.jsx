@@ -61,6 +61,9 @@ export default function Login() {
         if (result.data.data.role == "admin") {
           navigate("/dashboard");
         }
+        if (result.data.data.role == "fabricator") {
+          navigate("/fabricator/fabrication");
+        }
         login(result.data.data);
         console.log(result.data);
         setLoading(false);

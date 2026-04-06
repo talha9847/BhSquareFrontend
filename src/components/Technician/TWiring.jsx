@@ -34,10 +34,9 @@ const TWiring = () => {
   const getWiring = async () => {
     setTableLoading(true);
     try {
-      const res = await axios.get(
-        `/api/wiring/getWiringCustomerDetailsById`,
-        { withCredentials: true },
-      );
+      const res = await axios.get(`/api/wiring/getWiringCustomerDetailsById`, {
+        withCredentials: true,
+      });
 
       if (res.status === 200) {
         setWiringLogs(res.data.data);
