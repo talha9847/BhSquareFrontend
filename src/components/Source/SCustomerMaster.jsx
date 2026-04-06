@@ -1,36 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  User,
-  Zap,
-  CheckCircle2,
-  Clock,
-  Calendar,
-  FileText,
-  Save,
-  Edit3,
-  Settings,
-  Eye,
-  Activity,
-  Landmark,
-  Banknote,
-  MapPin,
-} from "lucide-react";
+import { User, CheckCircle2, Clock, Calendar, Activity } from "lucide-react";
 import axios from "axios";
 import Navbar from "../crm/Navbar";
 import Sidebar from "./Sidebar";
 
-const apiUrl = import.meta.env.VITE_API_URL;
-
-// --- SHARED UI COMPONENTS ---
+// --- SHARED UI COMPONENTS (READ-ONLY) ---
 
 const ModuleCard = ({
   title,
   icon,
   children,
-  isEditing,
-  onEdit,
-  onSave,
   accentColor = "text-[#1a5695]",
 }) => (
   <div className="bg-white rounded-[40px] p-10 border border-slate-200 shadow-sm relative transition-all hover:shadow-md animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -40,45 +20,20 @@ const ModuleCard = ({
       >
         {icon} {title}
       </h3>
-      <button
-        onClick={isEditing ? onSave : onEdit}
-        className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase transition-all ${
-          isEditing
-            ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100"
-            : "bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-blue-50"
-        }`}
-      >
-        {isEditing ? (
-          <>
-            <Save size={14} /> Save
-          </>
-        ) : (
-          <>
-            <Edit3 size={14} /> Edit
-          </>
-        )}
-      </button>
+      {/* Edit button removed from here */}
     </div>
     {children}
   </div>
 );
 
-const EditableField = ({ label, value, isEditing, isFull = false }) => (
+const DataField = ({ label, value, isFull = false }) => (
   <div className={isFull ? "col-span-full" : ""}>
     <p className="text-[9px] font-black uppercase tracking-[0.15em] mb-2 text-slate-400">
       {label}
     </p>
-    {isEditing ? (
-      <input
-        type="text"
-        defaultValue={value}
-        className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-slate-100 focus:border-[#1a5695] focus:bg-white transition-all outline-none font-bold text-sm text-slate-800"
-      />
-    ) : (
-      <p className="text-[13px] font-black uppercase tracking-tight text-slate-800">
-        {value || <span className="text-slate-200 tracking-widest">---</span>}
-      </p>
-    )}
+    <p className="text-[13px] font-black uppercase tracking-tight text-slate-800">
+      {value || <span className="text-slate-200 tracking-widest">---</span>}
+    </p>
   </div>
 );
 
@@ -91,23 +46,15 @@ const SCustomerMaster = () => {
   const [loading, setLoading] = useState(true);
   const [lead, setLead] = useState(null);
   const [stages, setStages] = useState([]);
-  const [isEditingBio, setIsEditingBio] = useState(false);
 
   const formatIST = (dateString) => {
     if (!dateString) return null;
-
-    // 1. Create a date object from your Node backend string
     const date = new Date(dateString);
-
-    // 2. Check if the date is valid before doing math
     if (isNaN(date.getTime())) return dateString;
 
-    // 3. Manually add 5 hours and 30 minutes (330 minutes)
-    // This shifts 09:23 AM UTC to 02:53 PM IST
     const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
     const localDate = new Date(date.getTime() + IST_OFFSET_MS);
 
-    // 4. Format for your clean UI
     return localDate
       .toLocaleString("en-IN", {
         day: "2-digit",
@@ -144,7 +91,7 @@ const SCustomerMaster = () => {
       }
     };
     fetchCore();
-  }, [leadId]);
+  }, [leadId, navigate]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex font-sans text-slate-900">
@@ -183,45 +130,35 @@ const SCustomerMaster = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                 <div className="lg:col-span-7 space-y-8">
-                  {/* BIO MODULE */}
+                  {/* BIO MODULE (READ ONLY) */}
                   <ModuleCard
                     title="Customer Bio & Site"
                     icon={<User size={18} />}
-                    isEditing={isEditingBio}
-                    onEdit={() => setIsEditingBio(true)}
-                    onSave={() => setIsEditingBio(false)}
                   >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
-                      <EditableField
+                      <DataField
                         label="Full Name"
                         value={lead?.customer_name}
-                        isEditing={isEditingBio}
                       />
-                      <EditableField
+                      <DataField
                         label="Phone Number"
                         value={lead?.contact_number}
-                        isEditing={isEditingBio}
                       />
-                      <EditableField
+                      <DataField
                         label="System Type"
                         value={lead?.installation_type}
-                        isEditing={isEditingBio}
                       />
-                      <EditableField
+                      <DataField
                         label="Total Capacity"
                         value={lead?.total_capacity}
-                        isEditing={isEditingBio}
                       />
-                      <EditableField
+                      <DataField
                         label="Installation Address"
                         value={lead?.address}
-                        isEditing={isEditingBio}
                         isFull
                       />
                     </div>
                   </ModuleCard>
-
-                  {/* SEPARATE FETCH MODULES */}
                 </div>
 
                 {/* TIMELINE COLUMN */}
@@ -241,7 +178,13 @@ const SCustomerMaster = () => {
                           className="relative flex items-start gap-8 pb-12 last:pb-0 group"
                         >
                           <div
-                            className={`relative z-10 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${stage.status === "done" ? "bg-emerald-500 text-white shadow-lg" : stage.status === "pending" ? "bg-[#1a5695] text-white animate-pulse" : "bg-slate-100 text-slate-300"}`}
+                            className={`relative z-10 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
+                              stage.status === "done"
+                                ? "bg-emerald-500 text-white shadow-lg"
+                                : stage.status === "pending"
+                                  ? "bg-[#1a5695] text-white animate-pulse"
+                                  : "bg-slate-100 text-slate-300"
+                            }`}
                           >
                             {stage.status === "done" ? (
                               <CheckCircle2 size={16} />
@@ -251,7 +194,11 @@ const SCustomerMaster = () => {
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4
-                              className={`text-[12px] font-black uppercase tracking-widest mb-3 ${stage.status === "not_used" ? "text-slate-300" : "text-slate-800"}`}
+                              className={`text-[12px] font-black uppercase tracking-widest mb-3 ${
+                                stage.status === "not_used"
+                                  ? "text-slate-300"
+                                  : "text-slate-800"
+                              }`}
                             >
                               {stage.name}
                             </h4>

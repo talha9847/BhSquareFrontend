@@ -213,12 +213,11 @@ const SLeads = () => {
         setLoadSaveLead(true);
         console.log(data);
         const res = await axios.post(
-          `/api/leads/addLead`,
+          `/api/leads/addLeadBySource`,
           {
             customer_name: data.customer_name,
             contact_number: data.contact_number,
             site_visit_date: data.site_visit_date,
-            source_id: data.source_id,
             address: data.address,
             notes: data.notes,
             panel_wattage: data.panel_wattage,
