@@ -64,6 +64,9 @@ export default function Login() {
         if (result.data.data.role == "fabricator") {
           navigate("/fabricator/fabrication");
         }
+        if (result.data.data.role == "source") {
+          navigate("/source/leads");
+        }
         login(result.data.data);
         console.log(result.data);
         setLoading(false);

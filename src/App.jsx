@@ -44,6 +44,9 @@ import ProtectedRoute from "./Guards/ProtectedRoute";
 import NotFound from "./Guards/NotFound";
 import TWiring from "./components/Technician/TWiring";
 import FFabrication from "./components/Fabricator/FFabrication";
+import Sources from "./components/crm/Sources";
+import SLeads from "./components/Source/SLeads";
+import SCustomerMaster from "./components/Source/SCustomerMaster";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -77,6 +80,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Leads />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/source/leads"
+            element={
+              <ProtectedRoute allowedRoles={["source"]}>
+                <SLeads />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sources"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Sources />
               </ProtectedRoute>
             }
           />
@@ -269,6 +288,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <CustomerMaster />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/source/master"
+            element={
+              <ProtectedRoute allowedRoles={["source"]}>
+                <SCustomerMaster />
               </ProtectedRoute>
             }
           />
