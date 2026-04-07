@@ -15,6 +15,7 @@ import {
   File,
   ChevronRight,
   ArrowRight,
+  Shield,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -290,6 +291,20 @@ const Customer = () => {
                         {/* IMPROVED ACTION COLUMN */}
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <div className="flex items-center justify-end">
+                            <button
+                              onClick={() =>
+                                navigate("/permissions", {
+                                  state: {
+                                    customerId: c.id,
+                                    leadId: c.lead_id,
+                                  },
+                                })
+                              }
+                              className="p-2.5 bg-blue-50 text-[#1a5695] hover:bg-[#1a5695] hover:text-white rounded-xl transition-all border border-blue-100 shadow-sm"
+                              title="Manage Permissions"
+                            >
+                              <Shield size={16} />
+                            </button>
                             {c.name_change === "not_used" ? (
                               <button
                                 onClick={() => {

@@ -37,6 +37,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       path: "/source/leads",
       activePaths: ["/source/leads"],
     },
+    {
+      name: "Customers",
+      icon: <HardHat size={18} />,
+      type: "Installation",
+      path: "/source/customers",
+      activePaths: ["/source/customers"],
+    },
   ];
 
   const fetchPendingLeadsCount = async () => {
