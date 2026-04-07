@@ -48,7 +48,7 @@ import Sources from "./components/crm/Sources";
 import SLeads from "./components/Source/SLeads";
 import SCustomerMaster from "./components/Source/SCustomerMaster";
 import Permissions from "./components/crm/Permissions";
-import SCustomers from "./components/Source/Scustomer";
+import SCustomers from "./components/Source/SCustomers";
 function App() {
   const [count, setCount] = useState(0);
 
