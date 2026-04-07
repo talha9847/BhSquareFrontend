@@ -47,8 +47,8 @@ import FFabrication from "./components/Fabricator/FFabrication";
 import Sources from "./components/crm/Sources";
 import SLeads from "./components/Source/SLeads";
 import SCustomerMaster from "./components/Source/SCustomerMaster";
-import SCustomers from "./components/Source/Scustomer";
 import Permissions from "./components/crm/Permissions";
+import SCustomers from "./components/Source/Scustomer";
 function App() {
   const [count, setCount] = useState(0);
 
