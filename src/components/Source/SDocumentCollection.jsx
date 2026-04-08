@@ -28,6 +28,9 @@ const SDocumentCollection = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { customerId } = location.state || {};
+  const { customerName } = location.state || {};
+  const { contactNumber } = location.state || {};
+  console.log(customerName);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAddingDoc, setIsAddingDoc] = useState(false);
   const [newDocName, setNewDocName] = useState("");
@@ -60,8 +63,8 @@ const SDocumentCollection = () => {
       const formData = new FormData();
       formData.append("customerId", customerId);
       formData.append("docId", docId);
-      formData.append("customerName", leadsData.customer_name);
-      formData.append("contactNumber", leadsData.contact_number);
+      formData.append("customerName", customerName);
+      formData.append("contactNumber", contactNumber);
 
       documents.forEach((doc) => {
         if (doc.file) {

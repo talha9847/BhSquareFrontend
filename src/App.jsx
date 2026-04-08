@@ -364,7 +364,11 @@ function App() {
             path="/source/documentcollection"
             element={
               <ProtectedRoute allowedRoles={["source"]}>
-                <SDocumentCollection />
+                <DocumentCollectionGuard>
+                  <SourceGuard>
+                    <SDocumentCollection />
+                  </SourceGuard>
+                </DocumentCollectionGuard>
               </ProtectedRoute>
             }
           />

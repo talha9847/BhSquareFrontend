@@ -184,11 +184,13 @@ const SCustomers = () => {
                                 <button
                                   onClick={() => {
                                     console.log(perm.page.id);
-                                    console.log(item.id);
+                                    console.log(item);
                                     navigate(`/source/${perm.page.url}`, {
                                       state: {
                                         customerId: item.id,
                                         pageId: perm.page.id,
+                                        customerName: item.lead.customer_name,
+                                        contactNumber: item.lead.contact_number,
                                       },
                                     });
                                   }}

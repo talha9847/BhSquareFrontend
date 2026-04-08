@@ -9,7 +9,6 @@ import { useAuth } from "../context/authContext";
 const NameChangeGuard = ({ children }) => {
   const location = useLocation();
   const { user } = useAuth();
-  console.log(user);
   // FIX 1: correct key
   const customerId = location.state?.customerId;
 

@@ -4,10 +4,11 @@ import axios from "axios";
 import Navbar from "../components/crm/Navbar";
 import Sidebar from "../components/crm/Sidebar";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "../context/authContext";
 
 const DocumentCollectionGuard = ({ children }) => {
   const location = useLocation();
-
+  const { user } = useAuth();
   // FIX 1: correct key
   const customerId = location.state?.customerId;
 
@@ -52,8 +53,16 @@ const DocumentCollectionGuard = ({ children }) => {
       </div>
     );
 
-  if (!allowed) return <Navigate to="/customers" replace />;
-
+  if (!allowed) {
+    if (user.role == "source") {
+      return <Navigate to="/source/customers" replace />;
+    }
+    if (user.role == "admin") {
+      return <Navigate to="/dashboard" replace />;
+    } else {
+      return <Navigate to="/login" replace />;
+    }
+  }
   return children;
 };
 
