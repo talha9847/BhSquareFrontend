@@ -4,39 +4,40 @@ import axios from "axios";
 import Navbar from "../components/crm/Navbar";
 import Sidebar from "../components/Source/Sidebar";
 import { Loader2 } from "lucide-react";
-import { useAuth } from "../context/authContext";
 
-const NameChangeGuard = ({ children }) => {
+const SourceGuard = ({ children }) => {
   const location = useLocation();
-  const { user } = useAuth();
-  console.log(user);
+
   // FIX 1: correct key
   const customerId = location.state?.customerId;
+  const pageId = location.state?.pageId;
 
   const [allowed, setAllowed] = useState(null);
   const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    if (!customerId) {
+    if (!customerId || !pageId) {
       setAllowed(false);
       return;
     }
 
     const checkAccess = async () => {
       try {
-        // FIX 2: pass customerId to backend
-        const res = await axios.get(`/api/docs/checkDocAccess/${customerId}`, {
-          withCredentials: true,
-        });
+        const res = await axios.get(
+          `/api/sources/checkPermission/${customerId}/${pageId}`,
+          {
+            withCredentials: true,
+          },
+        );
 
-        setAllowed(res.data.success);
+        setAllowed(!!res.data?.success);
       } catch (error) {
         setAllowed(false);
       }
     };
 
     checkAccess();
-  }, [customerId]);
+  }, [customerId, pageId]);
 
   if (allowed === null)
     return (
@@ -53,18 +54,9 @@ const NameChangeGuard = ({ children }) => {
       </div>
     );
 
-  if (!allowed) {
-    if (user.role == "source") {
-      return <Navigate to="/source/customers" replace />;
-    }
-    if (user.role == "admin") {
-      return <Navigate to="/dashboard" replace />;
-    } else {
-      return <Navigate to="/login" replace />;
-    }
-  }
+  if (!allowed) return <Navigate to="/customers" replace />;
 
   return children;
 };
 
-export default NameChangeGuard;
+export default SourceGuard;

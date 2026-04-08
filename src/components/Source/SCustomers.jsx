@@ -16,8 +16,10 @@ import Navbar from "../crm/Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const SCustomers = () => {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [customers, setCustomers] = useState([]);
@@ -180,6 +182,16 @@ const SCustomers = () => {
                             {item.permissions ? (
                               item.permissions.map((perm) => (
                                 <button
+                                  onClick={() => {
+                                    console.log(perm.page.id);
+                                    console.log(item.id);
+                                    navigate(`/source/${perm.page.url}`, {
+                                      state: {
+                                        customerId: item.id,
+                                        pageId: perm.page.id,
+                                      },
+                                    });
+                                  }}
                                   key={perm.id}
                                   disabled={!perm.is_permitted}
                                   title={perm.page.name.replace("_", " ")}

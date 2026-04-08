@@ -49,6 +49,9 @@ import SLeads from "./components/Source/SLeads";
 import SCustomerMaster from "./components/Source/SCustomerMaster";
 import Permissions from "./components/crm/Permissions";
 import SCustomers from "./components/Source/SCustomers";
+import SNameChange from "./components/Source/SNameChange";
+import SourceGuard from "./Guards/SourceGuard";
+import SDocumentCollection from "./components/Source/SDocumentCollection";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -336,12 +339,32 @@ function App() {
             }
           />
           <Route
+            path="/source/namechange"
+            element={
+              <ProtectedRoute allowedRoles={["source"]}>
+                <SourceGuard>
+                  <NameChangeGuard>
+                    <SNameChange />
+                  </NameChangeGuard>
+                </SourceGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/documentcollection"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <DocumentCollectionGuard>
                   <DocumentCollection />
                 </DocumentCollectionGuard>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/source/documentcollection"
+            element={
+              <ProtectedRoute allowedRoles={["source"]}>
+                <SDocumentCollection />
               </ProtectedRoute>
             }
           />
