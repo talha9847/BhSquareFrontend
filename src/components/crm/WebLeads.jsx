@@ -297,7 +297,7 @@ const WebLeads = () => {
                   >
                     <option value="pending">Pending Review</option>
                     <option value="contacted">Contacted</option>
-                    <option value="site_visit">Site Visit Scheduled</option>
+                    <option value="site_visit">Site Visit Scheduledd</option>
                     <option value="converted">Converted</option>
                     <option value="not_interested">Not Interested</option>
                   </select>
