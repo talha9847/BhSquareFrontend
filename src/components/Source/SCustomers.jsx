@@ -187,6 +187,7 @@ const SCustomers = () => {
                                     console.log(item);
                                     navigate(`/source/${perm.page.url}`, {
                                       state: {
+                                        leadId: item.lead_id,
                                         customerId: item.id,
                                         pageId: perm.page.id,
                                         customerName: item.lead.customer_name,

@@ -52,6 +52,8 @@ import SCustomers from "./components/Source/SCustomers";
 import SNameChange from "./components/Source/SNameChange";
 import SourceGuard from "./Guards/SourceGuard";
 import SDocumentCollection from "./components/Source/SDocumentCollection";
+import SLoanStep from "./components/Source/SLoanStep";
+import LoanStepGuard from "./Guards/LoanStepGuard";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -157,6 +159,18 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <LoanStep />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/source/loanstep"
+            element={
+              <ProtectedRoute allowedRoles={["source"]}>
+                <LoanStepGuard>
+                  <SourceGuard>
+                    <SLoanStep />
+                  </SourceGuard>
+                </LoanStepGuard>
               </ProtectedRoute>
             }
           />

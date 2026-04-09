@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Plus,
   Loader2,
+  Shield,
 } from "lucide-react";
 import axios from "axios";
 import Navbar from "./Navbar";
@@ -49,13 +50,10 @@ const AllCustomers = () => {
       setLoading(true);
       try {
         // Calling your new Node route: /api/customers/fetchByStatus?status=pending
-        const res = await axios.get(
-          `/api/customers/fetchCustomersByStatus`,
-          {
-            params: { status: activeTab },
-            withCredentials: true,
-          },
-        );
+        const res = await axios.get(`/api/customers/fetchCustomersByStatus`, {
+          params: { status: activeTab },
+          withCredentials: true,
+        });
 
         if (res.status === 200) {
           console.log(res.data.data);
@@ -103,9 +101,6 @@ const AllCustomers = () => {
                 {activeTab} Records • {customers.length} total
               </p>
             </div>
-            <button className="px-8 py-4 bg-[#1a5695] text-white rounded-[22px] text-[10px] font-black uppercase tracking-widest shadow-xl shadow-blue-100 flex items-center gap-2">
-              <Plus size={16} /> Create Lead
-            </button>
           </div>
 
           {/* CONTROLS */}
@@ -154,12 +149,6 @@ const AllCustomers = () => {
               {filteredList.map((c) => (
                 <div
                   key={c.customer_id}
-                  onClick={() => {
-                    console.log(c);
-                    navigate("/master", {
-                      state: { customerId: c.customer_id, leadId: c.lead_id },
-                    });
-                  }}
                   className="bg-white rounded-[40px] border border-slate-200 p-8 hover:shadow-2xl hover:border-[#1a5695]/40 transition-all cursor-pointer group"
                 >
                   <div className="flex justify-between items-start mb-8">
@@ -221,13 +210,39 @@ const AllCustomers = () => {
                   </div>
 
                   <div className="mt-10 flex justify-between items-center bg-slate-50 p-4 rounded-[24px] group-hover:bg-[#1a5695]/5 transition-colors">
-                    <span className="text-[10px] font-black text-[#1a5695] uppercase tracking-widest">
+                    <span
+                      onClick={() => {
+                        console.log(c);
+                        navigate("/master", {
+                          state: {
+                            customerId: c.customer_id,
+                            leadId: c.lead_id,
+                          },
+                        });
+                      }}
+                      className="text-[10px] font-black text-[#1a5695] uppercase tracking-widest"
+                    >
                       Master Details
                     </span>
                     <ChevronRight
                       size={18}
                       className="text-[#1a5695] group-hover:translate-x-1 transition-transform"
                     />
+
+                    <button
+                      onClick={() =>
+                        navigate("/permissions", {
+                          state: {
+                            customerId: c.customer_id,
+                            leadId: c.lead_id,
+                          },
+                        })
+                      }
+                      className="p-2.5 bg-blue-50 text-[#1a5695] hover:bg-[#1a5695] hover:text-white rounded-xl transition-all border border-blue-100 shadow-sm"
+                      title="Manage Permissions"
+                    >
+                      <Shield size={16} />
+                    </button>
                   </div>
                 </div>
               ))}
