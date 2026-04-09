@@ -3,7 +3,7 @@ import { X, User, Phone, MapPin, Send, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import axios from "axios";
 
-const LeadPopup = () => {
+const LeadPopUp = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -160,4 +160,4 @@ const LeadPopup = () => {
   );
 };
 
-export default LeadPopup;
+export default LeadPopUp;
