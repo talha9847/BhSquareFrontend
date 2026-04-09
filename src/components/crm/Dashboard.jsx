@@ -1,118 +1,207 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Users,
+  FileText,
+  Package,
+  Truck,
+  Hammer,
+  Zap,
+  ClipboardCheck,
+  Loader2,
+  ChevronRight,
+  TrendingUp,
+} from "lucide-react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
-import { useAuth } from "../../context/authContext";
+import axios from "axios";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const { user } = useAuth();
-  console.log(user);
-  const stats = [
-    {
-      label: "Total Leads",
-      value: "24",
-      change: "+4 this week",
-      color: "#1a5695",
-    },
-    {
-      label: "Capacity",
-      value: "112kW",
-      change: "Pipeline total",
-      color: "#f39200",
-    },
-    {
-      label: "Pending Docs",
-      value: "08",
-      change: "Action needed",
-      color: "#ef4444",
-    },
-    {
-      label: "Revenue",
-      value: "18L",
-      change: "↑ 12% vs last mo",
-      color: "#a855f7",
-    },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [counts, setCounts] = useState({
+    pending_leads: 0,
+    active_customers: 0,
+    kit_pending: 0,
+    fab_pending: 0,
+    wiring_pending: 0,
+    registration_pending: 0,
+    dispatch_pending: 0,
+  });
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchCounts();
+  }, []);
+
+  const fetchCounts = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get("/api/leads/pendingCounts", {
+        withCredentials: true,
+      });
+      if (res.status === 200) {
+        setCounts(res.data.data);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+    } finally {
+      setTimeout(() => setLoading(false), 600);
+    }
+  };
+
+  const StatCard = ({
+    label,
+    count,
+    color,
+    description,
+    icon: Icon,
+    onClick,
+  }) => (
+    <div
+      onClick={onClick}
+      className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden"
+    >
+      <div className="flex justify-between items-start relative z-10">
+        <div
+          className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-lg"
+          style={{
+            backgroundColor: color,
+            boxShadow: `0 8px 20px -6px ${color}`,
+          }}
+        >
+          <Icon size={22} />
+        </div>
+        <div className="text-right">
+          <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+            Pending
+          </span>
+          <div className="text-2xl font-black text-slate-800">{count}</div>
+        </div>
+      </div>
+      <div className="mt-4 relative z-10">
+        <h3 className="font-bold text-slate-700 group-hover:text-[#1a5695] flex items-center gap-1">
+          {label}{" "}
+          <ChevronRight
+            size={14}
+            className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"
+          />
+        </h3>
+        <p className="text-xs text-slate-400 mt-1 font-medium">{description}</p>
+      </div>
+      <Icon className="absolute -right-4 -bottom-4 w-20 h-20 text-slate-50 group-hover:text-slate-100/50 transition-colors pointer-events-none" />
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#f8fafc] flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
 
-      <div className="lg:ml-64 flex flex-col min-h-screen">
+      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8">
-          {/* Header Section */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+        <main className="p-4 lg:p-10">
+          {/* Header */}
+          <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne">
-                Installation Pipeline
+              <h1 className="text-3xl font-black text-slate-900 tracking-tight font-syne italic">
+                Solar<span className="text-[#1a5695] not-italic">OS</span>{" "}
+                Dashboard
               </h1>
-              <p className="text-sm text-slate-500">
-                Real-time status of all active solar projects
+              <p className="text-slate-500 font-medium mt-1 flex items-center gap-2">
+                <TrendingUp size={16} className="text-green-500" />
+                System operational: Tracking {counts.active_customers} active
+                projects
               </p>
             </div>
-            <div className="flex bg-white border border-slate-200 rounded-xl p-1 shadow-sm self-start">
-              {["Today", "Week", "Month"].map((t, i) => (
-                <button
-                  key={t}
-                  className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-all ${i === 0 ? "bg-[#1a5695] text-white" : "text-slate-500 hover:bg-slate-50"}`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
+            {loading && (
+              <div className="flex items-center gap-2 text-[#1a5695] bg-blue-50/50 backdrop-blur-md px-4 py-2 rounded-2xl border border-blue-100">
+                <Loader2 className="animate-spin" size={18} />
+                <span className="text-xs font-black uppercase tracking-tighter">
+                  Updating Live Data
+                </span>
+              </div>
+            )}
+          </header>
+
+          {/* Grid Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            {loading ? (
+              Array(7)
+                .fill(0)
+                .map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-32 bg-white rounded-3xl animate-pulse border border-slate-100"
+                  />
+                ))
+            ) : (
+              <>
+                <StatCard
+                  label="Leads"
+                  count={counts.pending_leads}
+                  color="#1e40af"
+                  icon={Users}
+                  description="Potential customers"
+                  onClick={() => navigate("/leads")}
+                />
+                <StatCard
+                  label="Govt. Reg"
+                  count={counts.registration_pending}
+                  color="#ea580c"
+                  icon={ClipboardCheck}
+                  description="Subsidy & Registration"
+                  onClick={() => navigate("/registration")}
+                />
+                <StatCard
+                  label="Kit Prep"
+                  count={counts.kit_pending}
+                  color="#dc2626"
+                  icon={Package}
+                  description="Material readiness"
+                  onClick={() => navigate("/kitready")}
+                />
+                <StatCard
+                  label="Logistics"
+                  count={counts.dispatch_pending}
+                  color="#7c3aed"
+                  icon={Truck}
+                  description="Delivery management"
+                  onClick={() => navigate("/dispatch")}
+                />
+                <StatCard
+                  label="Structure"
+                  count={counts.fab_pending}
+                  color="#059669"
+                  icon={Hammer}
+                  description="On-site fabrication"
+                  onClick={() => navigate("/fabrication")}
+                />
+                <StatCard
+                  label="Wiring"
+                  count={counts.wiring_pending}
+                  color="#0891b2"
+                  icon={Zap}
+                  description="Electrical finishing"
+                  onClick={() => navigate("/wiring")}
+                />
+                <StatCard
+                  label="Customers"
+                  count={counts.active_customers}
+                  color="#4f46e5"
+                  icon={FileText}
+                  description="Total active files"
+                  onClick={() => navigate("/customers")}
+                />
+              </>
+            )}
           </div>
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {stats.map((stat) => (
-              <div
-                key={stat.label}
-                className="bg-white p-6 rounded-2xl border border-slate-200 border-b-4 hover:shadow-lg transition-all"
-                style={{ borderBottomColor: stat.color }}
-              >
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">
-                  {stat.label}
-                </p>
-                <p className="text-3xl font-black text-slate-800">
-                  {stat.value}
-                </p>
-                <p
-                  className="text-xs font-bold mt-1"
-                  style={{ color: stat.color }}
-                >
-                  {stat.change}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          {/* Pipeline Progress Section (Placeholder) */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-            <h3 className="font-bold text-slate-800 mb-6">
-              Active Project: Ramanbhai Patel
-            </h3>
-            <div className="relative w-full h-2 bg-slate-100 rounded-full mb-8">
-              <div className="absolute top-0 left-0 h-full bg-[#1a5695] rounded-full w-[45%]" />
-              {/* Simplified Stage Markers */}
-              <div className="flex justify-between mt-4">
-                {["Lead", "Visit", "Docs", "Invoice", "Install"].map((s, i) => (
-                  <div key={s} className="flex flex-col items-center gap-2">
-                    <div
-                      className={`w-3 h-3 rounded-full ${i <= 2 ? "bg-[#1a5695]" : "bg-slate-200"}`}
-                    />
-                    <span className="text-[10px] font-bold text-slate-500">
-                      {s}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          {/* Restored Pipeline Section */}
         </main>
       </div>
     </div>
