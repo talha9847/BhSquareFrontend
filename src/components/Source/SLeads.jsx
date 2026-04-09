@@ -25,7 +25,6 @@ import Sidebar from "./Sidebar";
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { resume } from "react-dom/server";
 import { useNavigate } from "react-router-dom";
 
 const SLeads = () => {
@@ -34,33 +33,24 @@ const SLeads = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [loadSaveLead, setLoadSaveLead] = useState(false);
-  const [activeTab, setActiveTab] = useState("pending"); // active, delayed, cancelled
-  const [pageLoading, setPageLoading] = useState(true); // NEW: Used for initial fetch
+  const [activeTab, setActiveTab] = useState("pending");
+  const [pageLoading, setPageLoading] = useState(true);
+
+  // --- NEW STATES FOR DATE UPDATE ---
+  const [isDateModalOpen, setIsDateModalOpen] = useState(false);
+  const [selectedLeadForDate, setSelectedLeadForDate] = useState(null);
+  const [newVisitDate, setNewVisitDate] = useState("");
 
   const [edit, setEdit] = useState(false);
   const [editId, setEditId] = useState(0);
 
-  const editClick = async (lead) => {
-    setEdit(true);
-    setEditId(lead.id);
-    setIsModalOpen(true);
-    setPlateWattage(lead.panel_wattage);
-    setQuantity(lead.number_of_panels);
-    setQty(lead.number_of_inverters);
-    setInvereterKWattage(lead.inverter_kw);
-    reset({
-      customer_name: lead.customer_name,
-      contact_number: lead.contact_number,
-      address: lead.address,
-      notes: lead.notes,
-      site_visit_date: lead.site_visit_date,
-      installation_type: lead.installation_type,
-      panel_wattage: lead.panel_wattage,
-      number_of_panels: lead.number_of_panels,
-      inverter_kw: lead.inverter_kw,
-      number_of_inverters: lead.number_of_inverters,
-    });
-  };
+  // Capacity Estimator States
+  const [plateWattage, setPlateWattage] = useState(550);
+  const [invereterKWattage, setInvereterKWattage] = useState(550);
+  const [quantity, setQuantity] = useState(0);
+  const [qty, setQty] = useState(0);
+  const invCapacity = Number(invereterKWattage) * Number(qty);
+  const systemCapacity = (Number(plateWattage) * Number(quantity)) / 1000;
 
   const {
     register,
@@ -69,47 +59,14 @@ const SLeads = () => {
     formState: { errors },
   } = useForm();
 
-  // Lead Data with status
-  const [leads, setLeads] = useState([
-    {
-      id: 1,
-      customer_name: "Ramanbhai Patel",
-      contact_number: "+91 87338 17262",
-      address: "Vaskui, Mahuva",
-      total_capacity: "8.32 kW",
-      site_visit_date: "01-01-2026",
-      status: "active",
-    },
-    {
-      id: 2,
-      customer_name: "Suresh Mehta",
-      contact_number: "+91 98221 00234",
-      address: "Adajan, Surat",
-      total_capacity: "5.50 kW",
-      site_visit_date: "01-01-2026",
-      status: "delayed",
-    },
-    {
-      id: 3,
-      customer_name: "Anita Desai",
-      contact_number: "+91 70445 99122",
-      address: "Bardoli, GJ",
-      total_capacity: "12.00 kW",
-      site_visit_date: "01-01-2026",
-      status: "cancelled",
-    },
-  ]);
-  const apiUrl = import.meta.env.VITE_API_URL;
+  const [leads, setLeads] = useState([]);
 
   const getLeadsByStatus = async (status) => {
     setPageLoading(true);
     try {
       const result = await axios.get(`/api/leads/fetchLeadsBySource`, {
-        withCredentials: true, // ✅ send cookies
+        withCredentials: true,
       });
-
-      console.log(result.data);
-
       setLeads(result.data.data);
       setPageLoading(false);
     } catch (error) {
@@ -119,155 +76,86 @@ const SLeads = () => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (activeTab === "pending") {
-        await getLeadsByStatus("pending");
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
     getLeadsByStatus(activeTab);
   }, [activeTab]);
 
   const getDateStyle = (dateString) => {
     if (!dateString) return "text-slate-400";
-
     const visitDate = new Date(dateString);
     const today = new Date();
-
     today.setHours(0, 0, 0, 0);
     visitDate.setHours(0, 0, 0, 0);
-
     const diffTime = visitDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 0) {
-      return "text-red-700 font-black animate-blink";
-    } else if (diffDays <= 2) {
-      return "text-amber-600 font-bold";
-    } else {
-      return "text-emerald-600 font-medium";
+    if (diffDays < 0) return "text-red-700 font-black animate-pulse";
+    if (diffDays <= 2) return "text-amber-600 font-bold";
+    return "text-emerald-600 font-medium";
+  };
+
+  // --- NEW: DATE UPDATE HANDLER ---
+  const handleQuickDateUpdate = async () => {
+    if (!newVisitDate) return toast.error("Please select a date");
+    setLoadSaveLead(true);
+
+    try {
+      const res = await axios.post(
+        `/api/leads/updateLeadVisitDate`,
+        {
+          id: selectedLeadForDate.id,
+          date: newVisitDate,
+        },
+        { withCredentials: true },
+      );
+
+      if (res.status === 200) {
+        toast.success("Visit date updated!");
+        getLeadsByStatus(activeTab);
+        setIsDateModalOpen(false);
+      }
+    } catch (error) {
+      toast.error("Update failed");
+    } finally {
+      setLoadSaveLead(false);
     }
   };
 
   const onSubmit = async (data) => {
-    if (edit) {
-      try {
-        if (editId == 0) {
-          toast.error("plase select lead to edit");
-          setLoadSaveLead(false);
-          setIsModalOpen(false);
-          return;
-        }
-        setLoadSaveLead(true);
-        console.log(data);
-        const res = await axios.post(
-          `/api/leads/updateLead`,
-          {
-            id: editId,
-            customer_name: data.customer_name,
-            contact_number: data.contact_number,
-            site_visit_date: data.site_visit_date,
-            source_id: data.source_id,
-            address: data.address,
-            notes: data.notes,
-            panel_wattage: Number(data.panel_wattage), // cast to number
-            number_of_panels: Number(data.number_of_panels),
-            inverter_kw: Number(data.inverter_kw), // cast to number
-            number_of_inverters: Number(data.number_of_inverters),
-            installation_type: data.installation_type,
-          },
-          { withCredentials: true },
-        );
+    setLoadSaveLead(true);
+    const payload = {
+      ...data,
+      panel_wattage: Number(data.panel_wattage),
+      number_of_panels: Number(data.number_of_panels),
+      inverter_kw: Number(data.inverter_kw),
+      number_of_inverters: Number(data.number_of_inverters),
+    };
 
-        if (res.status == 200) {
-          toast.success("Lead edited successfully");
-          getLeadsByStatus(activeTab);
-          setLoadSaveLead(false);
-          setEdit(false);
-          setEditId(0);
-          setIsModalOpen(false);
-          reset({
-            customer_name: "",
-            contact_number: "",
-            address: "",
-            notes: "",
-            site_visit_date: "",
-            installation_type: "",
-            panel_wattage: "",
-            number_of_panels: "",
-          });
-        }
-      } catch (error) {
-        setLoadSaveLead(false);
-        setLoadSaveLead(false);
-        setEdit(false);
-        setEditId(0);
+    try {
+      const url = edit ? `/api/leads/updateLead` : `/api/leads/addLeadBySource`;
+      if (edit) payload.id = editId;
+      else payload.status = "pending";
+
+      const res = await axios.post(url, payload, { withCredentials: true });
+
+      if (res.status === 200 || res.status === 201) {
+        toast.success(edit ? "Lead updated" : "Lead saved");
+        getLeadsByStatus(activeTab);
         setIsModalOpen(false);
+        setEdit(false);
+        reset();
       }
-    } else {
-      try {
-        setLoadSaveLead(true);
-        console.log(data);
-        const res = await axios.post(
-          `/api/leads/addLeadBySource`,
-          {
-            customer_name: data.customer_name,
-            contact_number: data.contact_number,
-            site_visit_date: data.site_visit_date,
-            address: data.address,
-            notes: data.notes,
-            panel_wattage: data.panel_wattage,
-            number_of_panels: data.number_of_panels,
-            inverter_kw: data.inverter_kw,
-            number_of_inverters: data.number_of_inverters,
-            status: "pending",
-            installation_type: data.installation_type,
-          },
-          { withCredentials: true },
-        );
-
-        if (res.status == 201) {
-          toast.success("Lead save successfully");
-          getLeadsByStatus(activeTab);
-          setLoadSaveLead(false);
-          setIsModalOpen(false);
-          reset({
-            customer_name: "",
-            contact_number: "",
-            address: "",
-            notes: "",
-            site_visit_date: "",
-            installation_type: "",
-            panel_wattage: "",
-            number_of_panels: "",
-            inverter_kw: "",
-            number_of_inverters: "",
-          });
-        }
-      } catch (error) {
-        setLoadSaveLead(false);
-      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoadSaveLead(false);
     }
   };
-  // Capacity Estimator Logic
-  const [plateWattage, setPlateWattage] = useState(550);
-  const [invereterKWattage, setInvereterKWattage] = useState(550);
-  const [quantity, setQuantity] = useState(0);
-  const [qty, setQty] = useState(0);
-  const invCapacity = invereterKWattage * qty;
-  const systemCapacity = (plateWattage * quantity) / 1000;
 
-  // Filter leads based on Tab + Search
-  const filteredLeads = leads.filter((lead) => {
-    const matchesSearch =
+  const filteredLeads = leads.filter(
+    (lead) =>
       lead.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.contact_number.includes(searchQuery);
-    return matchesSearch;
-  });
+      lead.contact_number.includes(searchQuery),
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -282,28 +170,26 @@ const SLeads = () => {
 
         <main className="p-4 lg:p-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            {/* Left Side: Title & Info */}
             <div>
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase flex items-center gap-3">
+              <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase">
                 Leads Pipeline
               </h1>
               <p className="text-sm text-slate-500">
                 Manage and convert solar prospects
               </p>
             </div>
-
-            {/* Right Side: Button Group (Side by Side) */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsModalOpen(true)}
-                className="flex items-center justify-center gap-2 bg-[#1a5695] text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-900/20 hover:bg-[#15467a] transition-all active:scale-95 text-sm"
-              >
-                <Plus size={20} /> Add New Lead
-              </button>
-            </div>
+            <button
+              onClick={() => {
+                setEdit(false);
+                reset();
+                setIsModalOpen(true);
+              }}
+              className="flex items-center justify-center gap-2 bg-[#1a5695] text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:bg-[#15467a] transition-all active:scale-95 text-sm"
+            >
+              <Plus size={20} /> Add New Lead
+            </button>
           </div>
 
-          {/* Search Bar */}
           <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
             <div className="flex-1 relative">
               <Search
@@ -312,8 +198,8 @@ const SLeads = () => {
               />
               <input
                 type="text"
-                placeholder={`Search ${activeTab} leads...`}
-                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-[#1a5695] outline-none transition-all text-sm"
+                placeholder={`Search leads...`}
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-[#1a5695] outline-none text-sm"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -324,7 +210,7 @@ const SLeads = () => {
             {pageLoading ? (
               <div className="flex flex-col items-center justify-center py-32">
                 <Loader2 className="w-10 h-10 text-[#1a5695] animate-spin mb-4" />
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   Fetching Records
                 </p>
               </div>
@@ -342,7 +228,6 @@ const SLeads = () => {
                       <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                         Visit Date
                       </th>
-
                       <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                         Capacity
                       </th>
@@ -373,15 +258,24 @@ const SLeads = () => {
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        {/* --- CLICKABLE DATE CELL --- */}
+                        <td
+                          className="px-6 py-4 cursor-pointer hover:bg-blue-50 transition-all"
+                          onClick={() => {
+                            setSelectedLeadForDate(lead);
+                            setNewVisitDate(lead.site_visit_date);
+                            setIsDateModalOpen(true);
+                          }}
+                        >
                           <div className="flex flex-col">
                             <span
-                              className={`text-xs uppercase tracking-tight ${getDateStyle(lead.site_visit_date)}`}
+                              className={`text-xs uppercase tracking-tight flex items-center gap-2 ${getDateStyle(lead.site_visit_date)}`}
                             >
                               {lead.site_visit_date}
+                              <Edit size={12} className="text-slate-300" />
                             </span>
                             <span className="text-[9px] text-slate-400 font-semibold mt-0.5">
-                              Scheduled Visit
+                              Click to Reschedule
                             </span>
                           </div>
                         </td>
@@ -392,96 +286,92 @@ const SLeads = () => {
                         </td>
                         <td className="px-6 py-4">
                           <span className="text-sm font-black text-[#1a5695]">
-                            {lead.status == "pending"
+                            {lead.status === "pending"
                               ? "PENDING"
-                              : "CONVERTED TO CUSTOMER"}
+                              : "CONVERTED"}
                           </span>
                         </td>
-                        {lead.status == "converted" && (
-                          <td className="px-6 py-4">
-                            <span className="text-sm font-black text-[#1a5695]">
-                              <button
-                                onClick={() => {
-                                  navigate("/source/master", {
-                                    state: {
-                                      leadId: lead.id,
-                                    },
-                                  });
-                                }}
-                              >
-                                View Customer
-                              </button>
-                            </span>
-                          </td>
-                        )}
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                {filteredLeads.length === 0 && (
-                  <div className="p-12 text-center text-slate-400 text-sm italic">
-                    No leads found in this category.
-                  </div>
-                )}
               </div>
             )}
           </div>
         </main>
       </div>
 
-      {/* --- ADD LEAD MODAL (Updated with Visit & Notes) --- */}
+      {/* --- QUICK DATE UPDATE MODAL --- */}
+      {isDateModalOpen && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-sm rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in duration-200">
+            <div className="bg-[#1a5695] p-5 text-white flex justify-between items-center">
+              <h2 className="text-sm font-bold uppercase tracking-widest">
+                Reschedule
+              </h2>
+              <button onClick={() => setIsDateModalOpen(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase">
+                  Select New Date
+                </label>
+                <input
+                  type="date"
+                  className="w-full mt-1 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
+                  value={newVisitDate}
+                  onChange={(e) => setNewVisitDate(e.target.value)}
+                />
+              </div>
+              <button
+                onClick={handleQuickDateUpdate}
+                disabled={loadSaveLead}
+                className="w-full py-4 bg-[#f39200] text-white rounded-2xl font-bold shadow-lg hover:bg-[#e08600] transition-all flex items-center justify-center gap-2"
+              >
+                {loadSaveLead ? (
+                  <Loader2 className="animate-spin" size={20} />
+                ) : (
+                  "Update Schedule"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- MAIN ADD/EDIT MODAL --- */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          {/* Modal Container: Max height constrained to 90vh */}
           <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-[32px] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in duration-200">
-            {/* Fixed Header */}
             <div className="bg-[#1a5695] p-5 text-white flex justify-between items-center shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                   <Users size={20} />
                 </div>
                 <h2 className="text-xl font-bold font-syne uppercase tracking-tight">
-                  {edit ? "Edit Lead" : " Create New Lead"}
+                  {edit ? "Edit Lead" : "Create New Lead"}
                 </h2>
               </div>
               <button
-                onClick={() => {
-                  setIsModalOpen(false);
-                  setEdit(false);
-                  reset({
-                    customer_name: "",
-                    contact_number: "",
-                    address: "",
-                    notes: "",
-                    site_visit_date: "",
-                    installation_type: "",
-                    panel_wattage: "",
-                    number_of_panels: "",
-                    inverter_kw: "",
-                    number_of_inverters: "",
-                  });
-                }}
+                onClick={() => setIsModalOpen(false)}
                 className="hover:bg-white/10 p-2 rounded-full transition-colors"
               >
                 <X size={24} />
               </button>
             </div>
 
-            {/* Scrollable Form Body */}
             <form
               className="p-6 overflow-y-auto custom-scrollbar flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4"
               onSubmit={handleSubmit(onSubmit)}
             >
-              {/* Row 1: Identity */}
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">
                   Customer Name
                 </label>
                 <input
-                  {...register("customer_name", {
-                    required: "Customer name is required",
-                  })}
-                  placeholder="e.g. Rajesh Bhai"
+                  {...register("customer_name", { required: true })}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
                 />
               </div>
@@ -490,15 +380,10 @@ const SLeads = () => {
                   Contact Number
                 </label>
                 <input
-                  {...register("contact_number", {
-                    required: "Contact number is required",
-                  })}
-                  placeholder="+91 00000 00000"
+                  {...register("contact_number", { required: true })}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
                 />
               </div>
-
-              {/* Row 2: Logistics */}
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase flex items-center gap-1">
                   <Calendar size={10} /> Visit Schedule
@@ -509,84 +394,39 @@ const SLeads = () => {
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
                 />
               </div>
-
-              {/* Row 3: Category */}
-              <div className="md:col-span-2 space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">
-                  Project Category
-                </label>
-                <select
-                  {...register("installation_type", {
-                    required: "Project category is required",
-                  })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
-                >
-                  <option value={"Residential"}>Residential</option>
-                  <option value={"Commercial"}>Commercial</option>
-                  <option value={"Industrial"}>Industrial</option>
-                </select>
-              </div>
-
-              {/* Row 4: Address */}
               <div className="md:col-span-2 space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">
                   Full Address
                 </label>
                 <textarea
-                  {...register("address", {
-                    required: "Address is required",
-                  })}
-                  placeholder="Enter site address..."
+                  {...register("address", { required: true })}
                   rows="2"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none resize-none focus:border-[#1a5695]"
                 ></textarea>
               </div>
 
-              {/* Row 5: Internal Notes */}
-              <div className="md:col-span-2 space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase flex items-center gap-1">
-                  <ClipboardList size={10} /> Internal Notes
-                </label>
-                <textarea
-                  {...register("notes", {
-                    required: "Notes is required",
-                  })}
-                  placeholder="Specific requirements..."
-                  rows="2"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none resize-none focus:border-[#1a5695]"
-                ></textarea>
-              </div>
-
-              {/* Calculator Panel */}
+              {/* Capacity Estimator */}
               <div className="md:col-span-2 bg-blue-50/50 p-4 rounded-3xl border border-blue-100">
                 <div className="flex items-center gap-2 mb-3 text-[#1a5695] font-bold text-[10px] uppercase tracking-widest">
                   <Calculator size={14} /> Panel Capacity Estimator
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase ml-1">
-                      Wattage (W)
-                    </span>
-                    <input
-                      {...register("panel_wattage")}
-                      type="number"
-                      value={plateWattage}
-                      onChange={(e) => setPlateWattage(e.target.value)}
-                      className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase ml-1">
-                      Plates
-                    </span>
-                    <input
-                      {...register("number_of_panels")}
-                      type="number"
-                      value={quantity}
-                      onChange={(e) => setQuantity(e.target.value)}
-                      className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
-                    />
-                  </div>
+                  <input
+                    {...register("panel_wattage")}
+                    type="number"
+                    value={plateWattage}
+                    onChange={(e) => setPlateWattage(e.target.value)}
+                    className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
+                    placeholder="Wattage"
+                  />
+                  <input
+                    {...register("number_of_panels")}
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
+                    placeholder="Plates"
+                  />
                 </div>
                 <div className="mt-3 pt-3 border-t border-blue-100 flex justify-between items-center">
                   <span className="text-[10px] font-bold text-slate-500 uppercase">
@@ -598,66 +438,21 @@ const SLeads = () => {
                 </div>
               </div>
 
-              {/* Calculator Panel */}
-              <div className="md:col-span-2 bg-blue-50/50 p-4 rounded-3xl border border-blue-100">
-                <div className="flex items-center gap-2 mb-3 text-[#1a5695] font-bold text-[10px] uppercase tracking-widest">
-                  <Calculator size={14} />
-                  Inverter Capacity Estimator
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase ml-1">
-                      Kilo Wattage (KW)
-                    </span>
-                    <input
-                      {...register("inverter_kw")}
-                      type="number"
-                      value={invereterKWattage}
-                      onChange={(e) => setInvereterKWattage(e.target.value)}
-                      className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase ml-1">
-                      Number of Inverters
-                    </span>
-                    <input
-                      {...register("number_of_inverters")}
-                      type="number"
-                      value={qty}
-                      onChange={(e) => setQty(e.target.value)}
-                      className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
-                    />
-                  </div>
-                </div>
-                <div className="mt-3 pt-3 border-t border-blue-100 flex justify-between items-center">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">
-                    System Size
-                  </span>
-                  <span className="text-xl font-black text-[#1a5695]">
-                    {invCapacity.toFixed(2)} kW
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-6 border-t border-slate-100 bg-slate-50/50 shrink-0 flex gap-3">
+              <div className="p-6 border-t border-slate-100 bg-slate-50/50 shrink-0 flex gap-3 md:col-span-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 px-6 py-3.5 rounded-2xl font-bold text-slate-400 bg-white border border-slate-200 hover:bg-slate-50 transition-all"
+                  className="flex-1 px-6 py-3.5 rounded-2xl font-bold text-slate-400 bg-white border border-slate-200"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-[2] px-6 py-3.5 rounded-2xl font-bold text-white bg-[#f39200] shadow-lg shadow-orange-500/20 hover:bg-[#e08600] active:scale-95 transition-all flex items-center justify-center gap-2"
-                  disabled={loadSaveLead} // disable button while loading
+                  disabled={loadSaveLead}
+                  className="flex-[2] px-6 py-3.5 rounded-2xl font-bold text-white bg-[#f39200] flex items-center justify-center gap-2"
                 >
                   {loadSaveLead ? (
-                    <>
-                      <Loader2 className="animate-spin w-5 h-5 text-white" />
-                      Saving...
-                    </>
+                    <Loader2 className="animate-spin w-5 h-5" />
                   ) : (
                     "Save Lead"
                   )}
