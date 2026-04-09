@@ -46,21 +46,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     },
   ];
 
-  const fetchPendingLeadsCount = async () => {
-    try {
-      const result = await axios.get(`/api/leads/fetchPendingLeadsCount`, {
-        withCredentials: true,
-      });
-      setLeadCount(result.data.count);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  useEffect(() => {
-    fetchPendingLeadsCount();
-  }, []);
-
   const categories = [...new Set(menuItems.map((item) => item.type))];
 
   return (

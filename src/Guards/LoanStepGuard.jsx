@@ -24,7 +24,7 @@ const LoanStepGuard = ({ children }) => {
     const checkAccess = async () => {
       try {
         // FIX 2: pass customerId to backend
-        const res = await axios.get(`/api/docs/checkLoanAccess/${customerId}`, {
+        const res = await axios.get(`/api/loan/checkLoanAccess/${customerId}`, {
           withCredentials: true,
         });
 

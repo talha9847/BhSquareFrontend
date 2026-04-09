@@ -167,7 +167,18 @@ const AllCustomers = () => {
                     </div>
                   </div>
 
-                  <h3 className="text-2xl font-black text-slate-800 uppercase mb-2 line-clamp-1 group-hover:text-[#1a5695] transition-colors">
+                  <h3
+                    onClick={() => {
+                      console.log(c);
+                      navigate("/master", {
+                        state: {
+                          customerId: c.customer_id,
+                          leadId: c.lead_id,
+                        },
+                      });
+                    }}
+                    className="text-2xl font-black text-slate-800 uppercase mb-2 line-clamp-1 group-hover:text-[#1a5695] transition-colors cursor-pointer"
+                  >
                     {c.customer_name}
                   </h3>
                   <div className="flex items-center gap-2 mb-8">
@@ -210,18 +221,7 @@ const AllCustomers = () => {
                   </div>
 
                   <div className="mt-10 flex justify-between items-center bg-slate-50 p-4 rounded-[24px] group-hover:bg-[#1a5695]/5 transition-colors">
-                    <span
-                      onClick={() => {
-                        console.log(c);
-                        navigate("/master", {
-                          state: {
-                            customerId: c.customer_id,
-                            leadId: c.lead_id,
-                          },
-                        });
-                      }}
-                      className="text-[10px] font-black text-[#1a5695] uppercase tracking-widest"
-                    >
+                    <span className="text-[10px] font-black text-[#1a5695] uppercase tracking-widest">
                       Master Details
                     </span>
                     <ChevronRight
