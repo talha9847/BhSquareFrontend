@@ -129,16 +129,22 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       path: "/winventory",
       activePaths: ["/winventory"],
     },
+    {
+      name: "Web Leads",
+      icon: <HardHat size={18} />,
+      type: "Installation",
+      path: "/webleads",
+      activePaths: ["/webleads"],
+    },
 
     { name: "AMC & Service", icon: <Wrench size={18} />, type: "After Sales" },
   ];
 
   const fetchPendingLeadsCount = async () => {
     try {
-      const result = await axios.get(
-        `/api/leads/fetchPendingLeadsCount`,
-        { withCredentials: true },
-      );
+      const result = await axios.get(`/api/leads/fetchPendingLeadsCount`, {
+        withCredentials: true,
+      });
       setLeadCount(result.data.count);
     } catch (error) {
       console.log(error);

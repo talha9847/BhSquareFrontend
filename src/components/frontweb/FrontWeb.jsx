@@ -8,10 +8,12 @@ import Projects from "../frontweb/Projects";
 import Testimonials from "../frontweb/Testimonials";
 import Footer from "../frontweb/Footer";
 import Contact from "../frontweb/Contact";
+import LeadPopup from "./LeadPopUp";
 
 const FrontWeb = () => {
   return (
     <div>
+      <LeadPopup />
       <Navbar />
       <section id="home">
         <Hero />
@@ -26,7 +28,7 @@ const FrontWeb = () => {
       <section id="projects">
         <Projects />
       </section>
-      
+
       <Testimonials />
       <section id="contact">
         <Contact />

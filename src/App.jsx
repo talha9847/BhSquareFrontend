@@ -54,6 +54,7 @@ import SourceGuard from "./Guards/SourceGuard";
 import SDocumentCollection from "./components/Source/SDocumentCollection";
 import SLoanStep from "./components/Source/SLoanStep";
 import LoanStepGuard from "./Guards/LoanStepGuard";
+import WebLeads from "./components/crm/WebLeads";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -399,6 +400,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <RegistrationsManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/webleads"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <WebLeads />
               </ProtectedRoute>
             }
           />
