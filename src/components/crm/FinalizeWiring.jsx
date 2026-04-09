@@ -13,6 +13,9 @@ import {
   CloudUpload,
   RotateCcw,
   ChevronRight,
+  Hash,
+  X,
+  Save,
 } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -25,23 +28,25 @@ const FinalizeWiring = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-
-  console.log(user);
   const { selectedWiring } = state || {};
-  const apiUrl = import.meta.env.VITE_API_URL;
-  console.log(selectedWiring);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [btnLoading, setBtnLoading] = useState({});
-
   const [mandatoryDocs, setMandatoryDocs] = useState([]);
   const [otherDocs, setOtherDocs] = useState([]);
 
-  const isEverythingUploaded = () => {
-    if (initialLoading) return false;
-    if (otherDocs.length === 0) return false;
+  // --- Serial Modal States ---
+  const [isSerialModalOpen, setIsSerialModalOpen] = useState(false);
+  const [serialLoading, setSerialLoading] = useState(false);
+  const [serials, setSerials] = useState({
+    panelSerials: [],
+    inverterSerials: [],
+  });
+  const [updatingSerialId, setUpdatingSerialId] = useState(null);
 
-    // Checks if every single row (Panel 1, Geo Tag, etc.) has a link
+  const isEverythingUploaded = () => {
+    if (initialLoading || otherDocs.length === 0) return false;
     return otherDocs.every(
       (doc) => doc.existingLink && doc.existingLink !== "",
     );
@@ -53,7 +58,9 @@ const FinalizeWiring = () => {
       setInitialLoading(true);
       const res = await axios.get(
         `/api/wiring/getWiringDocs/${selectedWiring.wiring_id}`,
-        { withCredentials: true },
+        {
+          withCredentials: true,
+        },
       );
 
       if (res.status === 200 && res.data.data) {
@@ -61,13 +68,10 @@ const FinalizeWiring = () => {
           dbId: doc.id,
           docName: doc.doc_name,
           file: null,
-          existingLink: doc.doc_link, // This is the Google Drive link
+          existingLink: doc.doc_link,
           isFromDB: true,
         }));
-
-        // Put everything into otherDocs so the UI renders them all in the list
         setOtherDocs(allDocsFromDB);
-        setMandatoryDocs([]); // Keep this empty if there are no "special" categories
       }
     } catch (error) {
       toast.error("Failed to load documents");
@@ -76,35 +80,72 @@ const FinalizeWiring = () => {
     }
   };
 
+  // --- Fetch Serials Function ---
+  const fetchSerials = async () => {
+    setSerialLoading(true);
+    try {
+      const res = await axios.get(
+        `/api/kitready/fetchCustomerSerials/${selectedWiring.customer_id}`,
+        {
+          withCredentials: true,
+        },
+      );
+      if (res.data.success) {
+        console.log(res.data.data);
+        setSerials(res.data.data);
+        setIsSerialModalOpen(true);
+      }
+    } catch (error) {
+      toast.error("Failed to fetch serial numbers");
+    } finally {
+      setSerialLoading(false);
+    }
+  };
+
+  // --- Update Single Serial Function ---
+  const handleUpdateSerial = async (id, type, newValue) => {
+    setUpdatingSerialId(id);
+    console.log(id);
+    try {
+      await axios.put(
+        `/api/kitready/updateSingleSerial`,
+        {
+          id,
+          type, // 'panel' or 'inverter'
+          serial_number: newValue,
+        },
+        { withCredentials: true },
+      );
+      toast.success("Serial updated successfully");
+    } catch (error) {
+      toast.error("Update failed");
+    } finally {
+      setUpdatingSerialId(null);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [selectedWiring?.wiring_id]);
 
-  // --- IMPROVED NEXT STAGE WITH LOADER ---
   const handleNextStage = () => {
     Swal.fire({
       title: "Move to Next Stage?",
       text: "Finalizing the wiring process...",
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#10b981", // emerald-500
-      cancelButtonColor: "#f43f5e", // rose-500
+      confirmButtonColor: "#10b981",
+      cancelButtonColor: "#f43f5e",
       confirmButtonText: "Yes, Proceed!",
-      showLoaderOnConfirm: true, // This enables the loader inside Swal
+      showLoaderOnConfirm: true,
       preConfirm: async () => {
         try {
-          // Replace this with your actual Stage Update API call
-          // await axios.post(`/api/wiring/updateStage`, { id: selectedWiring.wiring_id });
-          console.log(selectedWiring);
           const res = await axios.post(
             `/api/wiring/moveToFinalStage`,
             { customerId: selectedWiring.customer_id },
             { withCredentials: true },
           );
-
-          if (res.status == 200) {
-            navigate("/finalstage");
-          }
+          if (res.status === 200) navigate("/finalstage");
         } catch (error) {
           Swal.showValidationMessage(`Request failed: ${error}`);
         }
@@ -117,11 +158,6 @@ const FinalizeWiring = () => {
         cancelButton:
           "rounded-xl px-6 py-3 text-[10px] font-black uppercase tracking-widest",
       },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        toast.success("Stage updated successfully!");
-        navigate("/wiring");
-      }
     });
   };
 
@@ -136,11 +172,9 @@ const FinalizeWiring = () => {
     formData.append("file", doc.file);
 
     try {
-      const res = await axios.post(
-        `/api/wiring/uploadWiringDocs`,
-        formData,
-        { withCredentials: true },
-      );
+      const res = await axios.post(`/api/wiring/uploadWiringDocs`, formData, {
+        withCredentials: true,
+      });
       if (res.status === 200 || res.status === 201) {
         toast.success(`${doc.docName.replace("_", " ")} uploaded!`);
         fetchData();
@@ -189,16 +223,33 @@ const FinalizeWiring = () => {
 
         <main className="p-4 lg:p-10 pb-32">
           <div className="max-w-5xl mx-auto">
-            <div className="flex items-center gap-5 mb-10">
+            {/* Header Section */}
+            <div className="flex items-center justify-between mb-10">
+              <div className="flex items-center gap-5">
+                <button
+                  onClick={() => navigate(-1)}
+                  className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#1a5695] transition-all shadow-sm"
+                >
+                  <ArrowLeft size={20} />
+                </button>
+                <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+                  Finalize Site
+                </h1>
+              </div>
+
+              {/* NEW ENTER SERIALS BUTTON */}
               <button
-                onClick={() => navigate(-1)}
-                className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#1a5695] transition-all shadow-sm"
+                onClick={fetchSerials}
+                disabled={serialLoading}
+                className="flex items-center gap-2 px-6 py-3 bg-[#1a5695] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:scale-105 active:scale-95 transition-all"
               >
-                <ArrowLeft size={20} />
+                {serialLoading ? (
+                  <Loader2 className="animate-spin" size={16} />
+                ) : (
+                  <Hash size={16} />
+                )}
+                Enter Serials
               </button>
-              <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
-                Finalize Site
-              </h1>
             </div>
 
             {initialLoading ? (
@@ -207,81 +258,7 @@ const FinalizeWiring = () => {
               </div>
             ) : (
               <div className="space-y-10">
-                {/* 1. MANDATORY SECTION */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {mandatoryDocs.map((doc) => (
-                    <div
-                      key={doc.dbId}
-                      className="bg-white p-6 rounded-[32px] border border-slate-100 shadow-sm flex flex-col items-center"
-                    >
-                      <div
-                        className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 ${doc.existingLink ? "bg-emerald-50 text-emerald-500" : "bg-slate-50 text-[#1a5695]"}`}
-                      >
-                        {doc.docName === "geo_tag" && <MapPin />}
-                        {doc.docName === "site_pic" && <Camera />}
-                        {doc.docName === "file" && <FileText />}
-                      </div>
-                      <p className="text-[11px] font-black uppercase mb-4 tracking-widest">
-                        {doc.docName.replace("_", " ")}
-                      </p>
-
-                      {doc.existingLink ? (
-                        <div className="w-full flex flex-col gap-2">
-                          <a
-                            href={doc.existingLink}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="w-full py-3 bg-emerald-500 text-white rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-2 tracking-widest"
-                          >
-                            <ExternalLink size={14} /> View Link
-                          </a>
-                          <button
-                            onClick={() =>
-                              triggerReupload(
-                                mandatoryDocs,
-                                setMandatoryDocs,
-                                doc.dbId,
-                              )
-                            }
-                            className="w-full py-2 border border-slate-200 text-slate-400 rounded-xl text-[9px] font-black uppercase flex items-center justify-center gap-2 hover:bg-slate-50 transition-all"
-                          >
-                            <RotateCcw size={12} /> Change File
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="w-full space-y-3">
-                          <input
-                            type="file"
-                            className="text-[10px] w-full block file:py-2 file:px-3 file:rounded-lg file:border-0 file:bg-blue-50 file:text-[#1a5695]"
-                            onChange={(e) =>
-                              updateFileInList(
-                                mandatoryDocs,
-                                setMandatoryDocs,
-                                doc.dbId,
-                                e.target.files[0],
-                              )
-                            }
-                          />
-                          <button
-                            onClick={() => handleSingleUpload(doc)}
-                            disabled={btnLoading[doc.dbId] || !doc.file}
-                            className="w-full py-3 bg-[#1a5695] text-white rounded-xl text-[10px] font-black uppercase flex items-center justify-center gap-2 disabled:opacity-50 min-h-[44px]"
-                          >
-                            {btnLoading[doc.dbId] ? (
-                              <Loader2 className="animate-spin" size={14} />
-                            ) : (
-                              <>
-                                <CloudUpload size={14} /> Upload Now
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* 2. OTHER DOCUMENTS */}
+                {/* Documents Content Logic stays same... */}
                 <div className="bg-white rounded-[40px] border border-slate-200 p-6 lg:p-10 shadow-sm">
                   <div className="flex justify-between items-center mb-8">
                     <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
@@ -316,7 +293,6 @@ const FinalizeWiring = () => {
                             )
                           }
                         />
-
                         {doc.existingLink ? (
                           <div className="flex-1 flex items-center justify-between bg-emerald-50 px-5 py-3 rounded-2xl w-full gap-4">
                             <span className="text-[10px] font-black text-emerald-600 uppercase flex items-center gap-2 font-mono">
@@ -392,10 +368,127 @@ const FinalizeWiring = () => {
           </div>
         </main>
 
-        {/* 3. NEXT STAGE ACTION BAR */}
+        {/* --- SERIAL NUMBERS MODAL --- */}
+        {isSerialModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+              <div className="bg-[#1a5695] p-8 text-white flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-black font-syne uppercase tracking-tight">
+                    Component Serials
+                  </h2>
+                  <p className="text-white/60 text-xs mt-1 font-bold">
+                    Manage panel and inverter serial numbers
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsSerialModalOpen(false)}
+                  className="bg-white/10 hover:bg-white/20 p-3 rounded-2xl transition-all"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="p-8 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-8">
+                {/* Panels Section */}
+                <div>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                    <div className="w-1.5 h-4 bg-yellow-400 rounded-full"></div>{" "}
+                    Solar Panels
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {serials.panelSerials.map((panel, idx) => (
+                      <div
+                        key={panel.id}
+                        className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col gap-3"
+                      >
+                        <label className="text-[9px] font-black text-[#1a5695] uppercase">
+                          Panel {idx + 1}
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            defaultValue={panel.serial_number}
+                            id={`panel-${panel.id}`}
+                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold focus:border-[#1a5695] outline-none transition-all"
+                          />
+                          <button
+                            onClick={() =>
+                              handleUpdateSerial(
+                                panel.id,
+                                "panel",
+                                document.getElementById(`panel-${panel.id}`)
+                                  .value,
+                              )
+                            }
+                            disabled={updatingSerialId === panel.id}
+                            className="bg-white p-2 text-emerald-500 rounded-xl border border-slate-200 hover:bg-emerald-50 transition-all shadow-sm"
+                          >
+                            {updatingSerialId === panel.id ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <Save size={16} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Inverters Section */}
+                <div>
+                  <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                    <div className="w-1.5 h-4 bg-[#1a5695] rounded-full"></div>{" "}
+                    Inverters
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {serials.inverterSerials.map((inv, idx) => (
+                      <div
+                        key={inv.id}
+                        className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col gap-3"
+                      >
+                        <label className="text-[9px] font-black text-[#1a5695] uppercase">
+                          Inverter {idx + 1}
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            defaultValue={inv.serial_number}
+                            id={`inv-${inv.id}`}
+                            className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold focus:border-[#1a5695] outline-none transition-all"
+                          />
+                          <button
+                            onClick={() =>
+                              handleUpdateSerial(
+                                inv.id,
+                                "inverter",
+                                document.getElementById(`inv-${inv.id}`).value,
+                              )
+                            }
+                            disabled={updatingSerialId === inv.id}
+                            className="bg-white p-2 text-emerald-500 rounded-xl border border-slate-200 hover:bg-emerald-50 transition-all shadow-sm"
+                          >
+                            {updatingSerialId === inv.id ? (
+                              <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                              <Save size={16} />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Next Stage Action Bar */}
         {isEverythingUploaded() &&
-          selectedWiring.wiring_status != "done" &&
-          user.role == "admin" && (
+          selectedWiring.wiring_status !== "done" &&
+          user.role === "admin" && (
             <div className="fixed bottom-0 left-0 right-0 lg:left-64 bg-white/80 backdrop-blur-md border-t border-slate-200 p-6 flex justify-center animate-in slide-in-from-bottom duration-500">
               <button
                 onClick={handleNextStage}

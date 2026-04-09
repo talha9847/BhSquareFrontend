@@ -51,8 +51,9 @@ const WebLeads = () => {
   const handleUpdateLead = async (e) => {
     e.preventDefault();
     setUpdating(true);
+    console.log(selectedLead);
     try {
-      await axios.post(`/api/leads/updateLead`, selectedLead, {
+      await axios.put(`/api/sources/updateWebLead`, selectedLead, {
         withCredentials: true,
       });
       toast.success("Lead updated successfully");
