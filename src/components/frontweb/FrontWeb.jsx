@@ -8,10 +8,12 @@ import Projects from "../frontweb/Projects";
 import Testimonials from "../frontweb/Testimonials";
 import Footer from "../frontweb/Footer";
 import Contact from "../frontweb/Contact";
+import Popup from "./Popup";
 
 const FrontWeb = () => {
   return (
     <div>
+      <Popup />
       <Navbar />
       <section id="home">
         <Hero />
