@@ -19,14 +19,21 @@ import axios from "axios";
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [counts, setCounts] = useState({
-    pending_leads: 0,
-    active_customers: 0,
-    kit_pending: 0,
-    fab_pending: 0,
-    wiring_pending: 0,
-    registration_pending: 0,
-    dispatch_pending: 0,
+
+  // Instant Loading Logic: Check localStorage so the dashboard is never empty on visit
+  const [counts, setCounts] = useState(() => {
+    const saved = localStorage.getItem("solar_dash_cache");
+    return saved
+      ? JSON.parse(saved)
+      : {
+          pending_leads: 0,
+          active_customers: 0,
+          kit_pending: 0,
+          fab_pending: 0,
+          wiring_pending: 0,
+          registration_pending: 0,
+          dispatch_pending: 0,
+        };
   });
 
   const navigate = useNavigate();
@@ -43,10 +50,13 @@ const Dashboard = () => {
       });
       if (res.status === 200) {
         setCounts(res.data.data);
+        // Save to cache for the next visit
+        localStorage.setItem("solar_dash_cache", JSON.stringify(res.data.data));
       }
     } catch (error) {
       console.error("Fetch error:", error);
     } finally {
+      // Small delay to make the transition feel smooth
       setTimeout(() => setLoading(false), 600);
     }
   };
@@ -58,10 +68,14 @@ const Dashboard = () => {
     description,
     icon: Icon,
     onClick,
+    index, // Added index for staggered animation delay
   }) => (
     <div
       onClick={onClick}
-      className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden"
+      style={{
+        animationDelay: `${index * 100}ms`,
+      }}
+      className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700"
     >
       <div className="flex justify-between items-start relative z-10">
         <div
@@ -112,17 +126,19 @@ const Dashboard = () => {
                 Solar<span className="text-[#1a5695] not-italic">OS</span>{" "}
                 Dashboard
               </h1>
-              <p className="text-slate-500 font-medium mt-1 flex items-center gap-2">
-                <TrendingUp size={16} className="text-green-500" />
-                System operational: Tracking {counts.active_customers} active
-                projects
-              </p>
+              <div className="flex items-center gap-3 mt-1">
+                <p className="text-slate-500 font-medium flex items-center gap-2">
+                  <TrendingUp size={16} className="text-green-500" />
+                  System operational: Tracking {counts.active_customers} active
+                  projects
+                </p>
+              </div>
             </div>
             {loading && (
-              <div className="flex items-center gap-2 text-[#1a5695] bg-blue-50/50 backdrop-blur-md px-4 py-2 rounded-2xl border border-blue-100">
+              <div className="flex items-center gap-2 text-[#1a5695] bg-blue-50/50 backdrop-blur-md px-4 py-2 rounded-2xl border border-blue-100 animate-pulse">
                 <Loader2 className="animate-spin" size={18} />
                 <span className="text-xs font-black uppercase tracking-tighter">
-                  Updating Live Data
+                  Syncing Live Data
                 </span>
               </div>
             )}
@@ -130,7 +146,8 @@ const Dashboard = () => {
 
           {/* Grid Layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            {loading ? (
+            {/* If it's the very first visit (no cache), show skeleton. Otherwise, show cached data. */}
+            {loading && counts.pending_leads === 0 ? (
               Array(7)
                 .fill(0)
                 .map((_, i) => (
@@ -142,6 +159,7 @@ const Dashboard = () => {
             ) : (
               <>
                 <StatCard
+                  index={0}
                   label="Leads"
                   count={counts.pending_leads}
                   color="#1e40af"
@@ -150,6 +168,7 @@ const Dashboard = () => {
                   onClick={() => navigate("/leads")}
                 />
                 <StatCard
+                  index={1}
                   label="Govt. Reg"
                   count={counts.registration_pending}
                   color="#ea580c"
@@ -158,6 +177,7 @@ const Dashboard = () => {
                   onClick={() => navigate("/registration")}
                 />
                 <StatCard
+                  index={2}
                   label="Kit Prep"
                   count={counts.kit_pending}
                   color="#dc2626"
@@ -166,6 +186,7 @@ const Dashboard = () => {
                   onClick={() => navigate("/kitready")}
                 />
                 <StatCard
+                  index={3}
                   label="Logistics"
                   count={counts.dispatch_pending}
                   color="#7c3aed"
@@ -174,6 +195,7 @@ const Dashboard = () => {
                   onClick={() => navigate("/dispatch")}
                 />
                 <StatCard
+                  index={4}
                   label="Structure"
                   count={counts.fab_pending}
                   color="#059669"
@@ -182,6 +204,7 @@ const Dashboard = () => {
                   onClick={() => navigate("/fabrication")}
                 />
                 <StatCard
+                  index={5}
                   label="Wiring"
                   count={counts.wiring_pending}
                   color="#0891b2"
@@ -190,6 +213,7 @@ const Dashboard = () => {
                   onClick={() => navigate("/wiring")}
                 />
                 <StatCard
+                  index={6}
                   label="Customers"
                   count={counts.active_customers}
                   color="#4f46e5"
@@ -200,8 +224,6 @@ const Dashboard = () => {
               </>
             )}
           </div>
-
-          {/* Restored Pipeline Section */}
         </main>
       </div>
     </div>
