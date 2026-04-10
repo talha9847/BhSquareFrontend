@@ -4,7 +4,7 @@ import { ShieldAlert, ArrowLeft, Loader2, Lock } from "lucide-react";
 
 const AccessControl = ({ type = "denied" }) => {
   const navigate = useNavigate();
-  const [countdown, setCountdown] = useState(7);
+  const [countdown, setCountdown] = useState(50);
 
   useEffect(() => {
     const timer = setInterval(() => {

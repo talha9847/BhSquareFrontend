@@ -5,7 +5,7 @@ const stats = [
   { value: "500+", label: "Installations" },
   { value: "15MW", label: "Power Generated" },
   { value: "98%", label: "Satisfaction Rate" },
-  { value: "10yr", label: "Warranty" },
+  { value: "3yr", label: "Warranty" },
 ];
 
 export default function Hero() {
@@ -135,7 +135,7 @@ export default function Hero() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   {[
                     { label: "Solar Input", value: 94, color: "#F5C518", Icon: Zap },
                     { label: "Grid Save", value: 78, color: "#3B82F6", Icon: BarChart2 },
@@ -153,7 +153,7 @@ export default function Hero() {
                       <span className="text-white text-xs font-body">{value}%</span>
                     </div>
                   ))}
-                </div>
+                </div> */}
               </div>
 
               <div className="absolute -top-4 -right-4 bg-[#F5C518] text-[#0F2D6B] rounded-2xl px-4 py-2 shadow-lg font-body text-sm font-semibold">

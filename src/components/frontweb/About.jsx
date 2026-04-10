@@ -10,7 +10,7 @@ const milestones = [
 
 const values = [
   { Icon: Zap, title: "Efficiency First", desc: "We use only Tier-1 solar panels with 21%+ efficiency ratings for maximum output." },
-  { Icon: ShieldCheck, title: "Certified Experts", desc: "MNRE-certified team with 10+ years of solar installation experience." },
+  { Icon: ShieldCheck, title: "Certified Experts", desc: "MNRE-certified team with 3+ years of solar installation experience." },
   { Icon: Leaf, title: "Eco Committed", desc: "Every installation offsets 2+ tonnes of CO₂ annually — we're building a greener India." },
 ];
 
@@ -51,7 +51,7 @@ export default function About() {
               </div>
             </div>
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-[#0F2D6B] text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3 whitespace-nowrap">
-              <span className="text-2xl font-display font-bold text-[#F5C518]">10+</span>
+              <span className="text-2xl font-display font-bold text-[#F5C518]">3+</span>
               <span className="text-sm font-body">Years of Excellence</span>
             </div>
           </div>
