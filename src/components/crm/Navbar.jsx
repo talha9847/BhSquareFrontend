@@ -1,7 +1,18 @@
 import React from "react";
-import { Search, Bell, Plus, Download, Sun, Menu } from "lucide-react";
+import { Search, Bell, Plus, Download, Sun, Menu, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const Navbar = ({ toggleSidebar }) => {
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    try {
+      const res = await axios.post("/api/users/logout");
+      navigate("/");
+    } catch (error) {}
+    console.log("Logging out...");
+  };
+
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white/80 backdrop-blur-md px-4 lg:px-8">
       <div className="flex items-center gap-4">
@@ -35,12 +46,17 @@ const Navbar = ({ toggleSidebar }) => {
           <span className="absolute top-2 right-2.5 w-2 h-2 bg-[#f39200] rounded-full border-2 border-white" />
         </button>
 
-        {/* <button className="hidden sm:flex items-center gap-2 bg-[#1a5695] text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-[#0f3d6e] transition-all">
-          <Plus size={16} />
-          <span>New Lead</span>
-        </button> */}
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+          title="Logout"
+        >
+          <LogOut size={20} />
+        </button>
       </div>
     </header>
   );
 };
+
 export default Navbar;
