@@ -121,7 +121,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <Cable size={18} />,
       type: "Logistics & Stores",
       path: "commissions",
-      activePaths: ["/commissions"],
+      activePaths: ["/commissions", "/allcommissions"],
     },
     {
       name: "AMC & Service",

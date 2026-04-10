@@ -56,6 +56,7 @@ import SLoanStep from "./components/Source/SLoanStep";
 import LoanStepGuard from "./Guards/LoanStepGuard";
 import WebLeads from "./components/crm/WebLeads";
 import Commissions from "./components/crm/Commissions";
+import AllCommission from "./components/crm/AllCommission";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -417,6 +418,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Commissions />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/allcommissions"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AllCommission />
               </ProtectedRoute>
             }
           />

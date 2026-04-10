@@ -16,12 +16,14 @@ import {
   ChevronRight,
   ArrowRight,
   Shield,
+  Trash2Icon,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const Customer = () => {
   const navigate = useNavigate();
@@ -98,6 +100,52 @@ const Customer = () => {
   useEffect(() => {
     getCustomers();
   }, []);
+
+  const handleDelete = async (item) => {
+    console.log(item);
+    await Swal.fire({
+      title: "Are you sure?",
+      text: `You want to delete ${item.lead.customer_name}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      showLoaderOnConfirm: true,
+      allowOutsideClick: () => !Swal.isLoading(),
+
+      preConfirm: async () => {
+        try {
+          const response = await axios.delete(
+            `/api/customers/deleteCustomerWithLead/${item.id}`,
+          );
+
+          if (response.status === 200) {
+            getCustomers();
+            return true;
+          } else {
+            throw new Error("Delete failed");
+          }
+        } catch (error) {
+          Swal.showValidationMessage(
+            error.response?.data?.message ||
+              error.message ||
+              "Failed to delete",
+          );
+        }
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Lead has been deleted successfully.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+    });
+  };
 
   const filteredCustomers = customer.filter(
     (c) =>
@@ -305,6 +353,16 @@ const Customer = () => {
                             >
                               <Shield size={16} />
                             </button>
+
+                            <button
+                              onClick={() => {
+                                handleDelete(c);
+                              }}
+                              className="p-2 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100"
+                            >
+                              <Trash2Icon size={16} />
+                            </button>
+
                             {c.name_change === "not_used" ? (
                               <button
                                 onClick={() => {

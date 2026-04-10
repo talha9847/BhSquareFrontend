@@ -27,6 +27,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { resume } from "react-dom/server";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const Leads = () => {
   const navigate = useNavigate();
@@ -81,6 +82,51 @@ const Leads = () => {
       number_of_panels: lead.number_of_panels,
       inverter_kw: lead.inverter_kw,
       number_of_inverters: lead.number_of_inverters,
+    });
+  };
+
+  const handleDelete = async (lead) => {
+    await Swal.fire({
+      title: "Are you sure?",
+      text: `You want to delete ${lead.customer_name}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      showLoaderOnConfirm: true,
+      allowOutsideClick: () => !Swal.isLoading(),
+
+      preConfirm: async () => {
+        try {
+          const response = await axios.delete(
+            `/api/leads/deleteLeadById/${lead.id}`,
+          );
+
+          if (response.status === 200) {
+            await getLeadsByStatus("pending");
+            return true;
+          } else {
+            throw new Error("Delete failed");
+          }
+        } catch (error) {
+          Swal.showValidationMessage(
+            error.response?.data?.message ||
+              error.message ||
+              "Failed to delete",
+          );
+        }
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Lead has been deleted successfully.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
     });
   };
 
@@ -695,6 +741,14 @@ const Leads = () => {
                               className="p-2 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100"
                             >
                               <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                handleDelete(lead);
+                              }}
+                              className="p-2 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100"
+                            >
+                              <Trash2 size={16} />
                             </button>
                           </div>
                         </td>

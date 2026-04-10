@@ -10,13 +10,17 @@ import {
   Zap,
   Calculator,
   Edit3,
+  ChevronRight,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Commission = () => {
+  const navigate = useNavigate();
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tableLoading, setTableLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -63,10 +67,12 @@ const Commission = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
+    console.log(commissionValue);
+    console.log(activeItem.id);
     setBtnLoading(true);
     try {
       const res = await axios.put(
-        `/api/commissions/update/${activeItem.id}`,
+        `/api/wiring/updateCommission/${activeItem.id}`,
         {
           commission: commissionValue,
           status: status,
@@ -103,8 +109,16 @@ const Commission = () => {
 
         <main className="p-4 lg:p-8">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase">
+            <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase flex items-center gap-3">
               Commission Management
+              <button
+                onClick={() => {
+                  navigate("/allcommissions");
+                }}
+                className="flex items-center gap-1 bg-slate-200 text-slate-600 text-[10px] px-2 py-1 rounded-full hover:bg-slate-300 transition-all cursor-pointer"
+              >
+                SHOW ALL Commissions <ChevronRight size={12} />
+              </button>
             </h1>
           </div>
 

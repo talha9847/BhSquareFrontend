@@ -175,6 +175,12 @@ const InventoryManager = () => {
                   <Eye size={16} /> View Brands
                 </button>
                 <button
+                  onClick={() => navigate("/category")}
+                  className="flex items-center gap-2 px-5 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
+                >
+                  <Eye size={16} /> View Category
+                </button>
+                <button
                   onClick={() => {
                     setEditingId(null);
                     setFormData({

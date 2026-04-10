@@ -18,12 +18,14 @@ import {
   Pencil,
   FileText,
   ChevronRight,
+  Trash2Icon,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 const Registration = () => {
   const navigate = useNavigate();
@@ -96,10 +98,9 @@ const Registration = () => {
   const getPanels = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `/api/registrations/getInventoryByCategory`,
-        { withCredentials: true },
-      );
+      const res = await axios.get(`/api/registrations/getInventoryByCategory`, {
+        withCredentials: true,
+      });
       if (res.status === 200) {
         console.log(res.data.data);
         setPanels(res.data.data);
@@ -177,6 +178,52 @@ const Registration = () => {
 
       setIsModalOpen(true);
     }
+  };
+
+  const handleDelete = async (item) => {
+    console.log(item.registration.customer_id);
+    await Swal.fire({
+      title: "Are you sure?",
+      text: `You want to delete ${item.lead.customer_name}?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      showLoaderOnConfirm: true,
+      allowOutsideClick: () => !Swal.isLoading(),
+
+      preConfirm: async () => {
+        try {
+          const response = await axios.delete(
+            `/api/customers/deleteCustomerWithLead/${item.registration.customer_id}`,
+          );
+
+          if (response.status === 200) {
+            getCustomers();
+            return true;
+          } else {
+            throw new Error("Delete failed");
+          }
+        } catch (error) {
+          Swal.showValidationMessage(
+            error.response?.data?.message ||
+              error.message ||
+              "Failed to delete",
+          );
+        }
+      },
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Lead has been deleted successfully.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+    });
   };
 
   const onSubmit = async (data) => {
@@ -496,6 +543,15 @@ const Registration = () => {
                                 )}
                               </button>
                             )}
+
+                            <button
+                              onClick={() => {
+                                handleDelete(item);
+                              }}
+                              className="p-2 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100"
+                            >
+                              <Trash2Icon size={16} />
+                            </button>
                           </div>
                         </td>
                       </tr>
