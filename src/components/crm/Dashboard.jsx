@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Users,
@@ -18,48 +18,52 @@ import axios from "axios";
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  // Instant Loading Logic: Check localStorage so the dashboard is never empty on visit
+  // 1. Initialize from Cache
   const [counts, setCounts] = useState(() => {
     const saved = localStorage.getItem("solar_dash_cache");
-    return saved
-      ? JSON.parse(saved)
-      : {
-          pending_leads: 0,
-          active_customers: 0,
-          kit_pending: 0,
-          fab_pending: 0,
-          wiring_pending: 0,
-          registration_pending: 0,
-          dispatch_pending: 0,
-        };
+    return saved ? JSON.parse(saved) : null;
   });
+
+  // 2. Control loading: ONLY true if we have zero data
+  const [loading, setLoading] = useState(!counts);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchCounts();
-  }, []);
+  const fetchCounts = useCallback(async (force = false) => {
+    // 3. Prevent excessive API calls (Throttle)
+    // If we fetched data in the last 5 minutes, don't call API unless forced
+    const lastFetch = localStorage.getItem("solar_dash_last_fetch");
+    const now = Date.now();
+    if (!force && lastFetch && now - parseInt(lastFetch) < 300000) {
+      // 5 minutes
+      setLoading(false);
+      return;
+    }
 
-  const fetchCounts = async () => {
     try {
-      setLoading(true);
+      setIsSyncing(true);
       const res = await axios.get("/api/leads/pendingCounts", {
         withCredentials: true,
       });
       if (res.status === 200) {
-        setCounts(res.data.data);
-        // Save to cache for the next visit
-        localStorage.setItem("solar_dash_cache", JSON.stringify(res.data.data));
+        const data = res.data.data;
+        setCounts(data);
+        localStorage.setItem("solar_dash_cache", JSON.stringify(data));
+        localStorage.setItem("solar_dash_last_fetch", now.toString());
       }
     } catch (error) {
-      console.error("Fetch error:", error);
+      console.error("Dashboard Sync Error:", error);
     } finally {
-      // Small delay to make the transition feel smooth
-      setTimeout(() => setLoading(false), 600);
+      setLoading(false);
+      setIsSyncing(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchCounts();
+  }, [fetchCounts]);
 
   const StatCard = ({
     label,
@@ -68,14 +72,12 @@ const Dashboard = () => {
     description,
     icon: Icon,
     onClick,
-    index, // Added index for staggered animation delay
+    index,
   }) => (
     <div
       onClick={onClick}
-      style={{
-        animationDelay: `${index * 100}ms`,
-      }}
-      className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-700"
+      style={{ animationDelay: `${index * 50}ms` }}
+      className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group relative overflow-hidden animate-in fade-in slide-in-from-bottom-4"
     >
       <div className="flex justify-between items-start relative z-10">
         <div
@@ -91,12 +93,12 @@ const Dashboard = () => {
           <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
             Pending
           </span>
-          <div className="text-2xl font-black text-slate-800">{count}</div>
+          <div className="text-2xl font-black text-slate-800">{count || 0}</div>
         </div>
       </div>
       <div className="mt-4 relative z-10">
         <h3 className="font-bold text-slate-700 group-hover:text-[#1a5695] flex items-center gap-1">
-          {label}{" "}
+          {label}
           <ChevronRight
             size={14}
             className="opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0"
@@ -114,46 +116,39 @@ const Dashboard = () => {
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
-
       <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-
         <main className="p-4 lg:p-10">
-          {/* Header */}
           <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-3xl font-black text-slate-900 tracking-tight font-syne italic">
                 Solar<span className="text-[#1a5695] not-italic">OS</span>{" "}
                 Dashboard
               </h1>
-              <div className="flex items-center gap-3 mt-1">
-                <p className="text-slate-500 font-medium flex items-center gap-2">
-                  <TrendingUp size={16} className="text-green-500" />
-                  System operational: Tracking {counts.active_customers} active
-                  projects
-                </p>
-              </div>
+              <p className="text-slate-500 font-medium mt-1 flex items-center gap-2">
+                <TrendingUp size={16} className="text-green-500" />
+                System operational: {counts?.active_customers || 0} active
+                projects
+              </p>
             </div>
-            {loading && (
-              <div className="flex items-center gap-2 text-[#1a5695] bg-blue-50/50 backdrop-blur-md px-4 py-2 rounded-2xl border border-blue-100 animate-pulse">
-                <Loader2 className="animate-spin" size={18} />
-                <span className="text-xs font-black uppercase tracking-tighter">
-                  Syncing Live Data
+            {isSyncing && (
+              <div className="flex items-center gap-2 text-[#1a5695] bg-blue-50/80 backdrop-blur-sm px-4 py-2 rounded-2xl border border-blue-100">
+                <Loader2 className="animate-spin" size={16} />
+                <span className="text-[10px] font-black uppercase tracking-widest">
+                  Live Sync
                 </span>
               </div>
             )}
           </header>
 
-          {/* Grid Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-            {/* If it's the very first visit (no cache), show skeleton. Otherwise, show cached data. */}
-            {loading && counts.pending_leads === 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {loading ? (
               Array(7)
                 .fill(0)
                 .map((_, i) => (
                   <div
                     key={i}
-                    className="h-32 bg-white rounded-3xl animate-pulse border border-slate-100"
+                    className="h-40 bg-white rounded-3xl animate-pulse border border-slate-100"
                   />
                 ))
             ) : (
@@ -161,7 +156,7 @@ const Dashboard = () => {
                 <StatCard
                   index={0}
                   label="Leads"
-                  count={counts.pending_leads}
+                  count={counts?.pending_leads}
                   color="#1e40af"
                   icon={Users}
                   description="Potential customers"
@@ -170,7 +165,7 @@ const Dashboard = () => {
                 <StatCard
                   index={1}
                   label="Govt. Reg"
-                  count={counts.registration_pending}
+                  count={counts?.registration_pending}
                   color="#ea580c"
                   icon={ClipboardCheck}
                   description="Subsidy & Registration"
@@ -179,7 +174,7 @@ const Dashboard = () => {
                 <StatCard
                   index={2}
                   label="Kit Prep"
-                  count={counts.kit_pending}
+                  count={counts?.kit_pending}
                   color="#dc2626"
                   icon={Package}
                   description="Material readiness"
@@ -188,7 +183,7 @@ const Dashboard = () => {
                 <StatCard
                   index={3}
                   label="Logistics"
-                  count={counts.dispatch_pending}
+                  count={counts?.dispatch_pending}
                   color="#7c3aed"
                   icon={Truck}
                   description="Delivery management"
@@ -197,7 +192,7 @@ const Dashboard = () => {
                 <StatCard
                   index={4}
                   label="Structure"
-                  count={counts.fab_pending}
+                  count={counts?.fab_pending}
                   color="#059669"
                   icon={Hammer}
                   description="On-site fabrication"
@@ -206,7 +201,7 @@ const Dashboard = () => {
                 <StatCard
                   index={5}
                   label="Wiring"
-                  count={counts.wiring_pending}
+                  count={counts?.wiring_pending}
                   color="#0891b2"
                   icon={Zap}
                   description="Electrical finishing"
@@ -215,7 +210,7 @@ const Dashboard = () => {
                 <StatCard
                   index={6}
                   label="Customers"
-                  count={counts.active_customers}
+                  count={counts?.active_customers}
                   color="#4f46e5"
                   icon={FileText}
                   description="Total active files"
