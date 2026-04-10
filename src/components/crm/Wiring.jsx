@@ -38,10 +38,9 @@ const Wiring = () => {
   const getWiring = async () => {
     setTableLoading(true);
     try {
-      const res = await axios.get(
-        `/api/wiring/fetchWiringCustomerDetails`,
-        { withCredentials: true },
-      );
+      const res = await axios.get(`/api/wiring/fetchWiringCustomerDetails`, {
+        withCredentials: true,
+      });
       if (res.status === 200) setWiringLogs(res.data.data);
     } catch (error) {
       toast.error("Failed to load records");

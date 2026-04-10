@@ -117,6 +117,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       activePaths: ["/winventory"],
     },
     {
+      name: "Commissions",
+      icon: <Cable size={18} />,
+      type: "Logistics & Stores",
+      path: "commissions",
+      activePaths: ["/commissions"],
+    },
+    {
       name: "AMC & Service",
       icon: <ShieldCheck size={18} />,
       type: "After Sales",

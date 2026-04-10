@@ -55,6 +55,7 @@ import SDocumentCollection from "./components/Source/SDocumentCollection";
 import SLoanStep from "./components/Source/SLoanStep";
 import LoanStepGuard from "./Guards/LoanStepGuard";
 import WebLeads from "./components/crm/WebLeads";
+import Commissions from "./components/crm/Commissions";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -408,6 +409,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <WebLeads />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/commissions"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Commissions />
               </ProtectedRoute>
             }
           />

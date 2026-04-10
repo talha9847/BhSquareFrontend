@@ -142,7 +142,10 @@ const FinalizeWiring = () => {
         try {
           const res = await axios.post(
             `/api/wiring/moveToFinalStage`,
-            { customerId: selectedWiring.customer_id },
+            {
+              customerId: selectedWiring.customer_id,
+              leadId: selectedWiring.lead_id,
+            },
             { withCredentials: true },
           );
           if (res.status === 200) navigate("/finalstage");
