@@ -495,7 +495,7 @@ const Dashboard = () => {
                         fill="transparent"
                       />
                       <Area
-                        name="Stage 9 Done"
+                        name="Completed"
                         type="monotone"
                         dataKey="stage_9_done"
                         stroke="#f59e0b"
