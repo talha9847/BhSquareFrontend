@@ -162,25 +162,27 @@ export default function Login() {
             <ArrowLeft size={16} />
             Back to website
           </Link>
-          <div className="flex items-center gap-3 mb-8">
-            {/* Logo Container - Scaled properly to match text height */}
-            <div className="h-40 w-40 flex-shrink-0">
-              <img
-                src={logo}
-                alt="BHSquare Logo"
-                className="w-full h-full object-contain"
-              />
+          <div className="flex items-center w-full mb-10">
+            {/* Left Half: Logo Container */}
+            <div className="w-1/2 flex justify-end pr-6">
+              <div className="h-50 w-auto">
+                <img
+                  src={logo}
+                  alt="BHSquare Logo"
+                  className="h-full w-full object-contain scale-[1.3]"
+                />
+              </div>
             </div>
 
-            {/* Text Section - Vertically centered with the logo */}
-            {/* <div className="flex flex-col justify-center border-l border-slate-200 pl-3">
-              <p className="font-display font-black text-xl text-[#0F2D6B] tracking-tight leading-none">
+            {/* Right Half: Text Section */}
+            <div className="w-1/2 flex flex-col justify-center border-l-2 border-slate-100 pl-6 mt-5">
+              <p className="font-display font-black text-3xl text-[#0F2D6B] tracking-tight leading-none">
                 BH<span className="text-[#1a5695]">Square</span>
               </p>
-              <p className="text-[10px] uppercase tracking-[0.15em] text-slate-400 mt-1 font-bold">
+              <p className="text-[10px] uppercase tracking-[0.2em] text-slate-400 mt-2 font-bold leading-none">
                 CRM Portal
               </p>
-            </div> */}
+            </div>
           </div>
 
           <h1 className="font-display text-3xl font-bold text-gray-900 mb-2">
