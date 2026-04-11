@@ -173,14 +173,14 @@ export default function Login() {
             </div>
 
             {/* Text Section - Vertically centered with the logo */}
-            <div className="flex flex-col justify-center border-l border-slate-200 pl-3">
+            {/* <div className="flex flex-col justify-center border-l border-slate-200 pl-3">
               <p className="font-display font-black text-xl text-[#0F2D6B] tracking-tight leading-none">
                 BH<span className="text-[#1a5695]">Square</span>
               </p>
               <p className="text-[10px] uppercase tracking-[0.15em] text-slate-400 mt-1 font-bold">
                 CRM Portal
               </p>
-            </div>
+            </div> */}
           </div>
 
           <h1 className="font-display text-3xl font-bold text-gray-900 mb-2">
