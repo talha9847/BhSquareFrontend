@@ -57,7 +57,7 @@ const socials = [
 const contactDetails = [
   {
     Icon: MapPin,
-    text: "Kharel Shiv Campus, Near Kharel Chokdi Police Station\nGujarat, India - 380054",
+    text: "Kharel Shiv Campus, Near Kharel Chokdi Police Station\nGujarat, India - 396430",
   },
   {
     Icon: Phone,
@@ -110,7 +110,7 @@ export default function Footer() {
             </div>
             <p className="text-blue-200 text-sm leading-relaxed font-body mb-5">
               India's trusted solar installation partner. Making clean energy
-              accessible for every home and business since 2014.
+              accessible for every home and business since 2024.
             </p>
             <div className="flex items-center gap-2 flex-wrap">
               {socials.map(({ name, Icon, href }) => (

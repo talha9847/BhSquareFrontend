@@ -2,10 +2,10 @@ import { useEffect, useRef } from "react";
 import { ArrowRight, PlayCircle, Zap, BarChart2, Leaf } from "lucide-react";
 
 const stats = [
-  { value: "500+", label: "Installations" },
-  { value: "1.5MW", label: "Power Generated" },
+  { value: "500+", label: "Happy Customers" },
+  { value: "1.5MW", label: "Capacity Solar Installed" },
   { value: "98%", label: "Satisfaction Rate" },
-  { value: "25yr", label: "Panel Performance" },
+  { value: "30yr", label: "Panel Performance" },
 ];
 
 export default function Hero() {
@@ -16,13 +16,15 @@ export default function Hero() {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.querySelectorAll(".animate-on-enter").forEach((el, i) => {
-              setTimeout(() => el.classList.add("entered"), i * 120);
-            });
+            entry.target
+              .querySelectorAll(".animate-on-enter")
+              .forEach((el, i) => {
+                setTimeout(() => el.classList.add("entered"), i * 120);
+              });
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
     if (heroRef.current) observer.observe(heroRef.current);
     return () => observer.disconnect();
@@ -53,7 +55,8 @@ export default function Hero() {
       <div
         className="absolute inset-0 opacity-5"
         style={{
-          backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
+          backgroundImage:
+            "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
           backgroundSize: "60px 60px",
         }}
       />
@@ -81,8 +84,9 @@ export default function Hero() {
             </div>
 
             <p className="animate-on-enter opacity-0 translate-y-4 transition-all duration-500 text-blue-100 text-lg leading-relaxed max-w-lg font-body">
-              BHSquare delivers premium solar installation for homes and businesses across India.
-              Cut energy costs by up to 90% with our certified, end-to-end solar solutions.
+              BHSquare delivers premium solar installation for homes and
+              businesses across India. Cut energy costs by up to 90% with our
+              certified, end-to-end solar solutions.
             </p>
 
             <div className="animate-on-enter opacity-0 translate-y-4 transition-all duration-500 flex flex-wrap gap-4">
@@ -117,7 +121,7 @@ export default function Hero() {
                       }}
                     >
                       <div className="w-full h-full rounded-lg opacity-40 grid grid-cols-2 gap-0.5 p-0.5">
-                        {[0,1,2,3].map(j => (
+                        {[0, 1, 2, 3].map((j) => (
                           <div key={j} className="bg-[#F5C518]/30 rounded-sm" />
                         ))}
                       </div>
@@ -127,11 +131,17 @@ export default function Hero() {
 
                 <div className="flex items-center justify-between bg-white/10 rounded-2xl p-4 mb-4">
                   <div>
-                    <p className="text-blue-200 text-xs font-body mb-1">Today's Generation</p>
-                    <p className="text-white text-2xl font-bold font-display">28.4 kWh</p>
+                    <p className="text-blue-200 text-xs font-body mb-1">
+                      Today's Generation
+                    </p>
+                    <p className="text-white text-2xl font-bold font-display">
+                      28.4 kWh
+                    </p>
                   </div>
                   <div className="w-16 h-16 rounded-full border-4 border-[#F5C518]/50 flex items-center justify-center">
-                    <span className="text-[#F5C518] text-lg font-bold font-display">94%</span>
+                    <span className="text-[#F5C518] text-lg font-bold font-display">
+                      94%
+                    </span>
                   </div>
                 </div>
 
@@ -171,7 +181,9 @@ export default function Hero() {
               className="animate-on-enter opacity-0 translate-y-4 transition-all duration-500 text-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5"
               style={{ transitionDelay: `${500 + i * 100}ms` }}
             >
-              <p className="font-display text-3xl font-bold text-[#F5C518]">{value}</p>
+              <p className="font-display text-3xl font-bold text-[#F5C518]">
+                {value}
+              </p>
               <p className="text-blue-200 text-sm mt-1 font-body">{label}</p>
             </div>
           ))}

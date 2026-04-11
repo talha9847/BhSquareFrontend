@@ -28,7 +28,7 @@ const contactInfo = [
     Icon: MapPin,
     label: "Office",
     value: "Kharel Shiv Campus , Near Kharel Chokdi Police Station",
-    sub: "Gujarat, India - 380054",
+    sub: "Gujarat, India - 396430",
   },
 ];
 

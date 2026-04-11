@@ -88,7 +88,7 @@ export default function About() {
             {/* FLOATING BADGE - Improved Positioning */}
             <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 lg:left-auto lg:right-0 lg:translate-x-1/4 bg-[#0F2D6B] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 whitespace-nowrap z-20">
               <div className="flex flex-col items-center leading-none">
-                <span className="text-2xl font-bold text-[#F5C518]">3+</span>
+                <span className="text-2xl font-bold text-[#F5C518]">2.5+</span>
               </div>
               <div className="h-8 w-[1px] bg-white/20" />
               <span className="text-xs sm:text-sm font-medium uppercase tracking-wider">
