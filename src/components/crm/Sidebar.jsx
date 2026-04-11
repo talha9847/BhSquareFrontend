@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import logo from "../../assets/logo.png";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const navigate = useNavigate();
@@ -177,19 +178,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           isOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0 flex flex-col`}
       >
-        <div className="bg-[#1a5695] px-6 py-5 shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#f39200] rounded-2xl flex items-center justify-center shadow-lg">
-              <Bolt className="text-white" size={20} fill="currentColor" />
-            </div>
-            <div>
-              <p className="font-bold text-white text-lg tracking-tight">
-                BHSquare
-              </p>
-              <p className="text-blue-200 text-[10px] font-bold tracking-widest uppercase">
-                Solar ERP
-              </p>
-            </div>
+        <div className="bg-[#1a5695] px-3 py-4 shrink-0 border-b border-white/10">
+          <div className="w-full h-17 bg-white rounded-xl shadow-inner flex items-center justify-center overflow-hidden">
+            <img
+              src={logo}
+              alt="BHSquare Logo"
+              className="w-full h-full object-contain scale-[2.6] transform"
+            />
           </div>
         </div>
 

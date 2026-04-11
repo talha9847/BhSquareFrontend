@@ -164,7 +164,7 @@ export default function Login() {
           </Link>
           <div className="flex items-center gap-3 mb-8">
             {/* Logo Container - Scaled properly to match text height */}
-            <div className="h-20 w-20 flex-shrink-0">
+            <div className="h-40 w-40 flex-shrink-0">
               <img
                 src={logo}
                 alt="BHSquare Logo"
