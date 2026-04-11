@@ -44,6 +44,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       path: "/source/customers",
       activePaths: ["/source/customers"],
     },
+    {
+      name: "Commission",
+      icon: <HardHat size={18} />,
+      type: "Installation",
+      path: "/source/commissions",
+      activePaths: ["/source/commissions"],
+    },
   ];
 
   const categories = [...new Set(menuItems.map((item) => item.type))];

@@ -59,6 +59,7 @@ import Commissions from "./components/crm/Commissions";
 import AllCommission from "./components/crm/AllCommission";
 import TFinalizeWiring from "./components/Technician/TFinalizeWiring";
 import TUpdateWiringLog from "./components/Technician/TUpdateWiringLog";
+import SCommission from "./components/Source/SCommission";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -132,6 +133,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["source"]}>
                 <SCustomers />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/source/commissions"
+            element={
+              <ProtectedRoute allowedRoles={["source"]}>
+                <SCommission />
               </ProtectedRoute>
             }
           />
