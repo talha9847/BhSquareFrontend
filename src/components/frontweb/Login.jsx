@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../../context/authContext";
+import logo from "../../assets/logo.png";
 
 export default function Login() {
   const { login } = useAuth();
@@ -161,16 +162,22 @@ export default function Login() {
             <ArrowLeft size={16} />
             Back to website
           </Link>
-
-          <div className="flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-[#0F2D6B] flex items-center justify-center">
-              <Sun size={22} className="text-[#F5C518]" fill="#F5C518" />
+          <div className="flex items-center gap-3 mb-8">
+            {/* Logo Container - Scaled properly to match text height */}
+            <div className="h-20 w-20 flex-shrink-0">
+              <img
+                src={logo}
+                alt="BHSquare Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
-            <div>
-              <p className="font-display font-bold text-xl text-[#0F2D6B]">
+
+            {/* Text Section - Vertically centered with the logo */}
+            <div className="flex flex-col justify-center border-l border-slate-200 pl-3">
+              <p className="font-display font-black text-xl text-[#0F2D6B] tracking-tight leading-none">
                 BH<span className="text-[#1a5695]">Square</span>
               </p>
-              <p className="text-xs text-gray-400 -mt-0.5 font-body">
+              <p className="text-[10px] uppercase tracking-[0.15em] text-slate-400 mt-1 font-bold">
                 CRM Portal
               </p>
             </div>
