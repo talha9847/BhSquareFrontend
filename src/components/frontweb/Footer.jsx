@@ -12,6 +12,7 @@ import {
   Youtube,
   ArrowRight,
 } from "lucide-react";
+import logo from "../../assets/logo2.png";
 
 const quickLinks = [
   { label: "Home", href: "#home" },
@@ -94,19 +95,24 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Company Info */}
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-lg bg-[#1B4FD8] flex items-center justify-center">
-                <Sun size={20} className="text-[#F5C518]" fill="#F5C518" />
-              </div>
-              <div>
+          <div className="group">
+          
+            {/* Added 'group' here so children can use group-hover */}
+            <div className="flex items-center gap-4 mb-4">
+              <img
+                src={logo}
+                alt="BHSquare Logo"
+                /* Changed w-30 to w-14 (56px) and added origin-left so it scales toward the right */
+                className="w-31 h-31 object-contain transition-transform duration-300 scale-[2.0] origin-left relative z-10"
+              />
+              {/* <div>
                 <span className="font-display font-bold text-lg text-white">
                   BH<span className="text-[#F5C518]">Square</span>
                 </span>
                 <p className="text-[10px] text-blue-300 -mt-0.5 tracking-wider uppercase">
                   Solar Energy
                 </p>
-              </div>
+              </div> */}
             </div>
             <p className="text-blue-200 text-sm leading-relaxed font-body mb-5">
               India's trusted solar installation partner. Making clean energy

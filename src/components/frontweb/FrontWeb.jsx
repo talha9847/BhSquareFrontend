@@ -9,11 +9,13 @@ import Testimonials from "../frontweb/Testimonials";
 import Footer from "../frontweb/Footer";
 import Contact from "../frontweb/Contact";
 import Popup from "./Popup";
+import SunCursor from "./SunCursor";
 
 const FrontWeb = () => {
   return (
-    <div>
-      <Popup />
+    <div className="select-none cursor-none">
+      <SunCursor />
+      {/* Hide default arrow */} <Popup />
       <Navbar />
       <section id="home">
         <Hero />
@@ -28,7 +30,6 @@ const FrontWeb = () => {
       <section id="projects">
         <Projects />
       </section>
-
       <Testimonials />
       <section id="contact">
         <Contact />
