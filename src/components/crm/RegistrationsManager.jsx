@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
-  User,
   FileText,
   FileDown,
   Calendar,
@@ -12,12 +11,13 @@ import {
   Clock,
   Zap,
   MapPin,
+  Edit3,
+  X,
 } from "lucide-react";
 import axios from "axios";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
-
-const apiUrl = import.meta.env.VITE_API_URL;
+import { toast } from "react-toastify";
 
 const RegistrationsManager = () => {
   const navigate = useNavigate();
@@ -28,33 +28,73 @@ const RegistrationsManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
 
-  // --- FETCH REGISTRATIONS ---
-  useEffect(() => {
-    const fetchRegistrations = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get(
-          `/api/registrations/fetchCustomersByStatus`,
-          { params: { status: activeTab }, withCredentials: true },
-        );
-        // Based on your JSON: res.data.data
-        if (res.status === 200) {
-          setData(res.data.data || []);
-        }
-      } catch (err) {
-        console.error("Backend Error:", err);
-      } finally {
-        setLoading(false);
+  // --- MODAL STATES ---
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [updateLoading, setUpdateLoading] = useState(false);
+
+  const fetchRegistrations = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`/api/registrations/fetchCustomersByStatus`, {
+        params: { status: activeTab },
+        withCredentials: true,
+      });
+      if (res.status === 200) {
+        setData(res.data.data || []);
       }
-    };
+    } catch (err) {
+      console.error("Backend Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchRegistrations();
   }, [activeTab]);
 
-  // --- DOWNLOAD HANDLER ---
+  // --- OPEN EDIT MODAL ---
+  const handleEditClick = (e, item) => {
+    e.stopPropagation(); // Prevent navigation to /master
+    setEditingItem({ ...item });
+    setIsEditModalOpen(true);
+  };
+
+  // --- HANDLE UPDATE ---
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    console.log(editingItem);
+    setUpdateLoading(true);
+    try {
+      // Adjust the endpoint and payload based on your backend
+      await axios.put(
+        `/api/registrations/updateFileGenerationAndLead/${editingItem.registration_id}/${editingItem.lead_id}`,
+        {
+          name: editingItem.customer_name,
+          contact: editingItem.contact_number,
+          address: editingItem.address,
+          panel_capacity: editingItem.panel_wattage,
+          inverter_capacity: editingItem.inverter_kw,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+      setIsEditModalOpen(false);
+      fetchRegistrations(); // Refresh list
+      toast.success("Updated!!!");
+    } catch (err) {
+      console.error("Update failed:", err);
+      toast.error("Failed to update registration");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
   const handleDownloadFile = async (e, item) => {
     e.stopPropagation();
     if (!item.registration_id || dLoad) return;
-
     try {
       setDLoad(true);
       const result = await axios.post(
@@ -69,7 +109,6 @@ const RegistrationsManager = () => {
           withCredentials: true,
         },
       );
-
       const url = window.URL.createObjectURL(new Blob([result.data]));
       const link = document.createElement("a");
       link.href = url;
@@ -88,7 +127,6 @@ const RegistrationsManager = () => {
     }
   };
 
-  // --- CLIENT SIDE FILTER ---
   const filteredList = data.filter(
     (item) =>
       item.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -162,7 +200,7 @@ const RegistrationsManager = () => {
             <div className="py-40 flex flex-col items-center gap-4">
               <Loader2 className="w-10 h-10 text-[#1a5695] animate-spin" />
               <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">
-                Fetching Deployment Records...
+                Fetching Records...
               </span>
             </div>
           ) : (
@@ -178,14 +216,24 @@ const RegistrationsManager = () => {
                       },
                     })
                   }
-                  className="bg-white rounded-[40px] border border-slate-200 p-8 hover:shadow-2xl hover:border-[#1a5695]/40 transition-all cursor-pointer group flex flex-col justify-between"
+                  className="bg-white rounded-[40px] border border-slate-200 p-8 hover:shadow-2xl hover:border-[#1a5695]/40 transition-all cursor-pointer group flex flex-col justify-between relative"
                 >
+                  {/* EDIT BUTTON */}
+                  <button
+                    onClick={(e) => handleEditClick(e, item)}
+                    className="absolute top-8 right-8 p-2 bg-slate-50 text-slate-400 rounded-full hover:bg-[#1a5695] hover:text-white transition-all shadow-sm"
+                  >
+                    <Edit3 size={16} />
+                  </button>
+
                   <div>
                     <div className="flex justify-between items-start mb-8">
                       <div className="p-4 bg-slate-50 rounded-2xl text-[#1a5695] group-hover:bg-[#1a5695] group-hover:text-white transition-all shadow-inner">
                         <FileText size={24} />
                       </div>
-                      <div className="flex flex-col items-end">
+                      <div className="flex flex-col items-end mr-10">
+                        {" "}
+                        {/* Adjusted for edit button */}
                         <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">
                           REG ID: {item.registration_id}
                         </span>
@@ -205,7 +253,6 @@ const RegistrationsManager = () => {
                       {item.customer_name}
                     </h3>
 
-                    {/* CAPACITY LOGO LIKE ALLCUSTOMERS */}
                     <div className="flex items-center gap-2 mb-8">
                       <div className="flex items-center gap-1.5 bg-blue-50 px-3 py-1 rounded-lg">
                         <Zap
@@ -274,6 +321,138 @@ const RegistrationsManager = () => {
           )}
         </main>
       </div>
+
+      {/* --- EDIT MODAL --- */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden border border-white/20">
+            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-[#1a5695] text-white">
+              <div>
+                <h2 className="text-2xl font-black uppercase tracking-tight">
+                  Edit Registration
+                </h2>
+                <p className="text-[10px] font-bold opacity-70 tracking-widest uppercase">
+                  ID: {editingItem?.registration_id}
+                </p>
+              </div>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <form
+              onSubmit={handleUpdate}
+              className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6"
+            >
+              <div className="md:col-span-2">
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-2">
+                  Customer Name
+                </label>
+                <input
+                  type="text"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-bold uppercase outline-none focus:border-[#1a5695] transition-all"
+                  value={editingItem?.customer_name || ""}
+                  onChange={(e) =>
+                    setEditingItem({
+                      ...editingItem,
+                      customer_name: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-2">
+                  Address
+                </label>
+                <textarea
+                  rows="2"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-bold uppercase outline-none focus:border-[#1a5695] transition-all"
+                  value={editingItem?.address || ""}
+                  onChange={(e) =>
+                    setEditingItem({ ...editingItem, address: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-2">
+                  Contact Number
+                </label>
+                <input
+                  type="text"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-bold uppercase outline-none focus:border-[#1a5695] transition-all"
+                  value={editingItem?.contact_number || ""}
+                  onChange={(e) =>
+                    setEditingItem({
+                      ...editingItem,
+                      contact_number: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-2">
+                  Panel Wattage (W)
+                </label>
+                <input
+                  type="number"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-bold uppercase outline-none focus:border-[#1a5695] transition-all"
+                  value={editingItem?.panel_wattage || ""}
+                  onChange={(e) =>
+                    setEditingItem({
+                      ...editingItem,
+                      panel_wattage: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-2">
+                  Inverter (KW)
+                </label>
+                <input
+                  type="number"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3.5 text-sm font-bold uppercase outline-none focus:border-[#1a5695] transition-all"
+                  value={editingItem?.inverter_kw || ""}
+                  onChange={(e) =>
+                    setEditingItem({
+                      ...editingItem,
+                      inverter_kw: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="md:col-span-2 mt-4 flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="flex-1 py-4 border border-slate-200 text-slate-400 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updateLoading}
+                  className="flex-1 py-4 bg-[#1a5695] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:shadow-[#1a5695]/30 transition-all flex items-center justify-center gap-2 disabled:bg-slate-300"
+                >
+                  {updateLoading ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    "Update Registration"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
