@@ -5,14 +5,12 @@ const milestones = [
   {
     year: "2024",
     event:
-      "BHSquare was founded with a mission to transform energy consumption through solar.Successfully completed 500kW+ residential solar installations, establishing a strong presence in Gujarat’s rooftop solar segment.",
+      "BHSquare was founded with a mission to transform energy consumption through solar. Successfully completed 500kW+ residential solar installations in Gujarat.",
   },
-  // { year: "2026", event: "Expanded to 5 states across India" },
-  // { year: "2027", event: "Crossed 250+ commercial installations" },
   {
     year: "2025",
     event:
-      "Expanded into commercial and apartment solar projects across South Gujarat.Achieved 1MW+ total solar capacity, marking a significant milestone in our growth journey.",
+      "Expanded into commercial and apartment projects across South Gujarat. Achieved 1MW+ total capacity, marking a significant growth milestone.",
   },
 ];
 
@@ -20,17 +18,17 @@ const values = [
   {
     Icon: Zap,
     title: "Efficiency First",
-    desc: "We use high-performance Tier-1 solar panels with 21%+ efficiency to ensure maximum output and long-term savings.",
+    desc: "We use high-performance Tier-1 solar panels with 21%+ efficiency for maximum output.",
   },
   {
     Icon: ShieldCheck,
     title: "Expert Team",
-    desc: "MSkilled professionals delivering safe, reliable, and high-quality solar installations.",
+    desc: "Skilled professionals delivering safe, reliable, and high-quality solar installations.",
   },
   {
     Icon: Leaf,
     title: "Eco Commitment",
-    desc: "Each installation offsets 2+ tonnes of CO₂ annually, contributing to a greener and sustainable future.",
+    desc: "Each installation offsets 2+ tonnes of CO₂ annually, contributing to a sustainable future.",
   },
 ];
 
@@ -55,104 +53,113 @@ export default function About() {
   }, []);
 
   return (
-    <section id="about" ref={ref} className="py-24 bg-white overflow-hidden">
+    <section id="about" ref={ref} className="py-20 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          {/* Image collage */}
-          <div className="abt-reveal opacity-0 -translate-x-6 transition-all duration-700 relative">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-4">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+          {/* REFINED IMAGE COLLAGE */}
+          <div className="abt-reveal opacity-0 -translate-x-6 transition-all duration-700 relative order-2 lg:order-1">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="space-y-3 sm:space-y-4">
                 <img
                   src="https://images.unsplash.com/photo-1509391366360-2e959784a276?w=600&q=80"
                   alt="Solar installation"
-                  className="w-full h-52 object-cover rounded-2xl shadow-md"
+                  className="w-full h-48 sm:h-64 object-cover rounded-2xl shadow-lg hover:scale-[1.02] transition-transform duration-500"
                 />
                 <img
                   src="https://images.unsplash.com/photo-1497440001374-f26997328c1b?w=600&q=80"
                   alt="Solar team"
-                  className="w-full h-36 object-cover rounded-2xl shadow-md"
+                  className="w-full h-32 sm:h-44 object-cover rounded-2xl shadow-lg hover:scale-[1.02] transition-transform duration-500"
                 />
               </div>
-              <div className="space-y-4 mt-8">
+              <div className="space-y-3 sm:space-y-4 pt-8 sm:pt-12">
                 <img
                   src="https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=600&q=80"
                   alt="Solar field"
-                  className="w-full h-36 object-cover rounded-2xl shadow-md"
+                  className="w-full h-32 sm:h-44 object-cover rounded-2xl shadow-lg hover:scale-[1.02] transition-transform duration-500"
                 />
                 <img
                   src="https://images.unsplash.com/photo-1521618755572-156ae0cdd74d?w=600&q=80"
                   alt="Solar rooftop"
-                  className="w-full h-52 object-cover rounded-2xl shadow-md"
+                  className="w-full h-48 sm:h-64 object-cover rounded-2xl shadow-lg hover:scale-[1.02] transition-transform duration-500"
                 />
               </div>
             </div>
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 bg-[#0F2D6B] text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-3 whitespace-nowrap">
-              <span className="text-2xl font-display font-bold text-[#F5C518]">
-                3+
+
+            {/* FLOATING BADGE - Improved Positioning */}
+            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 lg:left-auto lg:right-0 lg:translate-x-1/4 bg-[#0F2D6B] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 whitespace-nowrap z-20">
+              <div className="flex flex-col items-center leading-none">
+                <span className="text-2xl font-bold text-[#F5C518]">3+</span>
+              </div>
+              <div className="h-8 w-[1px] bg-white/20" />
+              <span className="text-xs sm:text-sm font-medium uppercase tracking-wider">
+                Years of Excellence
               </span>
-              <span className="text-sm font-body">Years of Excellence</span>
             </div>
           </div>
 
-          {/* Content */}
-          <div className="space-y-8">
+          {/* CONTENT SECTION */}
+          <div className="space-y-8 order-1 lg:order-2">
             <div className="abt-reveal opacity-0 translate-y-4 transition-all duration-500">
-              <span className="inline-block px-4 py-1.5 bg-blue-50 text-[#1a5695] text-sm font-semibold font-body rounded-full mb-4">
+              <span className="inline-block px-4 py-1 bg-blue-50 text-[#1a5695] text-xs sm:text-sm font-bold uppercase tracking-widest rounded-full mb-4">
                 About BHSquare
               </span>
-              <h2 className="font-display text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
+              <h2 className="text-3xl md:text-5xl font-bold text-gray-900 leading-[1.15]">
                 Powering India's
                 <span className="text-[#1a5695]"> Solar Future</span>
               </h2>
             </div>
 
-            <p className="abt-reveal opacity-0 translate-y-4 transition-all duration-500 text-gray-600 text-lg leading-relaxed font-body">
+            <p className="abt-reveal opacity-0 translate-y-4 transition-all duration-500 text-gray-600 text-base sm:text-lg leading-relaxed">
               Founded in 2024, BHSquare is rapidly emerging as a trusted solar
-              solutions provider in Gujarat, with a vision to expand across
-              India. We are committed to making clean energy accessible,
-              affordable, and reliable for every home and business.
+              solutions provider in Gujarat. We are committed to making clean
+              energy accessible, affordable, and reliable for every home and
+              business.
             </p>
 
-            <p className="abt-reveal opacity-0 translate-y-4 transition-all duration-500 text-gray-500 leading-relaxed font-body">
-              Our expert team designs customized solar systems based on your
-              energy needs and site conditions. With a strong focus on quality,
-              performance, and customer satisfaction, we are building a solid
-              foundation in the solar industry.
-            </p>
-
-            <div className="abt-reveal opacity-0 translate-y-4 transition-all duration-500 space-y-4">
+            {/* CORE VALUES */}
+            <div className="abt-reveal opacity-0 translate-y-4 transition-all duration-500 grid gap-4">
               {values.map(({ Icon, title, desc }) => (
                 <div
                   key={title}
-                  className="flex gap-4 p-4 bg-gray-50 rounded-xl"
+                  className="flex gap-4 p-4 border border-gray-100 bg-gray-50/50 rounded-2xl hover:bg-white hover:shadow-md transition-all duration-300"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
-                    <Icon size={20} className="text-[#1a5695]" />
+                  <div className="w-12 h-12 rounded-xl bg-blue-100/50 flex items-center justify-center flex-shrink-0">
+                    <Icon size={22} className="text-[#1a5695]" />
                   </div>
                   <div>
-                    <h4 className="font-display font-semibold text-gray-900 mb-1">
+                    <h4 className="font-bold text-gray-900 text-sm sm:text-base mb-0.5">
                       {title}
                     </h4>
-                    <p className="text-gray-500 text-sm font-body">{desc}</p>
+                    <p className="text-gray-500 text-xs sm:text-sm leading-snug">
+                      {desc}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="abt-reveal opacity-0 translate-y-4 transition-all duration-500">
-              <h4 className="font-display font-semibold text-gray-700 mb-4 text-sm uppercase tracking-wider">
+            {/* JOURNEY TIMELINE */}
+            <div className="abt-reveal opacity-0 translate-y-4 transition-all duration-500 pt-4">
+              <h4 className="font-bold text-gray-400 mb-6 text-[11px] uppercase tracking-[0.2em]">
                 Our Journey
               </h4>
-              <div className="relative">
-                <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-blue-100" />
-                <div className="space-y-3">
+              <div className="relative ml-2">
+                <div className="absolute left-[31px] top-2 bottom-2 w-[1.5px] bg-blue-100" />
+                <div className="space-y-6">
                   {milestones.map(({ year, event }) => (
-                    <div key={year} className="flex items-center gap-4">
-                      <div className="w-16 text-right text-xs font-bold text-[#1a5695] font-body flex-shrink-0">
+                    <div
+                      key={year}
+                      className="flex items-start gap-6 relative group"
+                    >
+                      <div className="w-8 text-right text-xs font-black text-[#1a5695] pt-1">
                         {year}
                       </div>
-                      <div className="w-4 h-4 rounded-full bg-[#1a5695] border-2 border-white shadow-sm flex-shrink-0 z-10" />
-                      <p className="text-sm text-gray-600 font-body">{event}</p>
+                      <div className="relative flex items-center justify-center pt-1">
+                        <div className="w-3.5 h-3.5 rounded-full bg-[#1a5695] border-2 border-white shadow-sm z-10 group-hover:scale-125 transition-transform" />
+                      </div>
+                      <p className="text-xs sm:text-sm text-gray-600 leading-relaxed max-w-md">
+                        {event}
+                      </p>
                     </div>
                   ))}
                 </div>

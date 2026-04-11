@@ -3,7 +3,7 @@ import { ArrowRight, PlayCircle, Zap, BarChart2, Leaf } from "lucide-react";
 
 const stats = [
   { value: "500+", label: "Installations" },
-  { value: "15MW", label: "Power Generated" },
+  { value: "1.5MW", label: "Power Generated" },
   { value: "98%", label: "Satisfaction Rate" },
   { value: "25yr", label: "Panel Performance" },
 ];
