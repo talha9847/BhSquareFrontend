@@ -21,6 +21,7 @@ import {
   BarChart3,
   Calendar,
   CalendarRange,
+  FileDown,
 } from "lucide-react";
 import {
   AreaChart,
@@ -35,7 +36,8 @@ import {
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import axios from "axios";
-
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable"; // Import it as a variable
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [counts, setCounts] = useState(() => {
@@ -57,6 +59,77 @@ const Dashboard = () => {
   const [isSyncing, setIsSyncing] = useState(false);
   const navigate = useNavigate();
 
+  // Add this with your other states
+  const [reportLoading, setReportLoading] = useState(false);
+  const [reportData, setReportData] = useState([]);
+
+  const [reportFilters, setReportFilters] = useState({
+    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+      .toISOString()
+      .split("T")[0],
+    endDate: new Date().toISOString().split("T")[0],
+  });
+
+  const downloadPDF = () => {
+    const doc = new jsPDF();
+
+    // Group data by month
+    const groupedData = reportData.reduce((acc, item) => {
+      if (!acc[item.month]) acc[item.month] = [];
+      acc[item.month].push(item);
+      return acc;
+    }, {});
+
+    const body = [];
+
+    Object.keys(groupedData).forEach((month) => {
+      // Add a full-width month header row
+      body.push([
+        {
+          content: month,
+          colSpan: 6,
+          styles: {
+            halign: "left",
+            fillColor: [220, 220, 220],
+            fontStyle: "bold",
+          },
+        },
+      ]);
+
+      // Add rows under that month
+      groupedData[month].forEach((item) => {
+        body.push([
+          item.customer_name,
+          item.address,
+          `${item.total_capacity} kW`,
+          item.number_of_panels,
+          `${item.panel_wattage} W`,
+          item.source_name,
+        ]);
+      });
+    });
+
+    autoTable(doc, {
+      head: [
+        [
+          "Customer",
+          "Address",
+          "Capacity (kW)",
+          "Panels",
+          "Wattage (W)",
+          "Source",
+        ],
+      ],
+      body: body,
+      startY: 25,
+      theme: "grid",
+      headStyles: { fillColor: [26, 86, 149] },
+      styles: { fontSize: 9 },
+    });
+
+    doc.text("Customer Completion Report - Stage 9", 14, 15);
+    doc.save(`SolarOS_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
   // 1. Fetch Summary Counts (Top Level Stats)
   const fetchCounts = useCallback(async (force = false) => {
     const lastFetch = localStorage.getItem("solar_dash_last_fetch");
@@ -84,6 +157,33 @@ const Dashboard = () => {
       setIsSyncing(false);
     }
   }, []);
+
+  const fetchReportData = useCallback(async () => {
+    setReportLoading(true);
+    try {
+      const res = await axios.post(
+        `/api/leads/getCustomerReport`,
+        {
+          startDate: reportFilters.startDate,
+          endDate: reportFilters.endDate,
+        },
+        {
+          withCredentials: true,
+        },
+      );
+      if (res.data.success) {
+        setReportData(res.data.data);
+      }
+    } catch (error) {
+      console.error("Report Fetch Error:", error);
+    } finally {
+      setReportLoading(false);
+    }
+  }, [reportFilters]);
+
+  useEffect(() => {
+    fetchReportData();
+  }, [fetchReportData]);
 
   // 2. Fetch Lead Analytics (Using req.body)
   const fetchAnalytics = useCallback(async (payload) => {
@@ -375,6 +475,68 @@ const Dashboard = () => {
               </div>
             </div>
           </section>
+
+          {/* --- QUICK ACTIONS / REPORTS --- */}
+          <section className="mb-10 grid grid-cols-1 gap-6">
+            <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-[#1a5695]">
+                  <FileText size={24} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-black text-slate-800">
+                    Completion Reports (Stage 9)
+                  </h2>
+                  <p className="text-xs text-slate-400 font-medium">
+                    Found {reportData.length} customers in selected range
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Date Selectors for the Controller */}
+                <div className="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100">
+                  <input
+                    type="date"
+                    className="bg-transparent border-none text-xs font-bold outline-none"
+                    value={reportFilters.startDate}
+                    onChange={(e) =>
+                      setReportFilters({
+                        ...reportFilters,
+                        startDate: e.target.value,
+                      })
+                    }
+                  />
+                  <span className="text-slate-300">-</span>
+                  <input
+                    type="date"
+                    className="bg-transparent border-none text-xs font-bold outline-none"
+                    value={reportFilters.endDate}
+                    onChange={(e) =>
+                      setReportFilters({
+                        ...reportFilters,
+                        endDate: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <button
+                  onClick={downloadPDF}
+                  disabled={reportLoading || reportData.length === 0}
+                  className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-rose-50 text-rose-700 text-sm font-bold hover:bg-rose-100 transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {reportLoading ? (
+                    <Loader2 size={18} className="animate-spin" />
+                  ) : (
+                    <FileDown size={18} />
+                  )}
+                  Download PDF
+                </button>
+              </div>
+            </div>
+          </section>
+          {/* --- QUICK ACTIONS / REPORTS --- */}
 
           {/* --- STATUS STAT CARDS GRID --- */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
