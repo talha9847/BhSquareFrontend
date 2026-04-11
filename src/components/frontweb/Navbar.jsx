@@ -38,13 +38,13 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-19">
           <Link to="/" className="flex items-center group">
             {/* The container height matches your previous Sun icon (h-9) */}
             <img
               src={logo}
               alt="BHSquare Logo"
-              className="h-55 w-auto object-contain transition-transform group-hover:scale-105"
+              className="h-55 w-auto object-contain transition-transform group-hover:scale-100"
             />
           </Link>
 
