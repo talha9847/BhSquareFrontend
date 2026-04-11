@@ -21,7 +21,6 @@ import {
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [active, setActive] = useState("dashboard");
   const navigate = useNavigate();
@@ -36,7 +35,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <HardHat size={18} />,
       type: "Installation",
       path: "/technician/wiring",
-      activePaths: ["/fabricator/fabrication/"],
+      activePaths: [
+        "/technician/wiring",
+        "/technician/updatewiring",
+        "/technician/finalizewiring",
+      ],
     },
   ];
 

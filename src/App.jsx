@@ -57,6 +57,8 @@ import LoanStepGuard from "./Guards/LoanStepGuard";
 import WebLeads from "./components/crm/WebLeads";
 import Commissions from "./components/crm/Commissions";
 import AllCommission from "./components/crm/AllCommission";
+import TFinalizeWiring from "./components/Technician/TFinalizeWiring";
+import TUpdateWiringLog from "./components/Technician/TUpdateWiringLog";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -262,6 +264,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["technician"]}>
                 <TWiring />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/technician/finalizewiring"
+            element={
+              <ProtectedRoute allowedRoles={["technician"]}>
+                <TFinalizeWiring />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/technician/updatewiring"
+            element={
+              <ProtectedRoute allowedRoles={["technician"]}>
+                <TUpdateWiringLog />
               </ProtectedRoute>
             }
           />

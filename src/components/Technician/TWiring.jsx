@@ -176,7 +176,7 @@ const TWiring = () => {
                           {item.wiring_inv_status === "pending" ? (
                             <button
                               onClick={() =>
-                                navigate("/updatewiring", {
+                                navigate("/technician/updatewiring", {
                                   state: {
                                     wiring_id: item.wiring_id,
                                     customer_id: item.customer_id,
@@ -191,7 +191,7 @@ const TWiring = () => {
                             <button
                               onClick={() => {
                                 // REPLACE MODAL LOGIC WITH NAVIGATION
-                                navigate("/finalizewiring", {
+                                navigate("/technician/finalizewiring", {
                                   state: { selectedWiring: item },
                                 });
                               }}
