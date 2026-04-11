@@ -38,6 +38,7 @@ import Navbar from "./Navbar";
 import axios from "axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable"; // Import it as a variable
+import logo from "../../assets/logo.png";
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [counts, setCounts] = useState(() => {
@@ -69,66 +70,99 @@ const Dashboard = () => {
       .split("T")[0],
     endDate: new Date().toISOString().split("T")[0],
   });
+  const downloadPDF = async () => {
+    // 1. Create a hidden element to render the HTML
+    const reportElement = document.createElement("div");
+    reportElement.style.width = "750px"; // Fixed width for consistent PDF scaling
+    reportElement.style.padding = "20px";
+    reportElement.style.backgroundColor = "white";
 
-  const downloadPDF = () => {
-    const doc = new jsPDF();
-
-    // Group data by month
+    // 2. Group data by month
     const groupedData = reportData.reduce((acc, item) => {
       if (!acc[item.month]) acc[item.month] = [];
       acc[item.month].push(item);
       return acc;
     }, {});
 
-    const body = [];
-
+    // 3. Build the HTML String
+    let tableRows = "";
     Object.keys(groupedData).forEach((month) => {
-      // Add a full-width month header row
-      body.push([
-        {
-          content: month,
-          colSpan: 6,
-          styles: {
-            halign: "left",
-            fillColor: [220, 220, 220],
-            fontStyle: "bold",
-          },
-        },
-      ]);
+      tableRows += `
+      <tr>
+        <td colspan="6" style="background-color: #f1f5f9; font-weight: bold; padding: 12px; border: 1px solid #e2e8f0; color: #1e293b;">
+          ${month}
+        </td>
+      </tr>
+    `;
 
-      // Add rows under that month
       groupedData[month].forEach((item) => {
-        body.push([
-          item.customer_name,
-          item.address,
-          `${item.total_capacity} kW`,
-          item.number_of_panels,
-          `${item.panel_wattage} W`,
-          item.source_name,
-        ]);
+        tableRows += `
+        <tr>
+          <td style="padding: 10px; border: 1px solid #e2e8f0;">${item.customer_name}</td>
+          <td style="padding: 10px; border: 1px solid #e2e8f0; font-size: 10px; width: 200px;">${item.address}</td>
+          <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center;">${item.total_capacity} kW</td>
+          <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center;">${item.number_of_panels}</td>
+          <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center;">${item.panel_wattage}W</td>
+          <td style="padding: 10px; border: 1px solid #e2e8f0;">${item.source_name}</td>
+        </tr>
+      `;
       });
     });
 
-    autoTable(doc, {
-      head: [
-        [
-          "Customer",
-          "Address",
-          "Capacity (kW)",
-          "Panels",
-          "Wattage (W)",
-          "Source",
-        ],
-      ],
-      body: body,
-      startY: 25,
-      theme: "grid",
-      headStyles: { fillColor: [26, 86, 149] },
-      styles: { fontSize: 9 },
-    });
+    reportElement.innerHTML = `
+    <div style="font-family: 'Helvetica', sans-serif; color: #334155;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1a5695; padding-bottom: 20px; margin-bottom: 30px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <img src="${logo}" style="height: 170px;" />
+       
+        </div>
+        <div style="text-align: right;">
+          <h2 style="margin: 0; font-size: 16px; color: #1a5695;">Project Completion Report</h2>
+          <p style="margin: 0; font-size: 11px;">Generated: ${new Date().toLocaleDateString()}</p>
+        </div>
+      </div>
 
-    doc.text("Customer Completion Report - Stage 9", 14, 15);
-    doc.save(`SolarOS_Report_${new Date().toISOString().slice(0, 10)}.pdf`);
+      <table style="width: 100%; border-collapse: collapse; font-size: 11px;">
+        <thead>
+          <tr style="background-color: #1a5695; color: #ffffff;">
+            <th style="padding: 12px; border: 1px solid #1a5695; text-align: left;">Customer</th>
+            <th style="padding: 12px; border: 1px solid #1a5695; text-align: left;">Site Address</th>
+            <th style="padding: 12px; border: 1px solid #1a5695;">Capacity</th>
+            <th style="padding: 12px; border: 1px solid #1a5695;">Panels</th>
+            <th style="padding: 12px; border: 1px solid #1a5695;">Wattage</th>
+            <th style="padding: 12px; border: 1px solid #1a5695; text-align: left;">Source</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+        </tbody>
+      </table>
+      
+      <div style="margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 10px; color: #94a3b8; text-align: center;">
+        This is a system-generated document from BHSquare SolarOS Dashboard.
+      </div>
+    </div>
+  `;
+
+    // 4. Generate PDF
+    const doc = new jsPDF("p", "pt", "a4");
+
+    try {
+      await doc.html(reportElement, {
+        callback: function (doc) {
+          doc.save(
+            `SolarOS_Report_${new Date().toISOString().slice(0, 10)}.pdf`,
+          );
+        },
+        x: 20,
+        y: 20,
+        autoPaging: "text", // Handles page breaks better
+        width: 550, // Target width in the PDF
+        windowWidth: 750, // Virtual window width
+      });
+    } catch (error) {
+      console.error("PDF Generation Error:", error);
+    }
   };
   // 1. Fetch Summary Counts (Top Level Stats)
   const fetchCounts = useCallback(async (force = false) => {
