@@ -5,7 +5,7 @@ const stats = [
   { value: "500+", label: "Installations" },
   { value: "15MW", label: "Power Generated" },
   { value: "98%", label: "Satisfaction Rate" },
-  { value: "3yr", label: "Warranty" },
+  { value: "25yr", label: "Panel Performance" },
 ];
 
 export default function Hero() {

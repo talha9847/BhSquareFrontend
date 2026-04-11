@@ -15,19 +15,19 @@ const contactInfo = [
   {
     Icon: Phone,
     label: "mobile",
-    value: "+91 98765 43210",
+    value: "+91  99094 31526",
     sub: "Mon-Sat, 9am-6pm",
   },
   {
     Icon: Mail,
     label: "Email",
-    value: "hello@bhsquare.in",
+    value: " harshwork2422@gmail.com",
     sub: "We reply within 24 hours",
   },
   {
     Icon: MapPin,
     label: "Office",
-    value: "SG Highway, Ahmedabad",
+    value: "Kharel Shiv Campus , Near Kharel Chokdi Police Station",
     sub: "Gujarat, India - 380054",
   },
 ];
@@ -35,7 +35,7 @@ const contactInfo = [
 const perks = [
   "Free site visit & consultation",
   "Subsidy application support",
-  "10-year system warranty",
+  "30 Years Of Warranty",
   "24/7 monitoring support",
 ];
 
@@ -211,7 +211,7 @@ export default function Contact() {
                         disabled={loading}
                         value={form.name}
                         onChange={(e) => handleChange("name", e.target.value)}
-                        placeholder="Ramesh Patel"
+                        placeholder="Harsh Patel"
                         className={`w-full px-4 py-3 border rounded-xl font-body text-sm outline-none transition-colors ${errors.name ? "border-red-400 bg-red-50" : "border-gray-200 focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100"}`}
                       />
                       {errors.name && (
@@ -232,7 +232,7 @@ export default function Contact() {
                       disabled={loading}
                       value={form.mobile}
                       onChange={(e) => handleChange("mobile", e.target.value)}
-                      placeholder="9876543210"
+                      placeholder="9909431526"
                       className={`w-full px-4 py-3 border rounded-xl font-body text-sm outline-none transition-colors ${errors.mobile ? "border-red-400 bg-red-50" : "border-gray-200 focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100"}`}
                     />
                     {errors.mobile && (
