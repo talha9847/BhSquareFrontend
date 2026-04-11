@@ -100,7 +100,7 @@ const Dashboard = () => {
         <tr>
           <td style="padding: 10px; border: 1px solid #e2e8f0;">${item.customer_name}</td>
           <td style="padding: 10px; border: 1px solid #e2e8f0; font-size: 10px; width: 200px;">${item.address}</td>
-          <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center;">${item.total_capacity} kW</td>
+          <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center;">${(item.total_capacity / 1000).toFixed(2)} kW</td>
           <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center;">${item.number_of_panels}</td>
           <td style="padding: 10px; border: 1px solid #e2e8f0; text-align: center;">${item.panel_wattage}W</td>
           <td style="padding: 10px; border: 1px solid #e2e8f0;">${item.source_name}</td>
