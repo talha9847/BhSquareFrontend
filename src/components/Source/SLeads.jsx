@@ -6,19 +6,12 @@ import {
   X,
   Calculator,
   Search,
-  UserCheck,
-  ArrowRightLeft,
-  Clock,
-  Ban,
-  MessageSquare,
-  Calendar,
   Edit,
-  Trash2,
-  ClipboardList,
-  ChevronRight,
-  Database,
   Loader2,
   Eye,
+  CheckCircle2,
+  Clock,
+  Calendar,
 } from "lucide-react";
 import Navbar from "../crm/Navbar";
 import Sidebar from "./Sidebar";
@@ -36,7 +29,7 @@ const SLeads = () => {
   const [activeTab, setActiveTab] = useState("pending");
   const [pageLoading, setPageLoading] = useState(true);
 
-  // --- NEW STATES FOR DATE UPDATE ---
+  // Date Update States
   const [isDateModalOpen, setIsDateModalOpen] = useState(false);
   const [selectedLeadForDate, setSelectedLeadForDate] = useState(null);
   const [newVisitDate, setNewVisitDate] = useState("");
@@ -46,10 +39,7 @@ const SLeads = () => {
 
   // Capacity Estimator States
   const [plateWattage, setPlateWattage] = useState(550);
-  const [invereterKWattage, setInvereterKWattage] = useState(550);
   const [quantity, setQuantity] = useState(0);
-  const [qty, setQty] = useState(0);
-  const invCapacity = Number(invereterKWattage) * Number(qty);
   const systemCapacity = (Number(plateWattage) * Number(quantity)) / 1000;
 
   const {
@@ -61,23 +51,24 @@ const SLeads = () => {
 
   const [leads, setLeads] = useState([]);
 
-  const getLeadsByStatus = async (status) => {
+  const getLeadsByStatus = async () => {
     setPageLoading(true);
     try {
       const result = await axios.get(`/api/leads/fetchLeadsBySource`, {
         withCredentials: true,
       });
       setLeads(result.data.data);
-      setPageLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
+      toast.error("Failed to fetch leads");
+    } finally {
       setPageLoading(false);
     }
   };
 
   useEffect(() => {
-    getLeadsByStatus(activeTab);
-  }, [activeTab]);
+    getLeadsByStatus();
+  }, []);
 
   const getDateStyle = (dateString) => {
     if (!dateString) return "text-slate-400";
@@ -88,29 +79,23 @@ const SLeads = () => {
     const diffTime = visitDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 0) return "text-red-700 font-black animate-pulse";
+    if (diffDays < 0) return "text-red-600 font-bold";
     if (diffDays <= 2) return "text-amber-600 font-bold";
-    return "text-emerald-600 font-medium";
+    return "text-emerald-600 font-bold";
   };
 
-  // --- NEW: DATE UPDATE HANDLER ---
   const handleQuickDateUpdate = async () => {
     if (!newVisitDate) return toast.error("Please select a date");
     setLoadSaveLead(true);
-
     try {
       const res = await axios.post(
         `/api/leads/updateLeadVisitDate`,
-        {
-          id: selectedLeadForDate.id,
-          date: newVisitDate,
-        },
+        { id: selectedLeadForDate.id, date: newVisitDate },
         { withCredentials: true },
       );
-
       if (res.status === 200) {
         toast.success("Visit date updated!");
-        getLeadsByStatus(activeTab);
+        getLeadsByStatus();
         setIsDateModalOpen(false);
       }
     } catch (error) {
@@ -126,8 +111,6 @@ const SLeads = () => {
       ...data,
       panel_wattage: Number(data.panel_wattage),
       number_of_panels: Number(data.number_of_panels),
-      inverter_kw: Number(data.inverter_kw),
-      number_of_inverters: Number(data.number_of_inverters),
     };
 
     try {
@@ -136,12 +119,10 @@ const SLeads = () => {
       else payload.status = "pending";
 
       const res = await axios.post(url, payload, { withCredentials: true });
-
       if (res.status === 200 || res.status === 201) {
         toast.success(edit ? "Lead updated" : "Lead saved");
-        getLeadsByStatus(activeTab);
+        getLeadsByStatus();
         setIsModalOpen(false);
-        setEdit(false);
         reset();
       }
     } catch (error) {
@@ -169,9 +150,10 @@ const SLeads = () => {
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="p-4 lg:p-8">
+          {/* Header Section */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase">
+              <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase">
                 Leads Pipeline
               </h1>
               <p className="text-sm text-slate-500">
@@ -190,6 +172,7 @@ const SLeads = () => {
             </button>
           </div>
 
+          {/* Search Bar */}
           <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
             <div className="flex-1 relative">
               <Search
@@ -198,7 +181,7 @@ const SLeads = () => {
               />
               <input
                 type="text"
-                placeholder={`Search leads...`}
+                placeholder="Search by name or number..."
                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:border-[#1a5695] outline-none text-sm"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -206,6 +189,7 @@ const SLeads = () => {
             </div>
           </div>
 
+          {/* Leads Table */}
           <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
             {pageLoading ? (
               <div className="flex flex-col items-center justify-center py-32">
@@ -220,13 +204,13 @@ const SLeads = () => {
                   <thead className="bg-slate-50/50">
                     <tr>
                       <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                        Name & Mobile
+                        Customer
                       </th>
                       <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                        Address
+                        Location
                       </th>
                       <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
-                        Visit Date
+                        Visit Schedule
                       </th>
                       <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                         Capacity
@@ -237,62 +221,81 @@ const SLeads = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {filteredLeads.map((lead) => (
-                      <tr
-                        key={lead.id}
-                        className="hover:bg-slate-50/80 transition-colors"
-                      >
-                        <td className="px-6 py-4">
-                          <p className="font-bold text-slate-800 text-sm">
-                            {lead.customer_name}
-                          </p>
-                          <p className="text-slate-400 text-[11px] font-medium">
-                            {lead.contact_number}
-                          </p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-1.5 text-slate-500 text-xs">
-                            <MapPin size={12} className="text-slate-300" />
-                            <span className="truncate max-w-[150px]">
-                              {lead.address}
-                            </span>
-                          </div>
-                        </td>
-                        {/* --- CLICKABLE DATE CELL --- */}
-                        <td
-                          className="px-6 py-4 cursor-pointer hover:bg-blue-50 transition-all"
-                          onClick={() => {
-                            setSelectedLeadForDate(lead);
-                            setNewVisitDate(lead.site_visit_date);
-                            setIsDateModalOpen(true);
-                          }}
+                    {filteredLeads.map((lead) => {
+                      const isConverted =
+                        lead.status?.toLowerCase() === "converted";
+                      return (
+                        <tr
+                          key={lead.id}
+                          className="hover:bg-slate-50/80 transition-colors group"
                         >
-                          <div className="flex flex-col">
-                            <span
-                              className={`text-xs uppercase tracking-tight flex items-center gap-2 ${getDateStyle(lead.site_visit_date)}`}
-                            >
-                              {lead.site_visit_date}
-                              <Edit size={12} className="text-slate-300" />
+                          <td className="px-6 py-4">
+                            <p className="font-bold text-slate-800 text-sm">
+                              {lead.customer_name}
+                            </p>
+                            <p className="text-slate-400 text-[11px] font-medium">
+                              {lead.contact_number}
+                            </p>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-1.5 text-slate-500 text-xs">
+                              <MapPin size={12} className="text-slate-300" />
+                              <span className="truncate max-w-[150px]">
+                                {lead.address}
+                              </span>
+                            </div>
+                          </td>
+                          <td
+                            className="px-6 py-4 cursor-pointer hover:bg-blue-50/50 transition-all"
+                            onClick={() => {
+                              setSelectedLeadForDate(lead);
+                              setNewVisitDate(lead.site_visit_date);
+                              setIsDateModalOpen(true);
+                            }}
+                          >
+                            <div className="flex flex-col">
+                              <span
+                                className={`text-xs uppercase tracking-tight flex items-center gap-2 ${getDateStyle(lead.site_visit_date)}`}
+                              >
+                                {lead.site_visit_date || "Set Date"}
+                                <Edit
+                                  size={12}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity"
+                                />
+                              </span>
+                              <span className="text-[9px] text-slate-400 font-semibold mt-0.5">
+                                Click to reschedule
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-sm font-black text-slate-700">
+                              {(lead.total_capacity / 1000).toFixed(2)}{" "}
+                              <span className="text-[10px] text-slate-400 font-normal">
+                                kW
+                              </span>
                             </span>
-                            <span className="text-[9px] text-slate-400 font-semibold mt-0.5">
-                              Click to Reschedule
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm font-black text-[#1a5695]">
-                            {(lead.total_capacity / 1000).toFixed(2)} Kw
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="text-sm font-black text-[#1a5695]">
-                            {lead.status === "pending"
-                              ? "PENDING"
-                              : "CONVERTED"}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="px-6 py-4">
+                            {isConverted ? (
+                              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 shadow-sm">
+                                <CheckCircle2 size={12} />
+                                <span className="text-[10px] font-bold uppercase tracking-wider">
+                                  Converted
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-600 border border-amber-100 shadow-sm">
+                                <Clock size={12} />
+                                <span className="text-[10px] font-bold uppercase tracking-wider">
+                                  Pending
+                                </span>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -301,13 +304,13 @@ const SLeads = () => {
         </main>
       </div>
 
-      {/* --- QUICK DATE UPDATE MODAL --- */}
+      {/* Reschedule Modal */}
       {isDateModalOpen && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-sm rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in duration-200">
             <div className="bg-[#1a5695] p-5 text-white flex justify-between items-center">
               <h2 className="text-sm font-bold uppercase tracking-widest">
-                Reschedule
+                Reschedule Visit
               </h2>
               <button onClick={() => setIsDateModalOpen(false)}>
                 <X size={20} />
@@ -316,7 +319,7 @@ const SLeads = () => {
             <div className="p-6 space-y-4">
               <div>
                 <label className="text-[10px] font-bold text-slate-400 uppercase">
-                  Select New Date
+                  New Date
                 </label>
                 <input
                   type="date"
@@ -341,7 +344,7 @@ const SLeads = () => {
         </div>
       )}
 
-      {/* --- MAIN ADD/EDIT MODAL --- */}
+      {/* Main Form Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-[32px] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in duration-200">
@@ -350,24 +353,24 @@ const SLeads = () => {
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                   <Users size={20} />
                 </div>
-                <h2 className="text-xl font-bold font-syne uppercase tracking-tight">
+                <h2 className="text-xl font-bold uppercase tracking-tight">
                   {edit ? "Edit Lead" : "Create New Lead"}
                 </h2>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="hover:bg-white/10 p-2 rounded-full transition-colors"
+                className="hover:bg-white/10 p-2 rounded-full"
               >
                 <X size={24} />
               </button>
             </div>
 
             <form
-              className="p-6 overflow-y-auto custom-scrollbar flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4"
+              className="p-6 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4"
               onSubmit={handleSubmit(onSubmit)}
             >
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">
+                <label className="text-[10px] font-bold text-slate-400 uppercase">
                   Customer Name
                 </label>
                 <input
@@ -376,7 +379,7 @@ const SLeads = () => {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">
+                <label className="text-[10px] font-bold text-slate-400 uppercase">
                   Contact Number
                 </label>
                 <input
@@ -385,8 +388,8 @@ const SLeads = () => {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase flex items-center gap-1">
-                  <Calendar size={10} /> Visit Schedule
+                <label className="text-[10px] font-bold text-slate-400 uppercase">
+                  Visit Date
                 </label>
                 <input
                   {...register("site_visit_date")}
@@ -395,8 +398,8 @@ const SLeads = () => {
                 />
               </div>
               <div className="md:col-span-2 space-y-1">
-                <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">
-                  Full Address
+                <label className="text-[10px] font-bold text-slate-400 uppercase">
+                  Address
                 </label>
                 <textarea
                   {...register("address", { required: true })}
@@ -405,7 +408,7 @@ const SLeads = () => {
                 ></textarea>
               </div>
 
-              {/* Capacity Estimator */}
+              {/* Estimator */}
               <div className="md:col-span-2 bg-blue-50/50 p-4 rounded-3xl border border-blue-100">
                 <div className="flex items-center gap-2 mb-3 text-[#1a5695] font-bold text-[10px] uppercase tracking-widest">
                   <Calculator size={14} /> Panel Capacity Estimator
@@ -438,7 +441,7 @@ const SLeads = () => {
                 </div>
               </div>
 
-              <div className="p-6 border-t border-slate-100 bg-slate-50/50 shrink-0 flex gap-3 md:col-span-2">
+              <div className="pt-4 flex gap-3 md:col-span-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}

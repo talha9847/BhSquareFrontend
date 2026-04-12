@@ -17,9 +17,12 @@ import {
   X,
   FileSignal,
   Users2,
+  UserPlus,
+  IndianRupeeIcon,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import logo from "../../assets/logo.png";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [active, setActive] = useState("dashboard");
@@ -32,21 +35,21 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const menuItems = [
     {
       name: "Leads",
-      icon: <HardHat size={18} />,
+      icon: <UserPlus size={18} />,
       type: "Installation",
       path: "/source/leads",
       activePaths: ["/source/leads"],
     },
     {
       name: "Customers",
-      icon: <HardHat size={18} />,
+      icon: <Users size={18} />,
       type: "Installation",
       path: "/source/customers",
       activePaths: ["/source/customers"],
     },
     {
       name: "Commission",
-      icon: <HardHat size={18} />,
+      icon: <IndianRupeeIcon size={18} />,
       type: "Installation",
       path: "/source/commissions",
       activePaths: ["/source/commissions"],
@@ -69,19 +72,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-slate-200 transition-transform duration-300 transform ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       >
         {/* Brand Header */}
-        <div className="bg-[#1a5695] px-6 py-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#f39200] rounded-2xl flex items-center justify-center shadow-lg">
-              <Bolt className="text-white" size={20} fill="currentColor" />
-            </div>
-            <div>
-              <p className="font-bold text-white text-lg tracking-tight">
-                BHSquare
-              </p>
-              <p className="text-blue-200 text-[10px] font-bold tracking-widest uppercase">
-                Solar ERP
-              </p>
-            </div>
+        <div className="bg-[#1a5695] px-3 py-4 shrink-0 border-b border-white/10">
+          <div className="w-full h-17 bg-white rounded-xl shadow-inner flex items-center justify-center overflow-hidden">
+            <img
+              src={logo}
+              alt="BHSquare Logo"
+              className="w-full h-full object-contain scale-[2.6] transform"
+            />
           </div>
         </div>
 
