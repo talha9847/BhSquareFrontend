@@ -27,7 +27,7 @@ const UserManagement = () => {
   const [tableLoading, setTableLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [users, setUsers] = useState([]);
-
+  const [toggleLoading, setToggleLoading] = useState(null); // Stores ID of user being toggled
   // Master Data State
   const [masterData, setMasterData] = useState({
     technicians: [],
@@ -120,7 +120,9 @@ const UserManagement = () => {
     console.log(formData);
     try {
       const endpoint =
-        modalType === "create" ? "/api/users/createUser" : "/api/users/updateUser";
+        modalType === "create"
+          ? "/api/users/createUser"
+          : "/api/users/updateUser";
       const res = await axios.post(`${endpoint}`, formData, {
         withCredentials: true,
       });
@@ -138,7 +140,26 @@ const UserManagement = () => {
       setModalLoading(false);
     }
   };
+  const toggleUserStatus = async (user) => {
+    console.log(user);
+    setToggleLoading(user.id);
+    try {
+      const res = await axios.put(
+        `/api/users/updateUserActiveStatus`,
+        { userId: user.id, is_active: !user.is_active },
+        { withCredentials: true },
+      );
 
+      if (res.status === 200) {
+        toast.success(`User ${!user.is_active ? "activated" : "deactivated"}`);
+        getUsers(); // Refresh list
+      }
+    } catch (error) {
+      toast.error("Failed to update status");
+    } finally {
+      setToggleLoading(null);
+    }
+  };
   const filteredUsers = users.filter((u) =>
     u.email?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
@@ -204,74 +225,128 @@ const UserManagement = () => {
                 </span>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-separate border-spacing-0">
-                  <thead className="bg-slate-50/50">
+              <div className="overflow-x-auto rounded-xl border border-slate-100">
+                <table className="w-full text-left border-separate border-spacing-0 min-w-[600px]">
+                  <thead className="bg-slate-50/80 sticky top-0 z-10">
                     <tr>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-20 text-center">
+                      {/* Responsive Hide: Hidden on mobile (sm) */}
+                      <th className="hidden sm:table-cell px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-16 text-center border-b border-slate-100">
                         ID
                       </th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase">
-                        User Details
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase border-b border-slate-100">
+                        User Info
                       </th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase">
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase border-b border-slate-100 text-center w-32">
+                        Status
+                      </th>
+                      {/* Responsive Hide: Hidden on mobile (md) */}
+                      <th className="hidden md:table-cell px-6 py-5 text-[10px] font-black text-slate-400 uppercase border-b border-slate-100 w-32">
                         Role
                       </th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase text-right">
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase text-right border-b border-slate-100 w-28">
                         Actions
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {filteredUsers.map((user) => (
-                      <tr
-                        key={user.id}
-                        className="hover:bg-slate-50/50 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-center font-black text-slate-300 text-[11px]">
-                          #{user.id}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="font-bold text-slate-800 text-sm lowercase leading-tight">
-                            {user.email}
-                          </div>
-                          <div className="text-[9px] text-slate-400 font-black uppercase mt-1 flex items-center gap-1">
-                            <CheckCircle2
-                              size={10}
-                              className="text-emerald-500"
-                            />{" "}
-                            Active
-                            <span className="mx-1 text-slate-200">|</span>
-                            Joined:{" "}
-                            {new Date(user.created_at).toLocaleDateString()}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span
-                            className={`px-4 py-1.5 rounded-full text-[9px] font-black uppercase border ${
-                              user.role === "admin"
-                                ? "bg-rose-50 border-rose-100 text-rose-500"
-                                : "bg-blue-50 border-blue-100 text-[#1a5695]"
-                            }`}
-                          >
-                            {user.role}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end gap-2">
-                            <button
-                              onClick={() => openModal("edit", user)}
-                              className="p-3 text-slate-400 hover:text-[#1a5695] hover:bg-blue-50 rounded-2xl transition-all"
+                    {filteredUsers.length > 0 ? (
+                      filteredUsers.map((user) => (
+                        <tr
+                          key={user.id}
+                          className="hover:bg-slate-50/50 transition-colors group"
+                        >
+                          {/* 1. ID COLUMN (HIDDEN ON MOBILE) */}
+                          <td className="hidden sm:table-cell px-6 py-4 text-center font-black text-slate-300 text-[11px]">
+                            {user.id}
+                          </td>
+
+                          {/* 2. USER INFO */}
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-slate-800 text-sm leading-none truncate max-w-[200px]">
+                                {user.email}
+                              </span>
+                              <span className="text-[10px] text-slate-400 mt-1 font-medium italic">
+                                Member since{" "}
+                                {new Date(user.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* 3. SEPARATE TOGGLE COLUMN */}
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col items-center gap-1.5">
+                              <button
+                                disabled={toggleLoading === user.id}
+                                onClick={() => toggleUserStatus(user)}
+                                className={`relative inline-flex h-5 w-10 items-center rounded-full transition-all duration-300 ${
+                                  user.is_active
+                                    ? "bg-emerald-500"
+                                    : "bg-slate-200"
+                                } ${toggleLoading === user.id ? "opacity-30 cursor-wait" : "cursor-pointer hover:scale-105"}`}
+                              >
+                                <span
+                                  className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 shadow-sm ${
+                                    user.is_active
+                                      ? "translate-x-5.5"
+                                      : "translate-x-1"
+                                  }`}
+                                />
+                              </button>
+                              <span
+                                className={`text-[8px] font-black uppercase tracking-tighter ${user.is_active ? "text-emerald-600" : "text-slate-400"}`}
+                              >
+                                {user.is_active ? "Enabled" : "Disabled"}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* 4. ROLE COLUMN (HIDDEN ON TABLET/MOBILE) */}
+                          <td className="hidden md:table-cell px-6 py-4">
+                            <span
+                              className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase border ${
+                                user.role === "admin"
+                                  ? "bg-rose-50 border-rose-100 text-rose-500"
+                                  : "bg-blue-50 border-blue-100 text-[#1a5695]"
+                              }`}
                             >
-                              <Edit3 size={18} />
-                            </button>
-                            <button className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all">
-                              <Trash2 size={18} />
-                            </button>
+                              {user.role}
+                            </span>
+                          </td>
+
+                          {/* 5. ACTIONS */}
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex justify-end items-center gap-1">
+                              <button
+                                onClick={() => openModal("edit", user)}
+                                className="p-2 text-slate-400 hover:text-[#1a5695] hover:bg-white border border-transparent hover:border-blue-100 rounded-lg transition-all"
+                              >
+                                <Edit3 size={15} />
+                              </button>
+                              <button className="p-2 text-slate-400 hover:text-rose-500 hover:bg-white border border-transparent hover:border-rose-100 rounded-lg transition-all">
+                                <Trash2 size={15} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan="5"
+                          className="py-24 text-center bg-slate-50/20"
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-300">
+                              <ShieldAlert size={20} />
+                            </div>
+                            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                              No matches found
+                            </p>
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
