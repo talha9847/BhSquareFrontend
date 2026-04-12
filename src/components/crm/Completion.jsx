@@ -12,6 +12,7 @@ import {
   Edit3,
   X,
   Save,
+  Filter,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -25,6 +26,20 @@ const Completion = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [data, setData] = useState([]);
 
+  // 🔹 Date Filter States (Default to current month)
+  const [startDate, setStartDate] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1)
+      .toISOString()
+      .split("T")[0];
+  });
+  const [endDate, setEndDate] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth() + 1, 0)
+      .toISOString()
+      .split("T")[0];
+  });
+
   // State for Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
@@ -34,7 +49,9 @@ const Completion = () => {
   const getCompletionData = async () => {
     setLoading(true);
     try {
+      // 🔹 Sending dates as query parameters
       const res = await axios.get(`/api/sources/getCompletionReport`, {
+        params: { startDate, endDate },
         withCredentials: true,
       });
       if (res.status === 200) {
@@ -47,9 +64,10 @@ const Completion = () => {
     }
   };
 
+  // Re-fetch data when dates change
   useEffect(() => {
     getCompletionData();
-  }, []);
+  }, [startDate, endDate]);
 
   const filteredItems = useMemo(() => {
     return data.filter((item) =>
@@ -61,21 +79,19 @@ const Completion = () => {
     return data.reduce((acc, curr) => acc + Number(curr.total_cost || 0), 0);
   }, [data]);
 
-  // Open Edit Modal
   const handleEditClick = (item) => {
     setEditingItem(item);
     setNewExtraCost(item.extra_cost);
     setIsModalOpen(true);
   };
 
-  // Save Extra Cost API Call
   const handleSaveExtraCost = async () => {
     setIsSaving(true);
     try {
       const res = await axios.post(
         `/api/sources/updateExtraCost`,
         {
-          customerId: editingItem.id, // Or use your specific ID field
+          customerId: editingItem.id,
           extraCost: newExtraCost,
         },
         { withCredentials: true },
@@ -84,7 +100,7 @@ const Completion = () => {
       if (res.status === 200) {
         toast.success("Extra cost updated successfully");
         setIsModalOpen(false);
-        getCompletionData(); // Refresh table
+        getCompletionData();
       }
     } catch (error) {
       toast.error("Update failed: " + error.message);
@@ -118,16 +134,45 @@ const Completion = () => {
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="p-4 lg:p-8">
-          <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+          <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-8">
             <div>
               <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase flex items-center gap-3">
                 <Trophy className="text-[#1a5695]" size={28} /> Project
                 Completion
               </h1>
+              <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest mt-1">
+                Viewing data from {new Date(startDate).toLocaleDateString()} to{" "}
+                {new Date(endDate).toLocaleDateString()}
+              </p>
             </div>
-            <button className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-[#1a5695] rounded-2xl font-black text-[10px] uppercase tracking-wider hover:shadow-md transition-all">
-              <Download size={16} /> Export
-            </button>
+
+            {/* 🔹 Date Filter UI */}
+            <div className="flex flex-wrap items-center gap-3 bg-white p-2 rounded-3xl border border-slate-200 shadow-sm">
+              <div className="flex items-center gap-2 px-3">
+                <Calendar size={14} className="text-slate-400" />
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="text-[10px] font-black uppercase text-slate-600 outline-none bg-transparent"
+                />
+              </div>
+              <div className="h-4 w-[1px] bg-slate-200" />
+              <div className="flex items-center gap-2 px-3">
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  className="text-[10px] font-black uppercase text-slate-600 outline-none bg-transparent"
+                />
+              </div>
+              <button
+                onClick={getCompletionData}
+                className="bg-[#1a5695] p-2 rounded-2xl text-white hover:bg-blue-700 transition-colors"
+              >
+                <Search size={16} />
+              </button>
+            </div>
           </header>
 
           {/* Stats Section */}
@@ -137,7 +182,7 @@ const Completion = () => {
                 Total Completed
               </p>
               <h2 className="text-3xl font-black text-slate-800">
-                {data.length}{" "}
+                {loading ? "..." : data.length}{" "}
                 <span className="text-emerald-500 text-sm">Units</span>
               </h2>
             </div>
@@ -147,15 +192,34 @@ const Completion = () => {
               </p>
               <h2 className="text-3xl font-black text-white flex items-center gap-1">
                 <IndianRupee size={24} />{" "}
-                {totalRevenue.toLocaleString(undefined, {
-                  minimumFractionDigits: 2,
-                })}
+                {loading
+                  ? "0.00"
+                  : totalRevenue.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                    })}
               </h2>
             </div>
           </section>
 
-          {/* Main Table Container */}
+          {/* Table Container */}
           <div className="bg-white rounded-[40px] border border-slate-200 overflow-hidden shadow-sm relative">
+            {/* Search inside table */}
+            <div className="p-6 border-b border-slate-50 flex justify-between items-center">
+              <div className="relative w-full max-w-xs">
+                <Search
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={16}
+                />
+                <input
+                  type="text"
+                  placeholder="SEARCH CUSTOMER..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 ring-blue-100 transition-all"
+                />
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-left border-separate border-spacing-0">
                 <thead className="bg-slate-50/50">
@@ -175,40 +239,51 @@ const Completion = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {filteredItems.map((item) => (
-                    <tr
-                      key={item.id}
-                      className="group hover:bg-slate-50/50 transition-colors"
-                    >
-                      <td className="px-8 py-6">
-                        <span className="font-black text-slate-800 text-sm uppercase">
-                          {item.customer_name}
-                        </span>
-                      </td>
-                      <td className="px-6 py-6 flex items-center justify-center gap-2">
-                        <CostBox label="Kit" value={item.kit_cost} />
-                        <CostBox label="Wire" value={item.wire_cost} />
-                        <CostBox
-                          label="Extra"
-                          value={item.extra_cost}
-                          color="amber"
+                  {loading ? (
+                    <tr>
+                      <td colSpan="4" className="py-20 text-center">
+                        <Loader2
+                          className="animate-spin mx-auto text-slate-300"
+                          size={32}
                         />
                       </td>
-                      <td className="px-6 py-6 text-center">
-                        <span className="text-emerald-600 font-black text-sm">
-                          ₹{Number(item.total_cost).toLocaleString()}
-                        </span>
-                      </td>
-                      <td className="px-8 py-6 text-right">
-                        <button
-                          onClick={() => handleEditClick(item)}
-                          className="p-2 bg-slate-100 text-slate-400 hover:bg-[#1a5695] hover:text-white rounded-xl transition-all"
-                        >
-                          <Edit3 size={16} />
-                        </button>
-                      </td>
                     </tr>
-                  ))}
+                  ) : (
+                    filteredItems.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="group hover:bg-slate-50/50 transition-colors"
+                      >
+                        <td className="px-8 py-6">
+                          <span className="font-black text-slate-800 text-sm uppercase">
+                            {item.customer_name}
+                          </span>
+                        </td>
+                        <td className="px-6 py-6 flex items-center justify-center gap-2">
+                          <CostBox label="Kit" value={item.kit_cost} />
+                          <CostBox label="Wire" value={item.wire_cost} />
+                          <CostBox
+                            label="Extra"
+                            value={item.extra_cost}
+                            color="amber"
+                          />
+                        </td>
+                        <td className="px-6 py-6 text-center">
+                          <span className="text-emerald-600 font-black text-sm">
+                            ₹{Number(item.total_cost).toLocaleString()}
+                          </span>
+                        </td>
+                        <td className="px-8 py-6 text-right">
+                          <button
+                            onClick={() => handleEditClick(item)}
+                            className="p-2 bg-slate-100 text-slate-400 hover:bg-[#1a5695] hover:text-white rounded-xl transition-all"
+                          >
+                            <Edit3 size={16} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -216,7 +291,7 @@ const Completion = () => {
         </main>
       </div>
 
-      {/* --- EXTRA COST EDIT MODAL --- */}
+      {/* --- MODAL REMAINS THE SAME AS YOUR PREVIOUS WORKING VERSION --- */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
           <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in duration-200">
