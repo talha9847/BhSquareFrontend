@@ -10,6 +10,7 @@ import {
   Layers,
   DollarSign,
   Eye,
+  IndianRupee,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -200,7 +201,7 @@ const InventoryManager = () => {
               </div>
               <div className="bg-white border border-slate-200 px-6 py-3 rounded-2xl shadow-sm flex items-center gap-4">
                 <div className="p-2 bg-green-50 text-green-600 rounded-xl">
-                  <DollarSign size={20} />
+                  <IndianRupee size={20} />
                 </div>
                 <div>
                   <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">

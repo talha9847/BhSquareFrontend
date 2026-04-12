@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   User,
-  Zap,
   CheckCircle2,
   Clock,
   Calendar,
@@ -14,6 +13,8 @@ import {
   Truck,
   Hammer,
   Box,
+  Zap,
+  Ruler,
 } from "lucide-react";
 import axios from "axios";
 import Navbar from "./Navbar";
@@ -240,7 +241,6 @@ const TechnicalModule = ({ customerId }) => {
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
           <DataField label="Consumer Number" value={tech.consumer_number} />
-          <DataField label="Registration ID" value={tech.registration_number} />
           <DataField label="Sub-Division" value={tech.sub_division} />
           <DataField label="GPS Coordinates" value={tech.geo_coordinate} />
         </div>
@@ -654,6 +654,152 @@ const FabricationModule = ({ customerId }) => {
     </div>
   );
 };
+const WiringModule = ({ customerId }) => {
+  const [wiringData, setWiringData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `/api/wiring/getWiringItemsByCustomerId/${customerId}`,
+        { withCredentials: true },
+      );
+      if (res.status === 200) {
+        setWiringData(res.data.data);
+      }
+    } catch (error) {
+      console.error("Wiring Fetch Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (customerId) fetchData();
+  }, [customerId]);
+
+  if (!loading && !wiringData) return null;
+
+  const isComplete =
+    wiringData?.status?.toLowerCase() === "done" ||
+    wiringData?.status?.toLowerCase() === "completed";
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
+      {/* HEADER: UPDATED WITH TECHNICIAN NAME */}
+      <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-start bg-white">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <Zap size={18} className="text-[#1a5695]" />
+            <h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-slate-800">
+              Wiring & Electrical Specs
+            </h3>
+          </div>
+          {/* Technician Info Label */}
+          <div className="flex items-center gap-1.5 ml-7">
+            <span className="text-[9px] font-black text-slate-300 uppercase tracking-widest">
+              Technician:
+            </span>
+            <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">
+              {wiringData?.technician_name || "Unassigned"}
+            </span>
+          </div>
+        </div>
+
+        <div
+          className={`flex items-center gap-2 px-3 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest ${
+            isComplete
+              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+              : "bg-slate-50 text-slate-600 border-slate-200"
+          }`}
+        >
+          {isComplete && <CheckCircle2 size={10} />}
+          {wiringData?.status || "Pending"}
+        </div>
+      </div>
+
+      {/* ITEMS LIST */}
+      <div className="divide-y divide-slate-100">
+        {loading ? (
+          <div className="p-10 text-center animate-pulse text-[10px] font-black text-slate-300 uppercase tracking-widest">
+            Loading Electrical Data...
+          </div>
+        ) : (
+          wiringData?.items?.map((item) => (
+            <div
+              key={item.wiring_item_id}
+              className="px-8 py-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors"
+            >
+              <div className="flex items-center gap-6">
+                {/* DYNAMIC COLOR INDICATOR */}
+                <div
+                  className="w-10 h-10 rounded-xl border border-slate-100 flex items-center justify-center shadow-sm transition-transform group-hover:scale-105"
+                  style={{
+                    backgroundColor:
+                      item.color.toLowerCase() === "white"
+                        ? "#f8fafc"
+                        : item.color.toLowerCase(),
+                    boxShadow: `inset 0 0 0 1px rgba(0,0,0,0.05)`,
+                  }}
+                >
+                  <Activity
+                    size={16}
+                    className={
+                      ["black", "blue", "red"].includes(
+                        item.color.toLowerCase(),
+                      )
+                        ? "text-white/70"
+                        : "text-slate-400"
+                    }
+                  />
+                </div>
+
+                <div>
+                  <p className="text-[13px] font-bold text-slate-900 uppercase tracking-tight">
+                    {item.name}
+                  </p>
+                  <div className="flex items-center gap-3 mt-0.5">
+                    <span className="text-[10px] font-black text-[#1a5695] uppercase tracking-wider">
+                      {item.wire_type}
+                    </span>
+                    <span className="text-slate-200">•</span>
+                    <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      <Ruler size={10} /> {item.gauge} SQMM
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* QUANTITY SECTION */}
+              <div className="text-right">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">
+                  Length
+                </p>
+                <p className="text-lg font-black text-slate-900 tabular-nums leading-none">
+                  {item.qty}
+                  <span className="text-[10px] ml-1 text-slate-300 font-bold uppercase tracking-tighter">
+                    mtrs
+                  </span>
+                </p>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* SYSTEM FOOTER */}
+      <div className="px-8 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+          BHSquare Electrical Log
+        </span>
+        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">
+          REG-ID: W-{wiringData?.wiring_id?.toString().padStart(3, "0")}
+        </span>
+      </div>
+    </div>
+  );
+};
 
 const CustomerMaster = () => {
   const location = useLocation();
@@ -766,7 +912,7 @@ const CustomerMaster = () => {
                       />
                       <DataField
                         label="Total Capacity"
-                        value={lead?.total_capacity}
+                        value={(lead?.total_capacity / 1000).toFixed(2) + " KW"}
                       />
                       <DataField
                         label="Installation Address"
@@ -781,6 +927,7 @@ const CustomerMaster = () => {
                   <KitModule customerId={customerId} />
                   <DispatchModule customerId={customerId} />
                   <FabricationModule customerId={customerId} />
+                  <WiringModule customerId={customerId} />
                 </div>
 
                 <div className="lg:col-span-5">
