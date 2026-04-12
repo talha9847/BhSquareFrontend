@@ -969,6 +969,7 @@ const Leads = () => {
                       {...register("panel_wattage")}
                       type="number"
                       value={plateWattage}
+                      min={200}
                       onChange={(e) => setPlateWattage(e.target.value)}
                       className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
                     />
@@ -981,6 +982,7 @@ const Leads = () => {
                       {...register("number_of_panels")}
                       type="number"
                       value={quantity}
+                      min={1}
                       onChange={(e) => setQuantity(e.target.value)}
                       className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
                     />
@@ -1011,6 +1013,7 @@ const Leads = () => {
                       {...register("inverter_kw")}
                       type="number"
                       value={invereterKWattage}
+                      min={0}
                       onChange={(e) => setInvereterKWattage(e.target.value)}
                       className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
                     />
@@ -1023,6 +1026,7 @@ const Leads = () => {
                       {...register("number_of_inverters")}
                       type="number"
                       value={qty}
+                      min={0}
                       onChange={(e) => setQty(e.target.value)}
                       className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
                     />

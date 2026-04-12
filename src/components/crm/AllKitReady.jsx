@@ -162,7 +162,17 @@ const AllKitReady = () => {
                                 {lead.customer_name?.charAt(0)}
                               </div>
                               <div>
-                                <p className="font-black text-slate-800 text-sm uppercase">
+                                <p
+                                  onClick={() => {
+                                    navigate("/master", {
+                                      state: {
+                                        customerId: cust.id,
+                                        leadId: lead.id,
+                                      },
+                                    });
+                                  }}
+                                  className="font-black text-slate-800 text-sm uppercase cursor-pointer"
+                                >
                                   {lead.customer_name}
                                 </p>
                                 <div className="flex items-center gap-1 text-slate-400 text-[10px] font-bold uppercase mt-0.5">

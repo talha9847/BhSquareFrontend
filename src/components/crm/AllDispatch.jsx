@@ -34,13 +34,10 @@ const AllDispatch = () => {
   const fetchDispatches = async () => {
     try {
       setPageLoading(true);
-      const res = await axios.get(
-        `/api/dispatch/fetchDispatchesByStatus`,
-        {
-          params: { status: activeTab },
-          withCredentials: true,
-        },
-      );
+      const res = await axios.get(`/api/dispatch/fetchDispatchesByStatus`, {
+        params: { status: activeTab },
+        withCredentials: true,
+      });
 
       if (res.status === 200) {
         setDispatches(res.data.data || []);
@@ -192,7 +189,17 @@ const AllDispatch = () => {
                               {d.customer_name?.charAt(0)}
                             </div>
                             <div>
-                              <p className="font-black text-slate-800 text-sm uppercase">
+                              <p
+                                onClick={() => {
+                                  navigate("/master", {
+                                    state: {
+                                      customerId: d.customer_id,
+                                      leadId: d.lead_id,
+                                    },
+                                  });
+                                }}
+                                className="font-black text-slate-800 text-sm uppercase cursor-pointer"
+                              >
                                 {d.customer_name}
                               </p>
                               <div className="flex items-center gap-1 text-slate-400 text-[10px] font-bold uppercase mt-0.5">

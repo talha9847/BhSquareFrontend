@@ -19,8 +19,10 @@ import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
 import axios from "axios";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const Completion = () => {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -255,7 +257,18 @@ const Completion = () => {
                         className="group hover:bg-slate-50/50 transition-colors"
                       >
                         <td className="px-8 py-6">
-                          <span className="font-black text-slate-800 text-sm uppercase">
+                          <span
+                            onClick={() => {
+                              console.log(item);
+                              navigate("/master", {
+                                state: {
+                                  customerId: item.customerId,
+                                  leadId: item.leadId,
+                                },
+                              });
+                            }}
+                            className="font-black text-slate-800 text-sm uppercase cursor-pointer"
+                          >
                             {item.customer_name}
                           </span>
                         </td>
