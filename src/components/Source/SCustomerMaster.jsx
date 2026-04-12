@@ -150,7 +150,7 @@ const SCustomerMaster = () => {
                       />
                       <DataField
                         label="Total Capacity"
-                        value={lead?.total_capacity}
+                        value={(lead?.total_capacity / 1000).toFixed(2) + " KW"}
                       />
                       <DataField
                         label="Installation Address"

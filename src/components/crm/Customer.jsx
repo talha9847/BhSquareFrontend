@@ -268,7 +268,6 @@ const Customer = () => {
                               <div>
                                 <p
                                   onClick={() => {
-                                    console.log(c.id);
                                     navigate("/master", {
                                       state: {
                                         customerId: c.id,

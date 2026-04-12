@@ -150,7 +150,18 @@ const SCustomers = () => {
                               {item.lead?.customer_name?.charAt(0)}
                             </div>
                             <div>
-                              <p className="font-bold text-slate-800 text-sm leading-tight">
+                              <p
+                                onClick={() => {
+                                  console.log(item);
+                                  navigate("/source/master", {
+                                    state: {
+                                      customerId: item.id,
+                                      leadId: item.lead_id,
+                                    },
+                                  });
+                                }}
+                                className="font-bold text-slate-800 text-sm leading-tight cursor-pointer"
+                              >
                                 {item.lead?.customer_name}
                               </p>
                               <p className="text-slate-400 text-[11px] font-medium flex items-center gap-1">
@@ -171,7 +182,7 @@ const SCustomers = () => {
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-1 text-[#1a5695] font-black text-sm">
                             <Zap size={14} className="fill-current" />
-                            {item.lead?.total_capacity}{" "}
+                            {(item.lead?.total_capacity / 1000).toFixed(2)}
                             <span className="text-[10px] text-slate-400 font-bold uppercase ml-0.5">
                               kW
                             </span>
