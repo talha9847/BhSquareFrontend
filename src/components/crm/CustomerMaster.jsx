@@ -7,20 +7,17 @@ import {
   Clock,
   Calendar,
   FileText,
-  Save,
-  Edit3,
   Settings,
   Eye,
   Activity,
   Landmark,
-  Banknote,
-  MapPin,
+  Truck,
+  Hammer,
+  Box,
 } from "lucide-react";
 import axios from "axios";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
-
-const apiUrl = import.meta.env.VITE_API_URL;
 
 // --- SHARED UI COMPONENTS ---
 
@@ -28,9 +25,6 @@ const ModuleCard = ({
   title,
   icon,
   children,
-  isEditing,
-  onEdit,
-  onSave,
   accentColor = "text-[#1a5695]",
 }) => (
   <div className="bg-white rounded-[40px] p-10 border border-slate-200 shadow-sm relative transition-all hover:shadow-md animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -40,66 +34,118 @@ const ModuleCard = ({
       >
         {icon} {title}
       </h3>
-      <button
-        onClick={isEditing ? onSave : onEdit}
-        className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase transition-all ${
-          isEditing
-            ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100"
-            : "bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-blue-50"
-        }`}
-      >
-        {isEditing ? (
-          <>
-            <Save size={14} /> Save
-          </>
-        ) : (
-          <>
-            <Edit3 size={14} /> Edit
-          </>
-        )}
-      </button>
     </div>
     {children}
   </div>
 );
 
-const EditableField = ({ label, value, isEditing, isFull = false }) => (
+const DataField = ({ label, value, isFull = false }) => (
   <div className={isFull ? "col-span-full" : ""}>
     <p className="text-[9px] font-black uppercase tracking-[0.15em] mb-2 text-slate-400">
       {label}
     </p>
-    {isEditing ? (
-      <input
-        type="text"
-        defaultValue={value}
-        className="w-full p-4 rounded-2xl bg-slate-50 border-2 border-slate-100 focus:border-[#1a5695] focus:bg-white transition-all outline-none font-bold text-sm text-slate-800"
-      />
-    ) : (
-      <p className="text-[13px] font-black uppercase tracking-tight text-slate-800">
-        {value || <span className="text-slate-200 tracking-widest">---</span>}
-      </p>
-    )}
+    <p className="text-[13px] font-black uppercase tracking-tight text-slate-800">
+      {value || <span className="text-slate-200 tracking-widest">---</span>}
+    </p>
   </div>
 );
+const NameChangeModule = ({ customerId }) => {
+  const [nameChangeDocs, setNameChangeDocs] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-// --- INDEPENDENT FEATURE MODULES ---
+  useEffect(() => {
+    const fetchNameChange = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(
+          `/api/namechange/getNameChangeDocs/${customerId}`,
+          { withCredentials: true },
+        );
+        if (res.status === 200) {
+          setNameChangeDocs(res.data.data || []);
+        }
+      } catch (err) {
+        console.error("Name Change Fetch Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (customerId) fetchNameChange();
+  }, [customerId]);
+
+  if (!loading && nameChangeDocs.length === 0) return null;
+
+  return (
+    <ModuleCard
+      title="Name Change Documentation"
+      icon={<User size={18} />}
+      accentColor="text-rose-600"
+    >
+      <div className="space-y-4">
+        {loading ? (
+          <div className="animate-pulse space-y-3">
+            <div className="h-16 bg-slate-50 rounded-3xl" />
+            <div className="h-16 bg-slate-50 rounded-3xl" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
+            {nameChangeDocs.map((doc) => (
+              <a
+                key={doc.id}
+                href={doc.document_url}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-between p-5 rounded-[32px] bg-slate-50 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                    <FileText
+                      size={20}
+                      className="text-slate-400 group-hover:text-rose-600"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest">
+                      {doc.document_name}
+                    </p>
+                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-1">
+                      Identity Verification Doc
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="opacity-0 group-hover:opacity-100 text-[9px] font-black text-rose-600 uppercase tracking-widest transition-opacity">
+                    View Document
+                  </span>
+                  <Eye
+                    size={18}
+                    className="text-slate-300 group-hover:text-rose-600"
+                  />
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </ModuleCard>
+  );
+};
+// --- FEATURE MODULES ---
 
 const LoanModule = ({ customerId }) => {
   const [loan, setLoan] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-
+  const fetchLoan = async () => {
+    try {
+      const res = await axios.get(`/api/loan/fetchCustomerLoan/${customerId}`, {
+        withCredentials: true,
+      });
+      if (res.status === 200) setLoan(res.data.data);
+    } catch (err) {
+      console.error("Loan Fetch Error:", err);
+    }
+  };
   useEffect(() => {
-    const fetchLoan = async () => {
-      try {
-        const res = await axios.get(
-          `/api/loan/fetchCustomerLoan/${customerId}`,
-          { withCredentials: true },
-        );
-        if (res.status === 200) setLoan(res.data.data);
-      } catch (err) {
-        console.error("Loan Fetch Error:", err);
-      }
-    };
     if (customerId) fetchLoan();
   }, [customerId]);
 
@@ -110,16 +156,9 @@ const LoanModule = ({ customerId }) => {
       title="Finance & Loan Registry"
       icon={<Landmark size={18} />}
       accentColor="text-indigo-600"
-      isEditing={isEditing}
-      onEdit={() => setIsEditing(true)}
-      onSave={() => setIsEditing(false)}
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8 mb-10">
-        <EditableField
-          label="Bank Name"
-          value={loan.bank_name}
-          isEditing={isEditing}
-        />
+        <DataField label="Bank Name" value={loan.bank_name} />
         <div className="flex flex-col">
           <p className="text-[9px] font-black uppercase tracking-[0.15em] mb-2 text-slate-400">
             Application Status
@@ -130,15 +169,13 @@ const LoanModule = ({ customerId }) => {
             {loan.is_applied ? "Applied" : "Not Applied"}
           </span>
         </div>
-        <EditableField
+        <DataField
           label="Estimated Amount"
           value={`₹${loan.estimated?.toLocaleString()}`}
-          isEditing={isEditing}
         />
-        <EditableField
+        <DataField
           label="Sanctioned Amount"
           value={`₹${loan.loan_amount?.toLocaleString()}`}
-          isEditing={isEditing}
         />
       </div>
       {loan.documents?.length > 0 && (
@@ -158,11 +195,9 @@ const LoanModule = ({ customerId }) => {
                     className="text-slate-400 group-hover:text-indigo-600"
                   />
                 </div>
-                <div>
-                  <p className="text-[10px] font-black text-slate-800 uppercase tracking-tight">
-                    {doc.doc_name}
-                  </p>
-                </div>
+                <p className="text-[10px] font-black text-slate-800 uppercase tracking-tight">
+                  {doc.doc_name}
+                </p>
               </div>
               <Eye
                 size={16}
@@ -178,7 +213,6 @@ const LoanModule = ({ customerId }) => {
 
 const TechnicalModule = ({ customerId }) => {
   const [tech, setTech] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchTech = async () => {
@@ -203,31 +237,12 @@ const TechnicalModule = ({ customerId }) => {
         title="Technical Registry"
         icon={<Settings size={18} />}
         accentColor="text-emerald-600"
-        isEditing={isEditing}
-        onEdit={() => setIsEditing(true)}
-        onSave={() => setIsEditing(false)}
       >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
-          <EditableField
-            label="Consumer Number"
-            value={tech.consumer_number}
-            isEditing={isEditing}
-          />
-          <EditableField
-            label="Registration ID"
-            value={tech.registration_number}
-            isEditing={isEditing}
-          />
-          <EditableField
-            label="Sub-Division"
-            value={tech.sub_division}
-            isEditing={isEditing}
-          />
-          <EditableField
-            label="GPS Coordinates"
-            value={tech.geo_coordinate}
-            isEditing={isEditing}
-          />
+          <DataField label="Consumer Number" value={tech.consumer_number} />
+          <DataField label="Registration ID" value={tech.registration_number} />
+          <DataField label="Sub-Division" value={tech.sub_division} />
+          <DataField label="GPS Coordinates" value={tech.geo_coordinate} />
         </div>
       </ModuleCard>
 
@@ -268,8 +283,6 @@ const TechnicalModule = ({ customerId }) => {
 
 const KitModule = ({ customerId }) => {
   const [kitData, setKitData] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [selected, setSelected] = useState(null);
 
   useEffect(() => {
     const fetchKit = async () => {
@@ -288,96 +301,359 @@ const KitModule = ({ customerId }) => {
 
   if (!kitData) return null;
 
+  const isComplete = kitData.status?.toLowerCase() === "done";
+
   return (
-    <div className="bg-white rounded-[40px] p-10 border border-slate-200 shadow-sm relative transition-all hover:shadow-md">
-      <div className="flex justify-between items-center mb-10">
-        <h3 className="text-[11px] font-black text-[#1a5695] uppercase tracking-[0.2em] flex items-center gap-3">
-          <Zap size={18} /> Kit Readiness & Inventory
-        </h3>
-        <span
-          className={`px-4 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest ${kitData.status === "done" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      {/* HEADER: CLEAN & COMPACT */}
+      <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white">
+        <div className="flex items-center gap-3">
+          <Zap size={18} className="text-[#1a5695]" />
+          <h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-slate-800">
+            Kit Readiness Report
+          </h3>
+        </div>
+        <div
+          className={`flex items-center gap-2 px-3 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest ${
+            isComplete
+              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+              : "bg-slate-50 text-slate-600 border-slate-200"
+          }`}
         >
-          Status: {kitData.status}
-        </span>
-      </div>
-      <div className="space-y-4">
-        {kitData.items.map((item) => (
-          <div
-            key={item.id}
-            className="flex items-center justify-between p-6 rounded-3xl bg-slate-50 border border-slate-100 group"
-          >
-            <div className="flex items-center gap-5">
-              <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm text-[#1a5695]">
-                <Settings size={20} />
-              </div>
-              <div>
-                <p className="text-[12px] font-black text-slate-800 uppercase tracking-tight">
-                  {item.item_name}
-                </p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  Qty: {item.qty} | {item.status}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                setSelected(item);
-                setShowModal(true);
-              }}
-              className="p-3 bg-white hover:bg-[#1a5695] text-slate-400 hover:text-white rounded-xl transition-all shadow-sm border border-slate-100"
-            >
-              <Edit3 size={16} />
-            </button>
-          </div>
-        ))}
+          {kitData.status}
+        </div>
       </div>
 
-      {showModal && selected && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-            <div className="p-8 bg-[#1a5695] text-white flex justify-between items-center">
-              <div>
-                <h2 className="text-xs font-black uppercase tracking-[0.2em]">
-                  Update Inventory
-                </h2>
-                <p className="text-[10px] text-blue-200 uppercase font-bold mt-1">
-                  {selected.item_name}
-                </p>
+      {/* ITEMS: STRUCTURED MINIMALISM */}
+      <div className="divide-y divide-slate-100">
+        {kitData.items.map((item) => {
+          const itemReady =
+            item.status?.toLowerCase() === "allocated" ||
+            item.status?.toLowerCase() === "done";
+
+          return (
+            <div
+              key={item.id}
+              className="px-8 py-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors"
+            >
+              <div className="flex items-center gap-6">
+                {/* STATUS INDICATOR */}
+                <div
+                  className={`w-2 h-2 rounded-full ${itemReady ? "bg-emerald-500" : "bg-slate-300"}`}
+                />
+
+                <div>
+                  <p className="text-[13px] font-bold text-slate-900 uppercase tracking-tight">
+                    {item.item_name}
+                  </p>
+                  <p className="text-[10px] font-medium text-slate-400 uppercase tracking-wider mt-0.5">
+                    Component Registry #{item.id}
+                  </p>
+                </div>
               </div>
-              <button onClick={() => setShowModal(false)}>
-                <Settings size={20} />
-              </button>
-            </div>
-            <div className="p-10 space-y-8">
-              <input
-                type="number"
-                defaultValue={selected.qty}
-                className="w-full p-5 rounded-[24px] bg-slate-50 border-2 border-slate-100 focus:border-[#1a5695] outline-none font-black text-slate-800"
-                placeholder="Quantity"
-              />
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 py-5 rounded-[24px] bg-slate-100 text-slate-500 text-[10px] font-black uppercase"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 py-5 rounded-[24px] bg-[#1a5695] text-white text-[10px] font-black uppercase shadow-lg shadow-blue-100"
-                >
-                  Confirm
-                </button>
+
+              <div className="flex items-center gap-12">
+                {/* QUANTITY SECTION */}
+                <div className="text-right">
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">
+                    Quantity
+                  </p>
+                  <p className="text-lg font-black text-slate-900 tabular-nums">
+                    {item.qty}
+                  </p>
+                </div>
+
+                {/* STATUS BADGE */}
+                <div className="w-24 text-right">
+                  <span
+                    className={`text-[10px] font-black uppercase tracking-tighter ${
+                      itemReady ? "text-emerald-600" : "text-slate-400"
+                    }`}
+                  >
+                    {itemReady ? "Verified" : "Pending"}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          );
+        })}
+      </div>
+
+      {/* FOOTER: SYSTEM LOG */}
+      <div className="px-8 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+          BHSquare Inventory System v2.0
+        </span>
+        <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">
+          {new Date().toLocaleDateString("en-IN")}
+        </span>
+      </div>
     </div>
   );
 };
 
+const DispatchModule = ({ customerId }) => {
+  const [dispatchData, setDispatchData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchDispatch = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `/api/dispatch/getDispatchByCustomerId/${customerId}`,
+        { withCredentials: true },
+      );
+      if (res.status === 200) {
+        const result = res.data.data;
+
+        // FIX: If it's a single object, wrap it in []. If it's already an array, use it.
+        if (result && !Array.isArray(result)) {
+          setDispatchData([result]);
+        } else {
+          setDispatchData(result || []);
+        }
+      }
+    } catch (error) {
+      console.error("Dispatch Fetch Error:", error);
+      setDispatchData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (customerId) fetchDispatch();
+  }, [customerId]);
+
+  // Use a simple null return if no data exists
+  if (!loading && (!dispatchData || dispatchData.length === 0)) return null;
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
+      <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white">
+        <div className="flex items-center gap-3">
+          <Truck size={18} className="text-[#1a5695]" />
+          <h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-slate-800">
+            Dispatch & Transit Log
+          </h3>
+        </div>
+        <div className="bg-blue-50 text-[#1a5695] border border-blue-100 px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest">
+          Active Shipments
+        </div>
+      </div>
+
+      <div className="divide-y divide-slate-100">
+        {loading ? (
+          <div className="p-10 text-center animate-pulse">
+            <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">
+              Retrieving Logistics Data...
+            </span>
+          </div>
+        ) : (
+          dispatchData.map((item) => (
+            <div
+              key={item.id}
+              className="px-8 py-6 hover:bg-slate-50/50 transition-colors"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                <div>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                    Assigned Driver
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <User size={14} className="text-slate-400" />
+                    <p className="text-[13px] font-bold text-slate-900 uppercase">
+                      {item.driver_name}
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                    Transport Vehicle
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <Truck size={14} className="text-slate-400" />
+                    <p className="text-[13px] font-bold text-slate-900 uppercase">
+                      {item.car_name}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="md:text-right">
+                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                    Dispatch Timestamp
+                  </p>
+                  <div className="flex items-center md:justify-end gap-2 text-slate-900">
+                    <Calendar size={14} className="text-slate-400" />
+                    <p className="text-[12px] font-black tabular-nums">
+                      {new Date(item.created_at)
+                        .toLocaleDateString("en-IN", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })
+                        .toUpperCase()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between opacity-60">
+                <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                  Log Entry ID: #{item.id?.toString().padStart(4, "0")}
+                </span>
+                <span className="text-[8px] font-black text-emerald-600 uppercase tracking-widest">
+                  Confirmed Dispatch
+                </span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      <div className="px-8 py-4 bg-slate-50 border-t border-slate-100 flex justify-center">
+        <p className="text-[9px] font-bold text-slate-300 uppercase tracking-[0.25em]">
+          BHSquare Operations | Logistics Verification
+        </p>
+      </div>
+    </div>
+  );
+};
 // --- MAIN PAGE COMPONENT ---
+const FabricationModule = ({ customerId }) => {
+  const [fabData, setFabData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchFab = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `/api/dispatch/getFabricationByCustomerId/${customerId}`,
+        { withCredentials: true },
+      );
+      if (res.status === 200) {
+        const result = res.data.data;
+        if (result && !Array.isArray(result)) {
+          setFabData([result]);
+        } else {
+          setFabData(result || []);
+        }
+      }
+    } catch (error) {
+      console.error("Fab Fetch Error:", error);
+      setFabData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (customerId) fetchFab();
+  }, [customerId]);
+
+  if (!loading && (!fabData || fabData.length === 0)) return null;
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
+      {/* HEADER */}
+      <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white">
+        <div className="flex items-center gap-3">
+          <Hammer size={18} className="text-[#1a5695]" />
+          <h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-slate-800">
+            Fabrication Progress
+          </h3>
+        </div>
+        <div className="bg-slate-50 text-slate-500 border border-slate-200 px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-widest">
+          Production Phase
+        </div>
+      </div>
+
+      {/* FABRICATION ENTRIES */}
+      <div className="divide-y divide-slate-100">
+        {loading ? (
+          <div className="p-10 text-center animate-pulse">
+            <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">
+              Fetching Fabrication Logs...
+            </span>
+          </div>
+        ) : (
+          fabData.map((item) => {
+            // Normalize status for green check
+            const isDone =
+              item.status?.toLowerCase() === "done" ||
+              item.status?.toLowerCase() === "completed";
+
+            return (
+              <div
+                key={item.id}
+                className="px-8 py-7 hover:bg-slate-50/50 transition-colors"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                  {/* FABRICATOR INFO */}
+                  <div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                      Service Partner
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <User size={14} className="text-[#1a5695]" />
+                      <p className="text-[14px] font-bold text-slate-900 uppercase">
+                        {item.fabricator_name}
+                      </p>
+                    </div>
+
+                    {/* STATUS BADGE - NOW GREEN FOR DONE */}
+                    <div
+                      className={`mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest ${
+                        isDone
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                          : "bg-slate-50 text-slate-600 border-slate-200"
+                      }`}
+                    >
+                      {isDone && <CheckCircle2 size={10} />}
+                      {item.status}
+                    </div>
+                  </div>
+
+                  {/* UPDATED TIMESTAMP */}
+                  <div className="md:text-right">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                      Last Site Update
+                    </p>
+                    <div className="flex items-center md:justify-end gap-2 text-slate-900">
+                      <Clock size={14} className="text-slate-400" />
+                      <p className="text-[12px] font-black tabular-nums">
+                        {new Date(item.updated_at || item.created_at)
+                          .toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                          .toUpperCase()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* SYSTEM FOOTER */}
+      <div className="px-8 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+        <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">
+          BHSquare Operations Management
+        </span>
+        <span className="text-[8px] font-bold text-slate-300 uppercase">
+          ID: FAB-{fabData[0]?.id?.toString().padStart(3, "0") || "000"}
+        </span>
+      </div>
+    </div>
+  );
+};
 
 const CustomerMaster = () => {
   const location = useLocation();
@@ -388,23 +664,13 @@ const CustomerMaster = () => {
   const [loading, setLoading] = useState(true);
   const [lead, setLead] = useState(null);
   const [stages, setStages] = useState([]);
-  const [isEditingBio, setIsEditingBio] = useState(false);
 
   const formatIST = (dateString) => {
     if (!dateString) return null;
-
-    // 1. Create a date object from your Node backend string
     const date = new Date(dateString);
-
-    // 2. Check if the date is valid before doing math
     if (isNaN(date.getTime())) return dateString;
-
-    // 3. Manually add 5 hours and 30 minutes (330 minutes)
-    // This shifts 09:23 AM UTC to 02:53 PM IST
     const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
     const localDate = new Date(date.getTime() + IST_OFFSET_MS);
-
-    // 4. Format for your clean UI
     return localDate
       .toLocaleString("en-IN", {
         day: "2-digit",
@@ -418,20 +684,15 @@ const CustomerMaster = () => {
   };
 
   useEffect(() => {
-    if (!customerId || !leadId) {
-      navigate("/customers");
-      return;
-    }
     const fetchCore = async () => {
       try {
         const [lRes, sRes] = await Promise.all([
           axios.get(`/api/leads/fetchLeadById/${leadId}`, {
             withCredentials: true,
           }),
-          axios.get(
-            `/api/customers/fetchCustomerStages/${customerId}`,
-            { withCredentials: true },
-          ),
+          axios.get(`/api/customers/fetchCustomerStages/${customerId}`, {
+            withCredentials: true,
+          }),
         ]);
         setLead(lRes.data?.data);
         setStages(sRes.data?.data || []);
@@ -441,8 +702,13 @@ const CustomerMaster = () => {
         setTimeout(() => setLoading(false), 800);
       }
     };
+
+    if (!customerId || !leadId) {
+      navigate("/customers");
+      return;
+    }
     fetchCore();
-  }, [customerId, leadId]);
+  }, [customerId, leadId, navigate]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] flex font-sans text-slate-900">
@@ -481,51 +747,42 @@ const CustomerMaster = () => {
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                 <div className="lg:col-span-7 space-y-8">
-                  {/* BIO MODULE */}
                   <ModuleCard
                     title="Customer Bio & Site"
                     icon={<User size={18} />}
-                    isEditing={isEditingBio}
-                    onEdit={() => setIsEditingBio(true)}
-                    onSave={() => setIsEditingBio(false)}
                   >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
-                      <EditableField
+                      <DataField
                         label="Full Name"
                         value={lead?.customer_name}
-                        isEditing={isEditingBio}
                       />
-                      <EditableField
+                      <DataField
                         label="Phone Number"
                         value={lead?.contact_number}
-                        isEditing={isEditingBio}
                       />
-                      <EditableField
+                      <DataField
                         label="System Type"
                         value={lead?.installation_type}
-                        isEditing={isEditingBio}
                       />
-                      <EditableField
+                      <DataField
                         label="Total Capacity"
                         value={lead?.total_capacity}
-                        isEditing={isEditingBio}
                       />
-                      <EditableField
+                      <DataField
                         label="Installation Address"
                         value={lead?.address}
-                        isEditing={isEditingBio}
                         isFull
                       />
                     </div>
                   </ModuleCard>
-
-                  {/* SEPARATE FETCH MODULES */}
+                  <NameChangeModule customerId={customerId} />
                   <TechnicalModule customerId={customerId} />
                   <LoanModule customerId={customerId} />
                   <KitModule customerId={customerId} />
+                  <DispatchModule customerId={customerId} />
+                  <FabricationModule customerId={customerId} />
                 </div>
 
-                {/* TIMELINE COLUMN */}
                 <div className="lg:col-span-5">
                   <div className="bg-white rounded-[40px] border border-slate-200 shadow-xl overflow-hidden sticky top-10">
                     <div className="p-8 border-b border-slate-100 bg-[#1a5695] text-white flex justify-between items-center">
@@ -539,7 +796,7 @@ const CustomerMaster = () => {
                       {stages.map((stage) => (
                         <div
                           key={stage.id}
-                          className="relative flex items-start gap-8 pb-12 last:pb-0 group"
+                          className="relative flex items-start gap-8 pb-12 last:pb-0"
                         >
                           <div
                             className={`relative z-10 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${stage.status === "done" ? "bg-emerald-500 text-white shadow-lg" : stage.status === "pending" ? "bg-[#1a5695] text-white animate-pulse" : "bg-slate-100 text-slate-300"}`}
