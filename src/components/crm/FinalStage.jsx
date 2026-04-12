@@ -28,10 +28,9 @@ const FinalStage = () => {
   const getFinalStageData = async () => {
     setTableLoading(true);
     try {
-      const res = await axios.get(
-        `/api/sources/getFinalStageCustomers`,
-        { withCredentials: true },
-      );
+      const res = await axios.get(`/api/sources/getFinalStageCustomers`, {
+        withCredentials: true,
+      });
       if (res.status === 200) {
         setFinalLogs(res.data.data || []);
       }
@@ -115,8 +114,15 @@ const FinalStage = () => {
           }
 
           if (field === "disbursal") {
-            console.log(field, !currentStatus);
-            await new Promise((resolve) => setTimeout(resolve, 500));
+            const res = await axios.post(
+              `/api/sources/updateStage14`,
+              {
+                customerId: item.customer_id,
+                flag: !currentStatus,
+              },
+              { withCredentials: true },
+            );
+            return res;
           }
 
           return true;
