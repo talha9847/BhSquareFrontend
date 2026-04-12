@@ -88,11 +88,11 @@ const Completion = () => {
   const handleSaveExtraCost = async () => {
     setIsSaving(true);
     try {
-      const res = await axios.post(
+      const res = await axios.put(
         `/api/sources/updateExtraCost`,
         {
-          customerId: editingItem.id,
-          extraCost: newExtraCost,
+          id: editingItem.id,
+          extra_cost: newExtraCost,
         },
         { withCredentials: true },
       );
