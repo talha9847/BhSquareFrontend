@@ -62,6 +62,7 @@ import TUpdateWiringLog from "./components/Technician/TUpdateWiringLog";
 import SCommission from "./components/Source/SCommission";
 import AllWiring from "./components/crm/AllWiring";
 import AllFabrication from "./components/crm/AllFabrication";
+import Completion from "./components/crm/Completion";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -471,6 +472,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AllCommission />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/completion"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Completion />
               </ProtectedRoute>
             }
           />
