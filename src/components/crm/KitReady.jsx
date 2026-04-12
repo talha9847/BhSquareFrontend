@@ -38,10 +38,9 @@ const KitReady = () => {
   const getCustomers = async () => {
     try {
       setPageLoading(true);
-      const res = await axios.get(
-        `/api/kitready/fetchKitReadyCustomers`,
-        { withCredentials: true },
-      );
+      const res = await axios.get(`/api/kitready/fetchKitReadyCustomers`, {
+        withCredentials: true,
+      });
       if (res.status === 200) {
         setCustomers(res.data.data);
       }
@@ -190,136 +189,155 @@ const KitReady = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {filteredCustomers.map((c) => (
-                      <tr
-                        key={c.id}
-                        className="hover:bg-slate-50/80 transition-colors"
-                      >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-50 text-[#1a5695] rounded-2xl flex items-center justify-center font-black border border-blue-100 uppercase">
-                              {c.customer.lead.customer_name.charAt(0)}
-                            </div>
-                            <div>
-                              <p
-                                onClick={() => {
-                                  console.log(c.customer);
-                                  navigate("/master", {
-                                    state: {
-                                      customerId: c.customer.id,
-                                      leadId: c.customer.lead.id,
-                                    },
-                                  });
-                                }}
-                                className="font-bold text-slate-800 text-sm cursor-pointer"
-                              >
-                                {c.customer.lead.customer_name}
-                              </p>
-                              <div className="flex items-center gap-1 text-slate-400 text-[11px]">
-                                <MapPin size={10} /> {c.customer.lead.address}
+                    {filteredCustomers.length > 0 ? (
+                      filteredCustomers.map((c) => (
+                        <tr
+                          key={c.id}
+                          className="hover:bg-slate-50/80 transition-colors"
+                        >
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-blue-50 text-[#1a5695] rounded-2xl flex items-center justify-center font-black border border-blue-100 uppercase">
+                                {c.customer.lead.customer_name.charAt(0)}
                               </div>
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* LOAN STATUS */}
-                        <td className="px-6 py-4 text-center">
-                          {!c.loan_status || c.loan_status === "pending" ? (
-                            <span className="text-slate-300 text-[10px] font-bold uppercase italic">
-                              Pending Setup
-                            </span>
-                          ) : c.loan_status === "required" ? (
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 text-[9px] font-black uppercase rounded-lg border border-amber-100">
-                              <Banknote size={10} /> Loan Required
-                            </span>
-                          ) : (
-                            <span className="text-emerald-600 text-[10px] font-black uppercase tracking-tighter">
-                              {c.loan_status == "completed"
-                                ? "Loan Done"
-                                : "Not applicable"}
-                            </span>
-                          )}
-                        </td>
-
-                        {/* KIT STATUS */}
-                        <td className="px-6 py-4 text-center">
-                          <span
-                            className={`text-[10px] font-black uppercase tracking-widest ${c.status === "done" ? "text-emerald-600" : "text-slate-400"}`}
-                          >
-                            {c.status === "done" ? "Dispatched" : "Pending"}
-                            {console.log(c)}
-                          </span>
-                        </td>
-
-                        {/* CONSOLIDATED ACTION BUTTON */}
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex justify-end">
-                            {!c.loan_status || c.loan_status === "pending" ? (
-                              <button
-                                onClick={() => {
-                                  setSelectedCustomer(c);
-                                  setIsModalOpen(true);
-                                }}
-                                className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-white hover:shadow-md rounded-xl transition-all border border-slate-100"
-                              >
-                                <Edit3 size={16} />
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => {
-                                  insertKit(
-                                    c.customer.id,
-                                    c.loan_status,
-                                    c.customer.lead?.id,
-                                  );
-                                }}
-                                className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
-                              >
-                                {c.loan_status === "required" ? (
-                                  <>
-                                    <Banknote size={14} /> Go For Loan
-                                  </>
-                                ) : (
-                                  <>
-                                    {naviLoad ? (
-                                      <>Going.....</>
-                                    ) : (
-                                      <>
-                                        <Package size={14} /> Go For Kit
-                                      </>
-                                    )}
-                                  </>
-                                )}
-                                <ChevronRight
-                                  size={14}
-                                  className="group-hover/btn:translate-x-1 transition-transform"
-                                />
-                              </button>
-                            )}
-
-                            {c.loan_status == "completed" ? (
-                              <>
-                                <button
+                              <div>
+                                <p
                                   onClick={() => {
-                                    navigate("/loanstep", {
+                                    console.log(c.customer);
+                                    navigate("/master", {
                                       state: {
                                         customerId: c.customer.id,
-                                        leadId: c.customer.lead?.id,
+                                        leadId: c.customer.lead.id,
                                       },
                                     });
                                   }}
+                                  className="font-bold text-slate-800 text-sm cursor-pointer"
+                                >
+                                  {c.customer.lead.customer_name}
+                                </p>
+                                <div className="flex items-center gap-1 text-slate-400 text-[11px]">
+                                  <MapPin size={10} /> {c.customer.lead.address}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* LOAN STATUS */}
+                          <td className="px-6 py-4 text-center">
+                            {!c.loan_status || c.loan_status === "pending" ? (
+                              <span className="text-slate-300 text-[10px] font-bold uppercase italic">
+                                Pending Setup
+                              </span>
+                            ) : c.loan_status === "required" ? (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 text-[9px] font-black uppercase rounded-lg border border-amber-100">
+                                <Banknote size={10} /> Loan Required
+                              </span>
+                            ) : (
+                              <span className="text-emerald-600 text-[10px] font-black uppercase tracking-tighter">
+                                {c.loan_status == "completed"
+                                  ? "Loan Done"
+                                  : "Not applicable"}
+                              </span>
+                            )}
+                          </td>
+
+                          {/* KIT STATUS */}
+                          <td className="px-6 py-4 text-center">
+                            <span
+                              className={`text-[10px] font-black uppercase tracking-widest ${c.status === "done" ? "text-emerald-600" : "text-slate-400"}`}
+                            >
+                              {c.status === "done" ? "Dispatched" : "Pending"}
+                              {console.log(c)}
+                            </span>
+                          </td>
+
+                          {/* CONSOLIDATED ACTION BUTTON */}
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex justify-end">
+                              {!c.loan_status || c.loan_status === "pending" ? (
+                                <button
+                                  onClick={() => {
+                                    setSelectedCustomer(c);
+                                    setIsModalOpen(true);
+                                  }}
+                                  className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-white hover:shadow-md rounded-xl transition-all border border-slate-100"
+                                >
+                                  <Edit3 size={16} />
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    insertKit(
+                                      c.customer.id,
+                                      c.loan_status,
+                                      c.customer.lead?.id,
+                                    );
+                                  }}
                                   className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
                                 >
-                                  See Loan
+                                  {c.loan_status === "required" ? (
+                                    <>
+                                      <Banknote size={14} /> Go For Loan
+                                    </>
+                                  ) : (
+                                    <>
+                                      {naviLoad ? (
+                                        <>Going.....</>
+                                      ) : (
+                                        <>
+                                          <Package size={14} /> Go For Kit
+                                        </>
+                                      )}
+                                    </>
+                                  )}
+                                  <ChevronRight
+                                    size={14}
+                                    className="group-hover/btn:translate-x-1 transition-transform"
+                                  />
                                 </button>
-                              </>
-                            ) : (
-                              <></>
-                            )}
+                              )}
+
+                              {c.loan_status == "completed" ? (
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      navigate("/loanstep", {
+                                        state: {
+                                          customerId: c.customer.id,
+                                          leadId: c.customer.lead?.id,
+                                        },
+                                      });
+                                    }}
+                                    className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
+                                  >
+                                    See Loan
+                                  </button>
+                                </>
+                              ) : (
+                                <></>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      /* NO DATA FOUND ROW */
+                      <tr>
+                        <td colSpan="4" className="px-6 py-20 text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <div className="bg-slate-100 p-4 rounded-full mb-4">
+                              <Package className="w-8 h-8 text-slate-300" />
+                            </div>
+                            <p className="text-slate-800 font-bold text-sm">
+                              No Records Found
+                            </p>
+                            <p className="text-slate-400 text-[11px] uppercase tracking-widest mt-1">
+                              Try adjusting your search or filters
+                            </p>
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>

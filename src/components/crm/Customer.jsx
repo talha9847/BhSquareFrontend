@@ -254,170 +254,192 @@ const Customer = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {filteredCustomers.map((c) => (
-                      <tr
-                        key={c.id}
-                        className="hover:bg-slate-50/80 transition-colors group"
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-50 text-[#1a5695] rounded-2xl flex items-center justify-center font-black text-xs border border-blue-100 uppercase">
-                              {c.lead?.customer_name?.charAt(0)}
+                    {filteredCustomers.length > 0 ? (
+                      filteredCustomers.map((c) => (
+                        <tr
+                          key={c.id}
+                          className="hover:bg-slate-50/80 transition-colors group"
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-blue-50 text-[#1a5695] rounded-2xl flex items-center justify-center font-black text-xs border border-blue-100 uppercase">
+                                {c.lead?.customer_name?.charAt(0)}
+                              </div>
+                              <div>
+                                <p
+                                  onClick={() => {
+                                    console.log(c.id);
+                                    navigate("/master", {
+                                      state: {
+                                        customerId: c.id,
+                                        leadId: c.lead_id,
+                                      },
+                                    });
+                                  }}
+                                  className="font-bold text-slate-800 text-sm leading-tight cursor-pointer"
+                                >
+                                  {c.lead?.customer_name}
+                                </p>
+                                <p className="text-slate-400 text-[11px] font-medium">
+                                  {c.lead?.contact_number}
+                                </p>
+                              </div>
                             </div>
-                            <div>
-                              <p
-                                onClick={() => {
-                                  console.log(c.id);
-                                  navigate("/master", {
+                          </td>
+
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 text-slate-500 text-xs font-medium max-w-[180px] truncate">
+                              <MapPin
+                                size={12}
+                                className="text-slate-300 shrink-0"
+                              />
+                              <span>{c.lead?.address}</span>
+                            </div>
+                          </td>
+
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {c.name_change === "required" && (
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-600 text-[9px] font-black uppercase rounded-lg border border-amber-100">
+                                <AlertCircle size={10} /> Required
+                              </span>
+                            )}
+                            {c.name_change === "changed" && (
+                              <span className="text-blue-700 text-[10px] font-black uppercase tracking-tighter">
+                                ● Changed
+                              </span>
+                            )}
+                            {c.name_change === "unchanged" && (
+                              <span className="text-emerald-600 text-[10px] font-black uppercase tracking-tighter">
+                                ● Unchanged
+                              </span>
+                            )}
+                            {c.name_change === "not_used" && (
+                              <span className="text-slate-300 text-[10px] font-bold uppercase italic">
+                                Not Setup
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-1 text-[#1a5695] font-black text-sm">
+                              {(c.lead?.total_capacity / 1000).toFixed(2)}{" "}
+                              <span className="text-[10px] text-slate-400">
+                                kW
+                              </span>
+                            </div>
+                          </td>
+
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <span
+                              className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase transition-all ${getStatusStyle(c.status)}`}
+                            >
+                              {c.status}
+                            </span>
+                          </td>
+
+                          {/* IMPROVED ACTION COLUMN */}
+                          <td className="px-6 py-4 whitespace-nowrap text-right">
+                            <div className="flex items-center justify-end">
+                              <button
+                                onClick={() =>
+                                  navigate("/permissions", {
                                     state: {
                                       customerId: c.id,
                                       leadId: c.lead_id,
                                     },
-                                  });
-                                }}
-                                className="font-bold text-slate-800 text-sm leading-tight cursor-pointer"
+                                  })
+                                }
+                                className="p-2.5 bg-blue-50 text-[#1a5695] hover:bg-[#1a5695] hover:text-white rounded-xl transition-all border border-blue-100 shadow-sm"
+                                title="Manage Permissions"
                               >
-                                {c.lead?.customer_name}
+                                <Shield size={16} />
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  handleDelete(c);
+                                }}
+                                className="p-2 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100"
+                              >
+                                <Trash2Icon size={16} />
+                              </button>
+
+                              {c.name_change === "not_used" ? (
+                                <button
+                                  onClick={() => {
+                                    setNameChange("unchanged");
+                                    setIsEditModalOpen(true);
+                                    setId(c.id);
+                                  }}
+                                  className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-white hover:shadow-md hover:border-[#1a5695]/30 rounded-xl transition-all border border-slate-100"
+                                  title="Update Status"
+                                >
+                                  <Edit3 size={16} />
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    const route =
+                                      c.name_change === "required"
+                                        ? "/namechange"
+                                        : c.status?.toLowerCase() === "done"
+                                          ? "/registration"
+                                          : "/documentcollection";
+                                    navigate(route, {
+                                      state: {
+                                        customerId: c.id,
+                                        customerName: c.lead.customer_name,
+                                        contactNumber: c.lead.contact_number,
+                                      },
+                                    });
+                                  }}
+                                  className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm active:scale-95"
+                                >
+                                  {c.name_change === "required" ? (
+                                    <>
+                                      {" "}
+                                      <FileText size={14} /> Process Name Change
+                                    </>
+                                  ) : c.status?.toLowerCase() === "done" ? (
+                                    <>
+                                      <Zap size={14} /> Go Registration
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Eye size={14} /> Collect Docs{" "}
+                                    </>
+                                  )}
+                                  <ChevronRight
+                                    size={14}
+                                    className="group-hover/btn:translate-x-1 transition-transform"
+                                  />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      /* NO DATA FOUND ROW */
+                      <tr>
+                        <td colSpan={6} className="py-20 text-center">
+                          <div className="flex flex-col items-center justify-center gap-3">
+                            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center border border-dashed border-slate-200">
+                              <Search className="text-slate-300" size={24} />
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-slate-800 font-bold text-sm">
+                                No Customers Found
                               </p>
-                              <p className="text-slate-400 text-[11px] font-medium">
-                                {c.lead?.contact_number}
+                              <p className="text-slate-400 text-xs">
+                                We couldn't find any records matching your
+                                criteria.
                               </p>
                             </div>
                           </div>
                         </td>
-
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-1.5 text-slate-500 text-xs font-medium max-w-[180px] truncate">
-                            <MapPin
-                              size={12}
-                              className="text-slate-300 shrink-0"
-                            />
-                            <span>{c.lead?.address}</span>
-                          </div>
-                        </td>
-
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {c.name_change === "required" && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-600 text-[9px] font-black uppercase rounded-lg border border-amber-100">
-                              <AlertCircle size={10} /> Required
-                            </span>
-                          )}
-                          {c.name_change === "changed" && (
-                            <span className="text-blue-700 text-[10px] font-black uppercase tracking-tighter">
-                              ● Changed
-                            </span>
-                          )}
-                          {c.name_change === "unchanged" && (
-                            <span className="text-emerald-600 text-[10px] font-black uppercase tracking-tighter">
-                              ● Unchanged
-                            </span>
-                          )}
-                          {c.name_change === "not_used" && (
-                            <span className="text-slate-300 text-[10px] font-bold uppercase italic">
-                              Not Setup
-                            </span>
-                          )}
-                        </td>
-
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-1 text-[#1a5695] font-black text-sm">
-                            {(c.lead?.total_capacity / 1000).toFixed(2)}{" "}
-                            <span className="text-[10px] text-slate-400">
-                              kW
-                            </span>
-                          </div>
-                        </td>
-
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
-                          <span
-                            className={`px-4 py-1.5 rounded-full text-[10px] font-black border uppercase transition-all ${getStatusStyle(c.status)}`}
-                          >
-                            {c.status}
-                          </span>
-                        </td>
-
-                        {/* IMPROVED ACTION COLUMN */}
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
-                          <div className="flex items-center justify-end">
-                            <button
-                              onClick={() =>
-                                navigate("/permissions", {
-                                  state: {
-                                    customerId: c.id,
-                                    leadId: c.lead_id,
-                                  },
-                                })
-                              }
-                              className="p-2.5 bg-blue-50 text-[#1a5695] hover:bg-[#1a5695] hover:text-white rounded-xl transition-all border border-blue-100 shadow-sm"
-                              title="Manage Permissions"
-                            >
-                              <Shield size={16} />
-                            </button>
-
-                            <button
-                              onClick={() => {
-                                handleDelete(c);
-                              }}
-                              className="p-2 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100"
-                            >
-                              <Trash2Icon size={16} />
-                            </button>
-
-                            {c.name_change === "not_used" ? (
-                              <button
-                                onClick={() => {
-                                  setNameChange("unchanged");
-                                  setIsEditModalOpen(true);
-                                  setId(c.id);
-                                }}
-                                className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-white hover:shadow-md hover:border-[#1a5695]/30 rounded-xl transition-all border border-slate-100"
-                                title="Update Status"
-                              >
-                                <Edit3 size={16} />
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => {
-                                  const route =
-                                    c.name_change === "required"
-                                      ? "/namechange"
-                                      : c.status?.toLowerCase() === "done"
-                                        ? "/registration"
-                                        : "/documentcollection";
-                                  navigate(route, {
-                                    state: {
-                                      customerId: c.id,
-                                      customerName: c.lead.customer_name,
-                                      contactNumber: c.lead.contact_number,
-                                    },
-                                  });
-                                }}
-                                className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm active:scale-95"
-                              >
-                                {c.name_change === "required" ? (
-                                  <>
-                                    {" "}
-                                    <FileText size={14} /> Process Name Change
-                                  </>
-                                ) : c.status?.toLowerCase() === "done" ? (
-                                  <>
-                                    <Zap size={14} /> Go Registration
-                                  </>
-                                ) : (
-                                  <>
-                                    <Eye size={14} /> Collect Docs{" "}
-                                  </>
-                                )}
-                                <ChevronRight
-                                  size={14}
-                                  className="group-hover/btn:translate-x-1 transition-transform"
-                                />
-                              </button>
-                            )}
-                          </div>
-                        </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>

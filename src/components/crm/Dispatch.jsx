@@ -13,6 +13,7 @@ import {
   Check,
   Users,
   Car,
+  Inbox, // Added for the empty state
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -48,7 +49,7 @@ const Dispatch = () => {
   const fetchData = async (endpoint, setter) => {
     try {
       const res = await axios.get(endpoint, { withCredentials: true });
-      if (res.status === 200) setter(res.data.data);
+      if (res.status === 200) setter(res.data.data || []);
     } catch (error) {
       toast.error(`Failed to load ${endpoint.split("/").pop()}`);
     }
@@ -123,8 +124,14 @@ const Dispatch = () => {
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-xl md:text-2xl font-black text-slate-800 tracking-tight uppercase">
+              <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase flex items-center gap-3">
                 Logistics & Dispatch
+                <button
+                  onClick={() => navigate("/alldispatch")}
+                  className="flex items-center gap-1 bg-slate-200 text-slate-600 text-[10px] px-2 py-1 rounded-full hover:bg-slate-300 transition-all cursor-pointer"
+                >
+                  SHOW ALL DISPATCH <ChevronRight size={12} />
+                </button>
               </h1>
               <p className="text-xs md:text-sm text-slate-500">
                 Track and manage outgoing equipment
@@ -165,15 +172,15 @@ const Dispatch = () => {
           </div>
 
           {/* Content Area */}
-          <div className="bg-white rounded-[24px] md:rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
+          <div className="bg-white rounded-[24px] md:rounded-[32px] border border-slate-200 overflow-hidden shadow-sm min-h-[400px] flex flex-col">
             {pageLoading ? (
-              <div className="flex flex-col items-center justify-center py-20 md:py-32">
+              <div className="flex-1 flex flex-col items-center justify-center py-20">
                 <Loader2 className="w-10 h-10 text-[#1a5695] animate-spin mb-4" />
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   Syncing Logistics...
                 </p>
               </div>
-            ) : (
+            ) : filteredDispatches.length > 0 ? (
               <>
                 {/* Desktop Table View */}
                 <div className="hidden md:block overflow-x-auto">
@@ -218,7 +225,7 @@ const Dispatch = () => {
                               {d.customer_name}
                             </p>
                             <div className="flex items-center gap-1.5 text-slate-400 text-[11px] mt-1">
-                              <MapPin size={10} />{" "}
+                              <MapPin size={10} />
                               <span className="truncate max-w-[150px]">
                                 {d.address}
                               </span>
@@ -279,7 +286,7 @@ const Dispatch = () => {
                   </table>
                 </div>
 
-                {/* Mobile List View (Visible only on small screens) */}
+                {/* Mobile List View */}
                 <div className="md:hidden divide-y divide-slate-100">
                   {filteredDispatches.map((d) => (
                     <div key={d.id} className="p-4 space-y-3">
@@ -298,7 +305,6 @@ const Dispatch = () => {
                           {d.status}
                         </span>
                       </div>
-
                       <div className="bg-slate-50 rounded-xl p-3 flex justify-between items-center">
                         <div className="text-[10px]">
                           <p className="text-slate-400 uppercase font-black">
@@ -326,12 +332,35 @@ const Dispatch = () => {
                   ))}
                 </div>
               </>
+            ) : (
+              /* NO DATA FOUND VIEW */
+              <div className="flex-1 flex flex-col items-center justify-center py-20 px-4 text-center">
+                <div className="bg-slate-50 p-6 rounded-full mb-4">
+                  <Inbox className="w-12 h-12 text-slate-300" />
+                </div>
+                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">
+                  No Dispatches Found
+                </h3>
+                <p className="text-[10px] text-slate-300 font-bold uppercase mt-1 tracking-tighter">
+                  {searchQuery
+                    ? `No results for "${searchQuery}"`
+                    : "The dispatch queue is currently empty"}
+                </p>
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="mt-4 text-[10px] font-black text-[#1a5695] uppercase hover:underline"
+                  >
+                    Clear Search
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </main>
       </div>
 
-      {/* DISPATCH MODAL - Improved Responsiveness */}
+      {/* DISPATCH MODAL */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-md rounded-t-[32px] sm:rounded-[40px] shadow-2xl overflow-hidden animate-in slide-in-from-bottom sm:zoom-in duration-300">
@@ -351,7 +380,6 @@ const Dispatch = () => {
                 <X size={24} />
               </button>
             </div>
-
             <div className="p-6 md:p-8 space-y-5">
               <div className="space-y-4">
                 <div className="relative">
@@ -374,7 +402,6 @@ const Dispatch = () => {
                     ))}
                   </select>
                 </div>
-
                 <div className="relative">
                   <Truck
                     className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -396,7 +423,6 @@ const Dispatch = () => {
                   </select>
                 </div>
               </div>
-
               <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Package className="text-emerald-500" size={20} />
@@ -406,7 +432,6 @@ const Dispatch = () => {
                 </div>
                 <Check className="text-emerald-500" size={20} />
               </div>
-
               <button
                 onClick={handleUpdateDispatch}
                 disabled={loading}

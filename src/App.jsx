@@ -60,6 +60,8 @@ import AllCommission from "./components/crm/AllCommission";
 import TFinalizeWiring from "./components/Technician/TFinalizeWiring";
 import TUpdateWiringLog from "./components/Technician/TUpdateWiringLog";
 import SCommission from "./components/Source/SCommission";
+import AllWiring from "./components/crm/AllWiring";
+import AllFabrication from "./components/crm/AllFabrication";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -245,6 +247,14 @@ function App() {
             }
           />
           <Route
+            path="/allfabrication"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AllFabrication />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/fabricator/fabrication"
             element={
               <ProtectedRoute allowedRoles={["fabricator"]}>
@@ -265,6 +275,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Wiring />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/allwirings"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AllWiring />
               </ProtectedRoute>
             }
           />

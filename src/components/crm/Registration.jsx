@@ -400,6 +400,7 @@ const Registration = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {loading ? (
+                    /* LOADING STATE */
                     <tr>
                       <td colSpan={5} className="py-24 text-center">
                         <Loader2
@@ -408,7 +409,8 @@ const Registration = () => {
                         />
                       </td>
                     </tr>
-                  ) : (
+                  ) : filteredCustomers.length > 0 ? (
+                    /* DATA FOUND STATE */
                     filteredCustomers.map((item) => (
                       <tr
                         key={item.id}
@@ -556,6 +558,23 @@ const Registration = () => {
                         </td>
                       </tr>
                     ))
+                  ) : (
+                    /* NO DATA FOUND STATE */
+                    <tr>
+                      <td colSpan={5} className="py-24 text-center">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <div className="bg-slate-100 p-4 rounded-full">
+                            <Search className="text-slate-400" size={32} />
+                          </div>
+                          <p className="font-bold text-slate-800 text-sm mt-2">
+                            No Records Found
+                          </p>
+                          <p className="text-slate-400 text-[11px] uppercase tracking-widest">
+                            Try adjusting your search or filters
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
                   )}
                 </tbody>
               </table>
