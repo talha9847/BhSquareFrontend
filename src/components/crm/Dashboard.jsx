@@ -214,9 +214,27 @@ const Dashboard = () => {
       setReportLoading(false);
     }
   }, [reportFilters]);
+  const [stageStats, setStageStats] = useState([]);
+  const [stageLoading, setStageLoading] = useState(true);
+  const fetchStageData = async () => {
+    setStageLoading(true);
+    try {
+      const res = await axios.get(`/api/leads/getPendingStageCapacity`, {
+        withCredentials: true,
+      });
+      if (res.status === 200) {
+        setStageStats(res.data.data);
+      }
+    } catch (error) {
+      console.error("Stage Data Error:", error);
+    } finally {
+      setStageLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchReportData();
+    fetchStageData();
   }, [fetchReportData]);
 
   // 2. Fetch Lead Analytics (Using req.body)
@@ -568,6 +586,214 @@ const Dashboard = () => {
                   Download PDF
                 </button>
               </div>
+            </div>
+          </section>
+
+          {/* --- PIPELINE BOTTLENECK ANALYSIS --- */}
+          {/* --- ADVANCED PIPELINE STAGE ANALYTICS --- */}
+          <section className="mb-10">
+            <div className="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden">
+              {/* Background Accents */}
+              <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-slate-50 rounded-full blur-3xl opacity-50 pointer-events-none" />
+
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 relative z-10">
+                <div>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                    <div className="p-2 bg-amber-100 rounded-xl">
+                      <Zap
+                        className="text-amber-600"
+                        size={24}
+                        fill="currentColor"
+                      />
+                    </div>
+                    Pipeline Distribution
+                  </h2>
+                  <p className="text-sm text-slate-400 font-medium mt-1">
+                    Tracking bottlenecks and capacity across the project
+                    lifecycle
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-4 bg-slate-900 px-5 py-3 rounded-2xl shadow-lg">
+                  <div className="text-right">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
+                      Total System Load
+                    </p>
+                    <p className="text-lg font-black text-white">
+                      {stageLoading ? (
+                        <span className="opacity-50 italic text-xs">
+                          Calculating...
+                        </span>
+                      ) : (
+                        <>
+                          {stageStats
+                            .reduce(
+                              (acc, curr) =>
+                                acc +
+                                (parseFloat(curr.pending_capacity_kw) / 1000 ||
+                                  0),
+                              0,
+                            )
+                            .toFixed(2)}{" "}
+                          <span className="text-amber-400 text-xs">kW</span>
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* --- UPDATED LOADING STATE --- */}
+              {stageLoading ? (
+                <div className="relative min-h-[400px] w-full flex flex-col items-center justify-center bg-slate-50/50 rounded-[2rem] border border-dashed border-slate-200 overflow-hidden">
+                  {/* Animated Background Shimmer for the container */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+
+                  <div className="relative">
+                    {/* Outer Rotating Ring */}
+                    <div className="w-20 h-20 rounded-full border-4 border-slate-100 border-t-[#1a5695] animate-spin" />
+
+                    {/* Inner Pulsing Icon */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Zap
+                        className="text-amber-500 animate-pulse"
+                        size={24}
+                        fill="currentColor"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-6 text-center">
+                    <p className="text-slate-900 font-black tracking-tight">
+                      Syncing Pipeline Data
+                    </p>
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+                      Analyzing Stage Capacities...
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 relative z-10">
+                  {stageStats.map((stage, idx) => {
+                    const capacityKw =
+                      parseFloat(stage.pending_capacity_kw) / 1000 || 0;
+                    const percentage = Math.min((capacityKw / 10) * 100, 100);
+                    const hasLoad = capacityKw > 0;
+                    const isHighLoad = capacityKw > 5;
+
+                    return (
+                      <div
+                        key={stage.stage_id}
+                        onClick={() => navigate(stage.url)}
+                        className={`group relative p-6 rounded-[2.5rem] border transition-all duration-500 cursor-pointer overflow-hidden
+                ${
+                  hasLoad
+                    ? "bg-white border-slate-100 hover:border-blue-300 hover:shadow-2xl hover:shadow-blue-900/10"
+                    : "bg-slate-50/50 border-transparent opacity-60 hover:opacity-100 hover:bg-white hover:border-slate-200"
+                }`}
+                      >
+                        <div className="flex justify-between items-start mb-6 relative z-10">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xs transition-all duration-300 shadow-sm
+                    ${hasLoad ? "bg-slate-900 text-white group-hover:scale-110" : "bg-slate-200 text-slate-500"}
+                  `}
+                            >
+                              {String(idx + 1).padStart(2, "0")}
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-slate-800 group-hover:text-[#1a5695] transition-colors line-clamp-1">
+                                {stage.stage_name}
+                              </h3>
+                              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                                Stage Route: {stage.url}
+                              </p>
+                            </div>
+                          </div>
+                          {hasLoad && (
+                            <div className="flex flex-col items-end">
+                              <span className="text-lg font-black text-slate-900">
+                                {stage.pending_count}
+                              </span>
+                              <span className="text-[9px] font-black text-slate-400 uppercase">
+                                Files
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Progress and Capacity */}
+                        <div className="space-y-4 relative z-10">
+                          <div className="flex justify-between items-end">
+                            <div className="flex items-center gap-1.5">
+                              <Zap
+                                size={14}
+                                className={
+                                  hasLoad
+                                    ? isHighLoad
+                                      ? "text-rose-500"
+                                      : "text-amber-500"
+                                    : "text-slate-300"
+                                }
+                                fill="currentColor"
+                              />
+                              <span
+                                className={`text-xl font-black tracking-tight ${hasLoad ? "text-slate-800" : "text-slate-400"}`}
+                              >
+                                {capacityKw.toFixed(2)}
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-400 mb-1">
+                                kW
+                              </span>
+                            </div>
+
+                            {hasLoad && (
+                              <div
+                                className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest ${
+                                  isHighLoad
+                                    ? "bg-rose-50 text-rose-600"
+                                    : "bg-blue-50 text-[#1a5695]"
+                                }`}
+                              >
+                                {isHighLoad ? "Action Required" : "Active"}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="relative h-2 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                            <div
+                              className={`absolute top-0 left-0 h-full rounded-full transition-all duration-1000 ease-out 
+                      ${isHighLoad ? "bg-gradient-to-r from-blue-600 to-rose-500" : "bg-[#1a5695]"}
+                    `}
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+
+                          <div className="flex justify-between items-center pt-1">
+                            <span className="text-[10px] font-bold text-slate-400 flex items-center gap-1">
+                              <Users size={12} className="opacity-50" />
+                              Avg{" "}
+                              {hasLoad && stage.pending_count > 0
+                                ? (capacityKw / stage.pending_count).toFixed(1)
+                                : 0}{" "}
+                              kW
+                            </span>
+
+                            <div className="text-[#1a5695] transition-transform group-hover:translate-x-1">
+                              <ChevronRight
+                                size={18}
+                                className={
+                                  hasLoad ? "opacity-100" : "opacity-20"
+                                }
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </section>
           {/* --- QUICK ACTIONS / REPORTS --- */}
