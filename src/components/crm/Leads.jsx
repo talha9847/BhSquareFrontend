@@ -136,7 +136,7 @@ const Leads = () => {
       const res = await axios.post(
         `/api/sources/addSource`,
         {
-          source_name: sourceName,
+          name: sourceName,
         },
         { withCredentials: true },
       );
