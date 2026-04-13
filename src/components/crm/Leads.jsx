@@ -1014,6 +1014,7 @@ const Leads = () => {
                       type="number"
                       value={invereterKWattage}
                       min={0}
+                      step="0.01" // 👈 allows floating values like 1.5, 2.75
                       onChange={(e) => setInvereterKWattage(e.target.value)}
                       className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
                     />
