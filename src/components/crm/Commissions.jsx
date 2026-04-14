@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Search,
-  DollarSign,
   X,
   Loader2,
   Clock,
@@ -11,6 +10,7 @@ import {
   Calculator,
   Edit3,
   ChevronRight,
+  IndianRupee,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -278,7 +278,7 @@ const Commission = () => {
                     Commission Amount (Manual Edit Allowed)
                   </label>
                   <div className="relative">
-                    <DollarSign
+                    <IndianRupee
                       className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                       size={16}
                     />

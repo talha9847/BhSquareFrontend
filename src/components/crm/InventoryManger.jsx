@@ -8,7 +8,6 @@ import {
   Loader2,
   Save,
   Layers,
-  DollarSign,
   Eye,
   IndianRupee,
 } from "lucide-react";

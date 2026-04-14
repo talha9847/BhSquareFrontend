@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Search,
-  DollarSign,
   X,
   Loader2,
   Clock,

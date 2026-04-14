@@ -261,7 +261,7 @@ const RegistrationsManager = () => {
                           fill="#1a5695"
                         />
                         <span className="text-[10px] font-black text-[#1a5695] uppercase tracking-widest">
-                          {item.total_capacity} KW
+                          {(item.total_capacity / 1000).toFixed(2)} KW
                         </span>
                       </div>
                     </div>

@@ -276,6 +276,18 @@ const Cost = () => {
                           <CostBox label="Kit" value={item.kit_cost} />
                           <CostBox label="Wire" value={item.wire_cost} />
                           <CostBox
+                            label="Fabricator"
+                            value={item.fabricator_commission}
+                          />
+                          <CostBox
+                            label="Distributor"
+                            value={item.commission_cost}
+                          />
+                          <CostBox
+                            label="Supervisor"
+                            value={item.supervisor_commission}
+                          />
+                          <CostBox
                             label="Extra"
                             value={item.extra_cost}
                             color="amber"

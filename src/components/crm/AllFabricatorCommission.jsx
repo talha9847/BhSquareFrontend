@@ -215,7 +215,7 @@ const AllFabricatorCommission = () => {
                         </span>
                       </div>
                       <span className="text-[9px] font-black text-slate-300 uppercase">
-                        Supervisor
+                        Supervisor 
                       </span>
                     </div>
                     <div className="flex items-center gap-4 text-slate-400">

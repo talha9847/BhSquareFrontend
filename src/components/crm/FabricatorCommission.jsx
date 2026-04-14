@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Search,
-  DollarSign,
   X,
   Loader2,
   Clock,
@@ -96,9 +95,12 @@ const FabricatorCommission = () => {
     }
   };
 
-  const filteredItems = leads.filter((item) =>
-    item.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const filteredItems = leads.filter((item) => {
+    return (
+      item.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.fabricator_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
@@ -181,7 +183,7 @@ const FabricatorCommission = () => {
                             {item.customer_name}
                           </div>
                           <div className="text-[10px] text-slate-400 font-bold">
-                            {item.mobile} | Supervisor: {item.source_name}
+                            {item.mobile} | Fabricator: {item.fabricator_name}
                           </div>
                         </td>
                         <td className="px-6 py-4 text-center">

@@ -3,7 +3,6 @@ import {
   Search,
   Zap,
   Loader2,
-  DollarSign,
   Calendar,
   ArrowUpRight,
   TrendingUp,

@@ -553,12 +553,12 @@ const Leads = () => {
 
             {/* Right Side: Button Group (Side by Side) */}
             <div className="flex items-center gap-3">
-              <button
+              {/* <button
                 onClick={() => setIsSourceModalOpen(true)}
                 className="flex items-center justify-center gap-2 bg-slate-800 text-white px-5 py-3 rounded-2xl font-bold shadow-lg hover:bg-slate-900 transition-all active:scale-95 text-sm"
               >
                 <Database size={18} /> Add Source
-              </button>
+              </button> */}
 
               <button
                 onClick={() => setIsModalOpen(true)}
