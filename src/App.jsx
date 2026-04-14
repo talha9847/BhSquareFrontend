@@ -66,6 +66,7 @@ import Completion from "./components/crm/Completion";
 import Supervisors from "./components/crm/Supervisors";
 import SupervisorCommission from "./components/crm/SuperVisorCommission";
 import AllSupervisorCommission from "./components/crm/AllSupervisorCommission";
+import FabricatorCommission from "./components/crm/FabricatorCommission";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -491,6 +492,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <AllCommission />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/fabcommissions"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <FabricatorCommission />
               </ProtectedRoute>
             }
           />

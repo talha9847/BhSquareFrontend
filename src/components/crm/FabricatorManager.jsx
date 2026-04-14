@@ -25,7 +25,7 @@ const FabricatorManager = () => {
   const [fabricators, setFabricators] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingId, setEditingId] = useState(null);
-  const [formData, setFormData] = useState({ name: "" });
+  const [formData, setFormData] = useState({ name: "", commission_rate: 0 });
 
   const getAllFabricators = async () => {
     setTableLoading(true);
@@ -51,13 +51,13 @@ const FabricatorManager = () => {
 
   const openAddModal = () => {
     setEditingId(null);
-    setFormData({ name: "" });
+    setFormData({ name: "", commission_rate: 0 });
     setIsModalOpen(true);
   };
 
   const handleEditClick = (fab) => {
     setEditingId(fab.id);
-    setFormData({ name: fab.name });
+    setFormData({ name: fab.name, commission_rate: fab.commission_rate });
     setIsModalOpen(true);
   };
 
@@ -68,10 +68,9 @@ const FabricatorManager = () => {
       )
     ) {
       try {
-        const res = await axios.delete(
-          `/api/kitready/deleteFabricator/${id}`,
-          { withCredentials: true },
-        );
+        const res = await axios.delete(`/api/kitready/deleteFabricator/${id}`, {
+          withCredentials: true,
+        });
         if (res.status === 200) {
           toast.success("Fabricator removed successfully");
           getAllFabricators();
@@ -95,11 +94,9 @@ const FabricatorManager = () => {
           { withCredentials: true },
         );
       } else {
-        res = await axios.post(
-          `/api/dispatch/createFabricator`,
-          formData,
-          { withCredentials: true },
-        );
+        res = await axios.post(`/api/dispatch/createFabricator`, formData, {
+          withCredentials: true,
+        });
       }
 
       if (res.status === 200 || res.status === 201) {
@@ -175,6 +172,9 @@ const FabricatorManager = () => {
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         Fabricator Name
                       </th>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Commission Rate
+                      </th>
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">
                         Actions
                       </th>
@@ -197,6 +197,16 @@ const FabricatorManager = () => {
                               </div>
                               <p className="font-bold text-slate-800 text-sm uppercase tracking-tight">
                                 {fab.name}
+                              </p>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center border border-blue-100">
+                                <Hammer size={14} />
+                              </div>
+                              <p className="font-bold text-slate-800 text-sm uppercase tracking-tight">
+                                {fab.commission_rate}
                               </p>
                             </div>
                           </td>
@@ -272,7 +282,29 @@ const FabricatorManager = () => {
                     className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none text-sm font-bold"
                     value={formData.name}
                     onChange={(e) =>
-                      setFormData({ name: e.target.value.toLocaleUpperCase() })
+                      setFormData({
+                        ...formData,
+                        name: e.target.value.toLocaleUpperCase(),
+                      })
+                    }
+                  />
+                  <UserCheck
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"
+                    size={18}
+                  />
+                </div>
+                <div className="relative">
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. John Doe, Apex Industries..."
+                    className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none text-sm font-bold"
+                    value={formData.commission_rate}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        commission_rate: e.target.value,
+                      })
                     }
                   />
                   <UserCheck

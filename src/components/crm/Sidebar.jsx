@@ -139,6 +139,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       activePaths: ["/supercommissions", "/allsupercommissions"],
     },
     {
+      name: "Fabricator Commi.",
+      icon: <Cable size={18} />,
+      type: "Logistics & Stores",
+      path: "fabcommissions",
+      activePaths: ["/fabcommissions", "/allfabcommissions"],
+    },
+    {
       name: "Completion",
       icon: <Cable size={18} />,
       type: "Logistics & Stores",
