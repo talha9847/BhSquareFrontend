@@ -146,11 +146,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       activePaths: ["/fabcommissions", "/allfabcommissions"],
     },
     {
-      name: "Completion",
+      name: "Cost",
       icon: <Cable size={18} />,
       type: "Logistics & Stores",
-      path: "completion",
-      activePaths: ["/completion"],
+      path: "cost",
+      activePaths: ["/cost"],
     },
     {
       name: "AMC & Service",

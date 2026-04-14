@@ -62,12 +62,12 @@ import TUpdateWiringLog from "./components/Technician/TUpdateWiringLog";
 import SCommission from "./components/Source/SCommission";
 import AllWiring from "./components/crm/AllWiring";
 import AllFabrication from "./components/crm/AllFabrication";
-import Completion from "./components/crm/Completion";
 import Supervisors from "./components/crm/Supervisors";
 import AllSupervisorCommission from "./components/crm/AllSupervisorCommission";
 import FabricatorCommission from "./components/crm/FabricatorCommission";
 import SuperviCommission from "./components/crm/SuperviCommission";
 import AllFabricatorCommission from "./components/crm/AllFabricatorCommission";
+import Cost from "./components/crm/Cost";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -521,10 +521,10 @@ function App() {
             }
           />
           <Route
-            path="/completion"
+            path="/cost"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
-                <Completion />
+                <Cost />
               </ProtectedRoute>
             }
           />
