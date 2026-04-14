@@ -132,6 +132,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       activePaths: ["/commissions", "/allcommissions"],
     },
     {
+      name: "Supervcisor Commi.",
+      icon: <Cable size={18} />,
+      type: "Logistics & Stores",
+      path: "supercommissions",
+      activePaths: ["/supercommissions", "/allsupercommissions"],
+    },
+    {
       name: "Completion",
       icon: <Cable size={18} />,
       type: "Logistics & Stores",
