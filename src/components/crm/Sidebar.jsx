@@ -37,7 +37,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     {
       name: "Leads",
       icon: <UserPlus size={18} />,
-      count: leadCount,
+      // count: leadCount,
       type: "Business Development",
       path: "leads",
       activePaths: ["/leads"],
@@ -52,7 +52,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     {
       name: "Customers",
       icon: <Briefcase size={18} />,
-      count: 5,
+      // count: 5,
       type: "Business Development",
       path: "customers",
       activePaths: [

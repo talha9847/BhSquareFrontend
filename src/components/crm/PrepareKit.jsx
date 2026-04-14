@@ -318,7 +318,7 @@ const PrepareKit = () => {
     const panelItem = allItems.find((item) => item.categoryId == 1);
 
     const inverterItem = allItems.find((item) => item.categoryId === 3);
-    console.log(panelItem);
+
     try {
       const res = await axios.post(
         `/api/kitready/addCustomerSerials`,
