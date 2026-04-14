@@ -17,7 +17,7 @@ import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
 import axios from "axios";
 
-const AllSupervisorCommission = () => {
+const AllFabricatorCommission = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,7 +38,7 @@ const AllSupervisorCommission = () => {
     try {
       // Using the status param to filter between pending/paid in the backend
       const res = await axios.get(
-        `/api/wiring/getSupervisorCommissionsByStatus`,
+        `/api/wiring/getFabricatorCommissionsByStatus`,
         {
           params: { status: activeTab },
           withCredentials: true,
@@ -73,7 +73,7 @@ const AllSupervisorCommission = () => {
     setBtnLoading(true);
     try {
       const res = await axios.put(
-        `/api/wiring/updateSupervisorCommission/${activeItem.id}`,
+        `/api/wiring/updateFabricatorCommission/${activeItem.id}`,
         {
           commission: commissionValue,
           status: status,
@@ -350,4 +350,4 @@ const AllSupervisorCommission = () => {
   );
 };
 
-export default AllSupervisorCommission;
+export default AllFabricatorCommission;

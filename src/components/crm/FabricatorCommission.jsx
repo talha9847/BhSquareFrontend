@@ -117,11 +117,11 @@ const FabricatorCommission = () => {
               Commission Management
               <button
                 onClick={() => {
-                  navigate("/allsupercommissions");
+                  navigate("/allfabcommissions");
                 }}
                 className="flex items-center gap-1 bg-slate-200 text-slate-600 text-[10px] px-2 py-1 rounded-full hover:bg-slate-300 transition-all cursor-pointer"
               >
-                SHOW ALL Super Commissions <ChevronRight size={12} />
+                SHOW ALL Fabricator Commissions <ChevronRight size={12} />
               </button>
             </h1>
           </div>
