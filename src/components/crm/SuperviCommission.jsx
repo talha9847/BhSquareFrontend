@@ -19,7 +19,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const SupervisorCommission = () => {
+const SuperviCommission = () => {
   const navigate = useNavigate();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -332,4 +332,4 @@ const SupervisorCommission = () => {
   );
 };
 
-export default SupervisorCommission;
+export default SuperviCommission;
