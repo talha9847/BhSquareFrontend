@@ -10,6 +10,8 @@ import {
   Save,
   CheckCircle,
   Eye,
+  UserPlus,
+  X,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -26,6 +28,30 @@ const FinalStage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [finalLogs, setFinalLogs] = useState([]);
 
+  const [isFabModalOpen, setIsFabModalOpen] = useState(false);
+  const [supervisors, setSupervisor] = useState([]);
+  const [activeItem, setActiveItem] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    customer_id: null,
+    supervisor_id: "",
+  });
+
+  const getSupervisors = async () => {
+    setTableLoading(true);
+
+    try {
+      const res = await axios.get(`/api/sources/fetchSupervisor`, {
+        withCredentials: true,
+      });
+      if (res.status === 200) setSupervisor(res.data.data || []);
+    } catch (error) {
+      console.error("Error fetching Supervisor:", error);
+    } finally {
+      setTableLoading(false);
+    }
+  };
+
   const getFinalStageData = async () => {
     setTableLoading(true);
     try {
@@ -41,9 +67,42 @@ const FinalStage = () => {
       setTableLoading(false);
     }
   };
+  const handleFabClick = (item) => {
+    setActiveItem(item);
+    setEditFormData({
+      customer_id: item.customer_id,
+      supervisor_id: item.supervisor_id || "",
+    });
+    setIsFabModalOpen(true);
+  };
+  const handleUpdateSupervisor = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const payload = {
+        customer_id: editFormData.customer_id,
+        supervisor_id: editFormData.supervisor_id,
+      };
+      const res = await axios.put(
+        `/api/sources/updateSupervisorViaId`,
+        payload,
+        { withCredentials: true },
+      );
+      if (res.status === 200) {
+        toast.success("Supervisor Updated!");
+        setIsFabModalOpen(false);
+        getFinalStageData(); // Refresh table
+      }
+    } catch (error) {
+      toast.error("Update failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     getFinalStageData();
+    getSupervisors();
   }, []);
 
   const handleToggle = async (id, field, currentStatus, label, item) => {
@@ -261,12 +320,15 @@ const FinalStage = () => {
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase">
                         Customer Information
                       </th>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase">
+                        Supervisor
+                      </th>
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase text-center">
                         Workflow Checklist
                       </th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase text-right">
+                      {/* <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase text-right">
                         Actions
-                      </th>
+                      </th> */}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
@@ -301,6 +363,22 @@ const FinalStage = () => {
                             <span className="uppercase">{item.address}</span>
                           </div>
                         </td>
+                        <td
+                          onClick={() => handleFabClick(item)}
+                          className="px-6 py-4 cursor-pointer group"
+                        >
+                          <div className="flex items-center gap-2 font-black text-[11px] text-[#1a5695] uppercase group-hover:underline">
+                            {item.supervisor_name || "ASSIGN SUPERVISOR"}
+                            <UserPlus
+                              size={12}
+                              className="text-slate-300 group-hover:text-[#1a5695]"
+                            />
+                          </div>
+                          <div className="text-[9px] text-slate-400 font-bold uppercase">
+                            Click to assign
+                          </div>
+                        </td>
+
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-center gap-2">
                             <InteractiveBadge
@@ -347,14 +425,14 @@ const FinalStage = () => {
                             />
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        {/* <td className="px-6 py-4 text-right">
                           <button
                             onClick={() => handleUpdate(item)}
                             className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a5695] text-white text-[10px] font-black uppercase rounded-2xl hover:bg-[#15467a] shadow-lg shadow-blue-100 active:scale-95 transition-all"
                           >
                             <Save size={14} /> Update Record
                           </button>
-                        </td>
+                        </td> */}
                       </tr>
                     ))}
                   </tbody>
@@ -364,6 +442,63 @@ const FinalStage = () => {
           </div>
         </main>
       </div>
+
+      {/* MODAL: SAME TO SAME AS FABRICATION.JSX */}
+      {isFabModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden">
+            <div className="bg-[#1a5695] p-8 text-white flex justify-between items-center">
+              <h2 className="text-xl font-black uppercase tracking-tight">
+                Assign Supervisor
+              </h2>
+              <button
+                onClick={() => setIsFabModalOpen(false)}
+                className="p-2 hover:bg-white/10 rounded-full transition-all"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <form onSubmit={handleUpdateSupervisor} className="p-8 space-y-6">
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
+                  Select Supervisor
+                </label>
+                <select
+                  required
+                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-[#1a5695]"
+                  value={editFormData.supervisor_id}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+                      supervisor_id: e.target.value,
+                    })
+                  }
+                >
+                  <option value="">Select a Supervisor</option>
+                  {supervisors.map((fab) => (
+                    <option key={fab.id} value={fab.id}>
+                      {fab.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                disabled={loading}
+                type="submit"
+                className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95"
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  <>
+                    <Save size={18} /> Update Assignment
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
