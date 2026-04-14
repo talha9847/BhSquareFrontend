@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Search,
-  DollarSign,
   X,
   Loader2,
   Save,
@@ -18,7 +17,7 @@ import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
 import axios from "axios";
 
-const AllCommission = () => {
+const AllSupervisorCommission = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,10 +37,13 @@ const AllCommission = () => {
     setLoading(true);
     try {
       // Using the status param to filter between pending/paid in the backend
-      const res = await axios.get(`/api/wiring/getCommissionsByStatus`, {
-        params: { status: activeTab },
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        `/api/wiring/getSupervisorCommissionsByStatus`,
+        {
+          params: { status: activeTab },
+          withCredentials: true,
+        },
+      );
       if (res.status === 200) setCommissions(res.data.data);
     } catch (error) {
       toast.error("Failed to load records");
@@ -146,7 +148,7 @@ const AllCommission = () => {
               />
               <input
                 type="text"
-                placeholder="SEARCH BY CUSTOMER OR SOURCE..."
+                placeholder="SEARCH BY CUSTOMER OR SUPERVISOR..."
                 className="w-full pl-16 pr-6 py-4.5 bg-white border border-slate-200 rounded-[24px] outline-none text-[11px] font-bold uppercase tracking-widest focus:border-[#1a5695] transition-all shadow-sm"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -213,7 +215,7 @@ const AllCommission = () => {
                         </span>
                       </div>
                       <span className="text-[9px] font-black text-slate-300 uppercase">
-                        Source
+                        Supervisor
                       </span>
                     </div>
                     <div className="flex items-center gap-4 text-slate-400">
@@ -348,4 +350,4 @@ const AllCommission = () => {
   );
 };
 
-export default AllCommission;
+export default AllSupervisorCommission;
