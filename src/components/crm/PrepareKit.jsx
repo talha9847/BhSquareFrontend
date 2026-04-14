@@ -166,7 +166,7 @@ const PrepareKit = () => {
     }
 
     // 3. Stock Check: If adding, ensure warehouse has enough
-    if (adjustmentMode === "add" && currentQty + val > editingItem.stock) {
+    if (adjustmentMode === "add" && currentQty + val >= editingItem.stock) {
       return toast.error(
         `Warehouse limit exceeded! Max available: ${editingItem.stock}`,
       );
