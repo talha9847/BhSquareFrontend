@@ -218,7 +218,7 @@ const TUpdateWiringLog = () => {
         { withCredentials: true },
       );
       if (res.status == 200) {
-        navigate("/wiring");
+        navigate("/technician/wiring");
       }
     } catch (error) {
       toast.error("Status update failed");
