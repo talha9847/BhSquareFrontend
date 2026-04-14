@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Trash2,
   Box,
+  ArrowRight,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import Navbar from "../crm/Navbar";
@@ -26,6 +27,7 @@ const TUpdateWiringLog = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [uL, setUL] = useState(false);
 
   // Data States
   const [inventory, setInventory] = useState([]);
@@ -83,7 +85,7 @@ const TUpdateWiringLog = () => {
   }, [wiringId, customerId]);
 
   useEffect(() => {
-    if (!customerId || !wiringId) return navigate("/wiring");
+    if (!customerId || !wiringId) return navigate("/technician/wiring");
     fetchData();
   }, [fetchData, navigate, customerId, wiringId]);
 
@@ -203,6 +205,26 @@ const TUpdateWiringLog = () => {
         fetchData(); // Refresh the dynamic lists
       }
     });
+  };
+
+  const handleNextStep = async () => {
+    try {
+      setUL(true);
+      toast.info("Moving to next stage...");
+      console.log(wiringId);
+      const res = await axios.put(
+        `/api/wiring/updateInventoryStatus/${wiringId}`,
+        {},
+        { withCredentials: true },
+      );
+      if (res.status == 200) {
+        navigate("/wiring");
+      }
+    } catch (error) {
+      toast.error("Status update failed");
+    } finally {
+      setUL(false);
+    }
   };
 
   return (
@@ -461,6 +483,23 @@ const TUpdateWiringLog = () => {
                   )}
                 </div>
               </div>
+
+              {isEditable && (
+                <div className="pt-4">
+                  <button
+                    onClick={handleNextStep}
+                    className="w-full py-6 bg-emerald-500 text-white rounded-[32px] font-black uppercase text-[11px] tracking-[0.2em] hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-100 flex items-center justify-center gap-3"
+                  >
+                    {uL ? (
+                      "Moving..."
+                    ) : (
+                      <>
+                        Move to Next Step <ArrowRight size={18} />
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </>
           )}
         </main>

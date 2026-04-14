@@ -919,6 +919,11 @@ const CustomerMaster = () => {
                         value={lead?.address}
                         isFull
                       />
+                      <DataField
+                        label="Source Name"
+                        value={lead?.source}
+                        isFull
+                      />
                     </div>
                   </ModuleCard>
                   <NameChangeModule customerId={customerId} />
