@@ -19,6 +19,9 @@ import {
   FileText,
   ChevronRight,
   Trash2Icon,
+  CreditCard,
+  Check,
+  Banknote,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -34,6 +37,8 @@ const Registration = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loading2, setLoading2] = useState(false);
+  const [loanRequired, setLoanRequired] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [cId, setCId] = useState(0);
   const [lId, setLId] = useState(0);
@@ -41,12 +46,15 @@ const Registration = () => {
   const [load, setLoad] = useState(false);
   const [rId, setRId] = useState(0);
   const [dLoad, setDLoad] = useState(false);
+  const [isModalOpen2, setIsModalOpen2] = useState(false);
+
   const [panels, setPanels] = useState([]);
   const [inverters, setInverters] = useState([]);
 
   const [brands, setBrands] = useState([{}]);
 
   const [isFinalizeModalOpen, setIsFinalizeModalOpen] = useState(false);
+
   const apiUrl = import.meta.env.VITE_API_URL;
 
   const {
@@ -102,7 +110,6 @@ const Registration = () => {
         withCredentials: true,
       });
       if (res.status === 200) {
-        console.log(res.data.data);
         setPanels(res.data.data);
       }
     } catch (error) {
@@ -119,7 +126,6 @@ const Registration = () => {
         { withCredentials: true },
       );
       if (res.status === 200) {
-        console.log(res.data.data);
         setInverters(res.data.data);
       }
     } catch (error) {
@@ -135,7 +141,6 @@ const Registration = () => {
         withCredentials: true,
       });
       if (res.status == 200) {
-        console.log(res.data.data);
         setBrands(res.data.data);
       }
     } catch (error) {}
@@ -149,7 +154,6 @@ const Registration = () => {
   }, []);
 
   const openRegistrationModal = (customer) => {
-    console.log(customer);
     if (
       customer.registration?.status?.toLowerCase() === "pending" ||
       customer.registration?.status?.toLowerCase() === "approved"
@@ -181,7 +185,6 @@ const Registration = () => {
   };
 
   const handleDelete = async (item) => {
-    console.log(item.registration.customer_id);
     await Swal.fire({
       title: "Are you sure?",
       text: `You want to delete ${item.lead.customer_name}?`,
@@ -229,7 +232,6 @@ const Registration = () => {
   const onSubmit = async (data) => {
     try {
       setLoad(true);
-      console.log(data);
       const res = await axios.post(
         `/api/registrations/registration`,
         {
@@ -296,7 +298,6 @@ const Registration = () => {
     try {
       if (item.registration.id > 0) {
         setDLoad(true);
-        console.log(customers);
         const result = await axios.post(
           `/api/registrations/getFileGeneration`,
           { registrationId: item.registration.id },
@@ -320,6 +321,29 @@ const Registration = () => {
     } catch (error) {
       console.error("Download failed:", error);
       setDLoad(false);
+    }
+  };
+
+  const handleUpdateStatus = async () => {
+    setLoading2(true);
+    try {
+      const res = await axios.post(
+        `/api/kitready/updateLoanFromRegistration`,
+        {
+          customerId: cId,
+          loanRequired: loanRequired,
+        },
+        { withCredentials: true },
+      );
+      if (res.status === 200) {
+        getCustomers();
+        toast.success("Status updated successfully");
+        setIsModalOpen(false);
+      }
+    } catch (error) {
+      toast.error("Error updating status");
+    } finally {
+      setLoading2(false);
     }
   };
 
@@ -517,6 +541,34 @@ const Registration = () => {
                                     </>
                                   )}
                                 </button>
+
+                                {!item.hasLoan && (
+                                  <button
+                                    className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
+                                    onClick={() => {
+                                      setCId(item.registration?.customer_id);
+                                      setIsModalOpen2(true);
+                                    }}
+                                  >
+                                    Loan Required
+                                  </button>
+                                )}
+                                {item.hasLoan && (
+                                  <button
+                                    className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
+                                    onClick={() => {
+                                      navigate("/loanstep", {
+                                        state: {
+                                          customerId:
+                                            item.registration?.customer_id,
+                                          leadId: item.lead.id,
+                                        },
+                                      });
+                                    }}
+                                  >
+                                    Go For Loan
+                                  </button>
+                                )}
                               </>
                             )}
 
@@ -817,6 +869,78 @@ const Registration = () => {
               </div>
             </div>
           </form>
+        </div>
+      )}
+
+      {isModalOpen2 && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden border border-white/20">
+            <div className="bg-[#1a5695] p-8 text-white flex justify-between items-center relative">
+              <div className="relative z-10">
+                <h2 className="text-xl font-black uppercase tracking-tight">
+                  Financing Setup
+                </h2>
+              </div>
+              <button
+                onClick={() => setIsModalOpen2(false)}
+                className="relative z-10 p-2 hover:bg-white/10 rounded-full transition-all"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-8">
+              <div className="space-y-6">
+                <div
+                  className={`p-6 rounded-[32px] border transition-all duration-500 ${loanRequired ? "bg-amber-50 border-amber-200" : "bg-emerald-50 border-emerald-200"}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`p-3 rounded-2xl shadow-sm transition-colors ${loanRequired ? "bg-amber-500 text-white" : "bg-emerald-500 text-white"}`}
+                      >
+                        {loanRequired ? (
+                          <Banknote size={20} />
+                        ) : (
+                          <CreditCard size={20} />
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-slate-800 uppercase">
+                          Is Loan Required?
+                        </p>
+                        <p
+                          className={`text-[10px] font-bold uppercase tracking-widest ${loanRequired ? "text-amber-600" : "text-emerald-600"}`}
+                        >
+                          {loanRequired ? "Financing Needed" : "Direct Payment"}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      // onClick={() => setLoanRequired(!loanRequired)}
+                      className={`w-14 h-7 rounded-full transition-all flex items-center px-1.5 ${loanRequired ? "bg-amber-500 justify-end" : "bg-slate-200 justify-start"}`}
+                    >
+                      <div className="w-4 h-4 bg-white rounded-full shadow-md" />
+                    </button>
+                  </div>
+                </div>
+                <button
+                  onClick={handleUpdateStatus}
+                  disabled={loading2}
+                  className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:bg-[#15467a] transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-70"
+                >
+                  {loading2 ? (
+                    <>
+                      <Loader2 className="animate-spin h-4 w-4" /> Updating...
+                    </>
+                  ) : (
+                    <>
+                      <Check size={16} /> Confirm Selection
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
