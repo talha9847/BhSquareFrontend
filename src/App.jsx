@@ -63,6 +63,7 @@ import SCommission from "./components/Source/SCommission";
 import AllWiring from "./components/crm/AllWiring";
 import AllFabrication from "./components/crm/AllFabrication";
 import Completion from "./components/crm/Completion";
+import Supervisors from "./components/crm/Supervisors";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -112,6 +113,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Sources />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/supervisors"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Supervisors />
               </ProtectedRoute>
             }
           />

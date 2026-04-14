@@ -15,7 +15,7 @@ import Sidebar from "./Sidebar";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-const Sources = () => {
+const Supervisors = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -31,7 +31,7 @@ const Sources = () => {
     setTableLoading(true);
     try {
       // Assuming your endpoint follows the same pattern as brands
-      const res = await axios.get(`/api/sources/fetchAllSources`, {
+      const res = await axios.get(`/api/sources/fetchAllSupervisor`, {
         withCredentials: true,
       });
       if (res.status === 200) {
@@ -66,26 +66,6 @@ const Sources = () => {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (id) => {
-    if (
-      window.confirm(
-        "Are you sure you want to remove this fabricator? This might affect ongoing project logs.",
-      )
-    ) {
-      try {
-        const res = await axios.delete(`/api/kitready/deleteFabricator/${id}`, {
-          withCredentials: true,
-        });
-        if (res.status === 200) {
-          toast.success("Fabricator removed successfully");
-          getAllFabricators();
-        }
-      } catch (error) {
-        toast.error(error.response?.data?.message || "Delete failed");
-      }
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -94,18 +74,19 @@ const Sources = () => {
       let res;
       if (editingId) {
         res = await axios.put(
-          `/api/sources/updateSource/${editingId}`,
+          `/api/sources/updateSupervisor/${editingId}`,
           formData,
           { withCredentials: true },
         );
       } else {
-        res = await axios.post(`/api/sources/addSource`, formData, {
+        console.log(formData);
+        res = await axios.post(`/api/sources/addSupervisor`, formData, {
           withCredentials: true,
         });
       }
 
       if (res.status === 200 || res.status === 201) {
-        toast.success(editingId ? "Fabricator updated!" : "Fabricator added!");
+        toast.success(editingId ? "Supervisor updated!" : "Supervisor added!");
         setIsModalOpen(false);
         getAllFabricators();
       }
@@ -134,13 +115,13 @@ const Sources = () => {
         <main className="p-4 lg:p-8">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase">
-              Source Registry
+              Supervisor Registry
             </h1>
             <button
               onClick={openAddModal}
               className="flex items-center gap-2 px-6 py-3 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg active:scale-95"
             >
-              <Plus size={16} /> Add Source
+              <Plus size={16} /> Add Supervisor
             </button>
           </div>
 
@@ -154,7 +135,7 @@ const Sources = () => {
               <input
                 type="text"
                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold"
-                placeholder="Search source names..."
+                placeholder="Search Supervisor names..."
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
@@ -175,7 +156,7 @@ const Sources = () => {
                         No.
                       </th>
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        Source Name
+                        Supervisor Name
                       </th>
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         Commercial Commission
@@ -273,7 +254,7 @@ const Sources = () => {
             >
               <div>
                 <h2 className="text-xl font-black uppercase tracking-tight">
-                  {editingId ? "Edit Personnel" : "New Source"}
+                  {editingId ? "Edit Personnel" : "New Supervisor"}
                 </h2>
                 <p className="text-white/40 text-[10px] font-bold uppercase mt-1">
                   Team Management
@@ -386,4 +367,4 @@ const Sources = () => {
   );
 };
 
-export default Sources;
+export default Supervisors;

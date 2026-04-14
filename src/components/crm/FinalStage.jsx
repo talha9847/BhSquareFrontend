@@ -9,6 +9,7 @@ import {
   Banknote,
   Save,
   CheckCircle,
+  Eye,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -212,6 +213,13 @@ const FinalStage = () => {
               <ShieldCheck className="text-[#1a5695]" size={28} />
               Final Stage Management
             </h1>
+
+            <button
+              onClick={() => navigate("/supervisors")}
+              className="flex items-center gap-2 px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
+            >
+              <Eye size={16} /> View Supervisors
+            </button>
           </div>
 
           {/* Search */}
