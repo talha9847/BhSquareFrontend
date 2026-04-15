@@ -295,8 +295,8 @@ const FabricatorManager = () => {
                 <div className="relative">
                   <input
                     required
-                    type="text"
-                    placeholder="e.g. John Doe, Apex Industries..."
+                    type="number"
+                    placeholder="e.g. 800"
                     className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none text-sm font-bold"
                     value={formData.commission_rate}
                     onChange={(e) =>
