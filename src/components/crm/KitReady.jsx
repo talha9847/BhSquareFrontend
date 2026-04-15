@@ -177,7 +177,7 @@ const KitReady = () => {
   const confirmFinalize = async (data) => {
     console.log(data);
     try {
-      if (rId > 0 && cId > 0 && lId > 0 && kId>0) {
+      if (rId > 0 && cId > 0 && lId > 0 && kId > 0) {
         setLoad(true);
         const res = await axios.post(
           `/api/registrations/markRegistrationAsDone`,
@@ -186,7 +186,7 @@ const KitReady = () => {
             data: data,
             customerId: cId,
             leadId: lId,
-            kitId:kId
+            kitId: kId,
           },
           { withCredentials: true },
         );
@@ -385,6 +385,27 @@ const KitReady = () => {
                           {/* CONSOLIDATED ACTION BUTTON */}
                           <td className="px-6 py-4 text-right">
                             <div className="flex justify-end">
+                              {c.file_gen == "pending" && (
+                                <button
+                                  className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
+                                  onClick={() => {
+                                    insertKit(
+                                      c.customer.id,
+                                      c.loan_status,
+                                      c.customer.lead?.id,
+                                      c,
+                                    );
+                                  }}
+                                >
+                                  {naviLoad ? (
+                                    <>Going.....</>
+                                  ) : (
+                                    <>
+                                      <Package size={14} /> Finalize
+                                    </>
+                                  )}
+                                </button>
+                              )}
                               {!c.loan_status || c.loan_status === "pending" ? (
                                 <button
                                   onClick={() => {
@@ -395,7 +416,7 @@ const KitReady = () => {
                                 >
                                   <Edit3 size={16} />
                                 </button>
-                              ) : (
+                              ) : c.loan_status === "required" ? (
                                 <button
                                   onClick={() => {
                                     insertKit(
@@ -407,38 +428,31 @@ const KitReady = () => {
                                   }}
                                   className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
                                 >
-                                  {c.loan_status === "required" ? (
-                                    <>
-                                      <Banknote size={14} /> Go For Loan
-                                    </>
-                                  ) : c.file_gen === "pending" ? (
-                                    <>
-                                      {naviLoad ? (
-                                        <>Going.....</>
-                                      ) : (
-                                        <>
-                                          <Package size={14} /> Finalize
-                                        </>
-                                      )}
-                                    </>
-                                  ) : (
-                                    <>
-                                      {naviLoad ? (
-                                        <>Going.....</>
-                                      ) : (
-                                        <>
-                                          <Package size={14} /> Go For Kit
-                                        </>
-                                      )}
-                                    </>
-                                  )}
-
+                                  <Banknote size={14} /> Go For Loan
                                   <ChevronRight
                                     size={14}
                                     className="group-hover/btn:translate-x-1 transition-transform"
                                   />
                                 </button>
-                              )}
+                              ) : c.file_gen === "done" ? (
+                                <button
+                                  onClick={() => {
+                                    insertKit(
+                                      c.customer.id,
+                                      c.loan_status,
+                                      c.customer.lead?.id,
+                                      c,
+                                    );
+                                  }}
+                                  className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
+                                >
+                                  <Package size={14} /> Go For Kit
+                                  <ChevronRight
+                                    size={14}
+                                    className="group-hover/btn:translate-x-1 transition-transform"
+                                  />
+                                </button>
+                              ) : null}
 
                               {c.loan_status == "completed" ? (
                                 <>
