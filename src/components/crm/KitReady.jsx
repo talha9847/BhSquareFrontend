@@ -406,6 +406,7 @@ const KitReady = () => {
                                   )}
                                 </button>
                               )}
+
                               {!c.loan_status || c.loan_status === "pending" ? (
                                 <button
                                   onClick={() => {
@@ -428,7 +429,13 @@ const KitReady = () => {
                                   }}
                                   className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
                                 >
-                                  <Banknote size={14} /> Go For Loan
+                                  {naviLoad ? (
+                                    <>Going.....</>
+                                  ) : (
+                                    <>
+                                      <Banknote size={14} /> Go For Loan
+                                    </>
+                                  )}
                                   <ChevronRight
                                     size={14}
                                     className="group-hover/btn:translate-x-1 transition-transform"
@@ -446,7 +453,14 @@ const KitReady = () => {
                                   }}
                                   className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
                                 >
-                                  <Package size={14} /> Go For Kit
+                                  {naviLoad ? (
+                                    <>Going.....</>
+                                  ) : (
+                                    <>
+                                      <Package size={14} /> Go For Kit
+                                    </>
+                                  )}
+
                                   <ChevronRight
                                     size={14}
                                     className="group-hover/btn:translate-x-1 transition-transform"
