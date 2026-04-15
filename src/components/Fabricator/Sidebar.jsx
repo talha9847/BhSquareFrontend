@@ -1,34 +1,13 @@
 import React, { useEffect, useState } from "react";
-import {
-  LayoutDashboard,
-  Users,
-  Compass,
-  FolderOpen,
-  FileSearch,
-  Bolt,
-  Box,
-  HardHat,
-  Wrench,
-  Settings,
-  BarChart3,
-  Plus,
-  Bell,
-  Menu,
-  X,
-  FileSignal,
-  Users2,
-} from "lucide-react";
+import { HardHat, IndianRupee, IndianRupeeIcon } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { FaBridgeCircleExclamation } from "react-icons/fa6";
-import { WiRefresh } from "react-icons/wi";
-import { FiExternalLink } from "react-icons/fi";
+import logo from "../../assets/logo.png";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [active, setActive] = useState("dashboard");
   const navigate = useNavigate();
   const location = useLocation();
-  const [leadCount, setLeadCount] = useState(0);
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -37,25 +16,19 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       name: "Sites",
       icon: <HardHat size={18} />,
       type: "Installation",
-      path: "/technician/wiring",
+      path: "/fabricator/fabrication",
       activePaths: ["/fabricator/fabrication"],
+    },
+    {
+      name: "Commission",
+      icon: <IndianRupeeIcon size={18} />,
+      type: "Installation",
+      path: "/fabricator/commission",
+      activePaths: ["/fabricator/commission"],
     },
   ];
 
-  const fetchPendingLeadsCount = async () => {
-    try {
-      const result = await axios.get(`/api/leads/fetchPendingLeadsCount`, {
-        withCredentials: true,
-      });
-      setLeadCount(result.data.count);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
-  useEffect(() => {
-    fetchPendingLeadsCount();
-  }, []);
 
   const categories = [...new Set(menuItems.map((item) => item.type))];
 
@@ -72,20 +45,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       <aside
         className={`fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-slate-200 transition-transform duration-300 transform ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}
       >
-        {/* Brand Header */}
-        <div className="bg-[#1a5695] px-6 py-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#f39200] rounded-2xl flex items-center justify-center shadow-lg">
-              <Bolt className="text-white" size={20} fill="currentColor" />
-            </div>
-            <div>
-              <p className="font-bold text-white text-lg tracking-tight">
-                BHSquare
-              </p>
-              <p className="text-blue-200 text-[10px] font-bold tracking-widest uppercase">
-                Solar ERP
-              </p>
-            </div>
+        <div className="bg-[#1a5695] px-3 py-4 shrink-0 border-b border-white/10">
+          <div className="w-full h-17 bg-white rounded-xl shadow-inner flex items-center justify-center overflow-hidden">
+            <img
+              src={logo}
+              alt="BHSquare Logo"
+              className="w-full h-full object-contain scale-[2.6] transform"
+            />
           </div>
         </div>
 
