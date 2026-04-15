@@ -42,7 +42,6 @@ const TWiring = () => {
         setWiringLogs(res.data.data);
       }
     } catch (error) {
-      console.error(error);
 
       // Extract proper error message
       const message =

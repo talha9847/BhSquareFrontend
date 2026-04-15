@@ -70,8 +70,6 @@ const SuperviCommission = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    console.log(commissionValue);
-    console.log(activeItem.id);
     setBtnLoading(true);
     try {
       const res = await axios.put(

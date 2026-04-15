@@ -35,7 +35,6 @@ const SCustomers = () => {
         setCustomers(res.data.data);
       }
     } catch (error) {
-      console.error("Error fetching customers:", error);
       toast.error("Failed to sync customer records");
     } finally {
       setPageLoading(false); // End loading
@@ -152,7 +151,6 @@ const SCustomers = () => {
                             <div>
                               <p
                                 onClick={() => {
-                                  console.log(item);
                                   navigate("/source/master", {
                                     state: {
                                       customerId: item.id,
@@ -194,8 +192,7 @@ const SCustomers = () => {
                               item.permissions.map((perm) => (
                                 <button
                                   onClick={() => {
-                                    console.log(perm.page.id);
-                                    console.log(item);
+                                   
                                     navigate(`/source/${perm.page.url}`, {
                                       state: {
                                         leadId: item.lead_id,

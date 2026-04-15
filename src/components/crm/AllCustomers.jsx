@@ -56,11 +56,9 @@ const AllCustomers = () => {
         });
 
         if (res.status === 200) {
-          console.log(res.data.data);
           setCustomers(res.data.data);
         }
       } catch (err) {
-        console.error("Backend Error:", err);
       } finally {
         setLoading(false);
       }
@@ -169,7 +167,6 @@ const AllCustomers = () => {
 
                   <h3
                     onClick={() => {
-                      console.log(c);
                       navigate("/master", {
                         state: {
                           customerId: c.customer_id,

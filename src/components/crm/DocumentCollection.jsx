@@ -120,8 +120,7 @@ const DocumentCollection = () => {
       );
       if (res.data.data) {
         setDocInfo(res.data.data);
-        console.log("i am talking about this");
-        console.log(res.data.data);
+ 
         setDocId(res.data.data.id);
         setIsFound(true);
       } else {
@@ -134,7 +133,6 @@ const DocumentCollection = () => {
         });
       }
     } catch (error) {
-      console.error(error);
     }
   };
 
@@ -220,7 +218,6 @@ const DocumentCollection = () => {
         { withCredentials: true },
       );
       if (res.status == 200) {
-        console.log(res.data);
         setGotoNext(res.data.readyForNextStage.status);
         setDocuments([
           { id: 1, name: "Aadhar Card", file: null },
@@ -245,12 +242,9 @@ const DocumentCollection = () => {
       );
       if (res.status === 200) {
         setLeadsData(res.data.data);
-        console.log("thi ;dkjkdlfj lkdsjfklsd jfkldsj ;");
-        // console.log(res.data.data);
         setGotoNext(res.data.readyForNextStage.status);
       }
     } catch (error) {
-      console.error(error);
     }
   };
 

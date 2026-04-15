@@ -259,7 +259,6 @@ const Cost = () => {
                         <td className="px-8 py-6">
                           <span
                             onClick={() => {
-                              console.log(item);
                               navigate("/master", {
                                 state: {
                                   customerId: item.customerId,

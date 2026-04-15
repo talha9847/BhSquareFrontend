@@ -71,7 +71,6 @@ const SLoanStep = () => {
     setSavingDocs(true);
     const formData = new FormData();
     if (!leadId) {
-      console.log("lead Id not found");
       return;
     }
     formData.append("leadId", leadId);
@@ -88,10 +87,7 @@ const SLoanStep = () => {
         withCredentials: true,
       });
     } catch (error) {}
-    console.log(
-      "Uploading Files:",
-      docs.filter((d) => d.file),
-    );
+
     await new Promise((r) => setTimeout(r, 1000));
     setSavingDocs(false);
     toast.success("Documents synced!");

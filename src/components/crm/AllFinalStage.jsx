@@ -65,7 +65,6 @@ const AllFinalStage = () => {
       });
       if (res.status === 200) setSupervisors(res.data.data || []);
     } catch (error) {
-      console.error("Error fetching supervisors");
     }
   };
 

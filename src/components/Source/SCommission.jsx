@@ -30,7 +30,6 @@ const SCommission = () => {
         setCommissions(res.data.data);
       }
     } catch (error) {
-      console.error("Error fetching commissions:", error);
       toast.error("Failed to sync commission records");
     } finally {
       setPageLoading(false);

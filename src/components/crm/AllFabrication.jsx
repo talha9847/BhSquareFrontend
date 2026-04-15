@@ -58,7 +58,6 @@ const AllFabrication = () => {
         setFabrications(res.data.data || []);
       }
     } catch (err) {
-      console.error("Fetch Error:", err);
       toast.error("Failed to load records");
     } finally {
       setLoading(false);

@@ -91,7 +91,6 @@ const LoanStep = () => {
     setSavingDocs(true);
     const formData = new FormData();
     if (!leadId) {
-      console.log("lead Id not found");
       return;
     }
     formData.append("leadId", leadId);
@@ -110,10 +109,7 @@ const LoanStep = () => {
         { withCredentials: true },
       );
     } catch (error) {}
-    console.log(
-      "Uploading Files:",
-      docs.filter((d) => d.file),
-    );
+
     await new Promise((r) => setTimeout(r, 1000));
     setSavingDocs(false);
     toast.success("Documents synced!");
@@ -121,8 +117,6 @@ const LoanStep = () => {
 
   const handleNextStage = async () => {
     setSubmittingNextStage(true);
-    console.log("Yes procceeedd clickedd");
-    console.log(customerId);
 
     try {
       const res = await axios.put(
@@ -142,7 +136,6 @@ const LoanStep = () => {
         `/api/loan/getLoanByCustomerId/${customerId}`,
         { withCredentials: true },
       );
-      console.log(res.data.data);
       const data = res.data.data;
       if (data.is_approved) setIsApproved(true);
       setLoanData({
@@ -175,7 +168,6 @@ const LoanStep = () => {
 
   const handleSaveFullProfile = async () => {
     setSavingAll(true);
-    console.log("Final Submit:", loanData);
 
     try {
       const body = {

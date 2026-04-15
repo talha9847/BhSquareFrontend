@@ -38,7 +38,6 @@ const WebLeads = () => {
       });
       setWebLeads(res.data.data || []);
     } catch (error) {
-      console.error("Error fetching web leads", error);
     } finally {
       setLoading(false);
     }
@@ -51,7 +50,6 @@ const WebLeads = () => {
   const handleUpdateLead = async (e) => {
     e.preventDefault();
     setUpdating(true);
-    console.log(selectedLead);
     try {
       await axios.put(`/api/sources/updateWebLead`, selectedLead, {
         withCredentials: true,

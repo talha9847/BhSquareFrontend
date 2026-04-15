@@ -90,7 +90,6 @@ const Customer = () => {
       });
       setCustomer(res.data.data);
     } catch (error) {
-      console.log(error);
       toast.error("Failed to load customers");
     } finally {
       setPageLoading(false);
@@ -102,7 +101,6 @@ const Customer = () => {
   }, []);
 
   const handleDelete = async (item) => {
-    console.log(item);
     await Swal.fire({
       title: "Are you sure?",
       text: `You want to delete ${item.lead.customer_name}?`,

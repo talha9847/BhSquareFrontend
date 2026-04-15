@@ -65,7 +65,6 @@ const WiringInventory = () => {
         setInventory(res.data.data);
       }
     } catch (error) {
-      console.error("Fetch Error:", error);
       toast.error("Failed to load inventory");
     } finally {
       setIsTableLoading(false);

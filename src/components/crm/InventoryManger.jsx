@@ -49,7 +49,6 @@ const InventoryManager = () => {
       });
       if (res.status === 200) setInventory(res.data.data);
     } catch (error) {
-      console.error(error);
     } finally {
       setTableLoading(false);
     }
@@ -62,7 +61,6 @@ const InventoryManager = () => {
       });
       if (res.status === 200) setBrands(res.data.data);
     } catch (error) {
-      console.error(error);
     }
   };
 
@@ -73,7 +71,6 @@ const InventoryManager = () => {
       });
       if (res.status === 200) setCategories(res.data.data);
     } catch (error) {
-      console.error(error);
     }
   };
 

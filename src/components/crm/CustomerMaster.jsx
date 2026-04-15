@@ -66,7 +66,6 @@ const NameChangeModule = ({ customerId }) => {
           setNameChangeDocs(res.data.data || []);
         }
       } catch (err) {
-        console.error("Name Change Fetch Error:", err);
       } finally {
         setLoading(false);
       }
@@ -143,7 +142,6 @@ const LoanModule = ({ customerId }) => {
       });
       if (res.status === 200) setLoan(res.data.data);
     } catch (err) {
-      console.error("Loan Fetch Error:", err);
     }
   };
   useEffect(() => {
@@ -224,7 +222,6 @@ const TechnicalModule = ({ customerId }) => {
         );
         if (res.status === 200) setTech(res.data.data);
       } catch (err) {
-        console.error("Tech Fetch Error:", err);
       }
     };
     if (customerId) fetchTech();
@@ -293,7 +290,6 @@ const KitModule = ({ customerId }) => {
         );
         if (res.status === 200) setKitData(res.data.data);
       } catch (err) {
-        console.error("Kit Fetch Error:", err);
       }
     };
     if (customerId) fetchKit();
@@ -414,7 +410,6 @@ const DispatchModule = ({ customerId }) => {
         }
       }
     } catch (error) {
-      console.error("Dispatch Fetch Error:", error);
       setDispatchData([]);
     } finally {
       setLoading(false);
@@ -541,7 +536,6 @@ const FabricationModule = ({ customerId }) => {
         }
       }
     } catch (error) {
-      console.error("Fab Fetch Error:", error);
       setFabData([]);
     } finally {
       setLoading(false);
@@ -669,7 +663,6 @@ const WiringModule = ({ customerId }) => {
         setWiringData(res.data.data);
       }
     } catch (error) {
-      console.error("Wiring Fetch Error:", error);
     } finally {
       setLoading(false);
     }
@@ -843,7 +836,6 @@ const CustomerMaster = () => {
         setLead(lRes.data?.data);
         setStages(sRes.data?.data || []);
       } catch (err) {
-        console.error(err);
       } finally {
         setTimeout(() => setLoading(false), 800);
       }

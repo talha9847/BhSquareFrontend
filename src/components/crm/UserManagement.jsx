@@ -79,7 +79,6 @@ const UserManagement = () => {
         });
       }
     } catch (error) {
-      console.error("Master data fetch error", error);
     }
   };
 
@@ -117,7 +116,6 @@ const UserManagement = () => {
     }
 
     setModalLoading(true);
-    console.log(formData);
     try {
       const endpoint =
         modalType === "create"
@@ -141,7 +139,6 @@ const UserManagement = () => {
     }
   };
   const toggleUserStatus = async (user) => {
-    console.log(user);
     setToggleLoading(user.id);
     try {
       const res = await axios.put(

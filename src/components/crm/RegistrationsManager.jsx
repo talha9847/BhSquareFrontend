@@ -44,7 +44,6 @@ const RegistrationsManager = () => {
         setData(res.data.data || []);
       }
     } catch (err) {
-      console.error("Backend Error:", err);
     } finally {
       setLoading(false);
     }
@@ -66,7 +65,6 @@ const RegistrationsManager = () => {
   // --- HANDLE UPDATE ---
   const handleUpdate = async (e) => {
     e.preventDefault();
-    console.log(editingItem);
     setUpdateLoading(true);
     try {
       // Adjust the endpoint and payload based on your backend
@@ -87,7 +85,6 @@ const RegistrationsManager = () => {
       fetchRegistrations(); // Refresh list
       toast.success("Updated!!!");
     } catch (err) {
-      console.error("Update failed:", err);
       toast.error("Failed to update registration");
     } finally {
       setUpdateLoading(false);
@@ -123,7 +120,6 @@ const RegistrationsManager = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Download failed:", error);
     } finally {
       setDLoad(false);
     }

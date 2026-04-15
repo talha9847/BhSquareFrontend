@@ -87,7 +87,6 @@ const Permissions = () => {
         toast.success("Access updated");
       }
     } catch (error) {
-      console.error(error);
       toast.error("Failed to update permission");
     } finally {
       setUpdatingId(null); // Stop loader

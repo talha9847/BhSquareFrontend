@@ -30,7 +30,6 @@ const SDocumentCollection = () => {
   const { customerId } = location.state || {};
   const { customerName } = location.state || {};
   const { contactNumber } = location.state || {};
-  console.log(customerName);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAddingDoc, setIsAddingDoc] = useState(false);
   const [newDocName, setNewDocName] = useState("");
@@ -179,8 +178,7 @@ const SDocumentCollection = () => {
       );
       if (res.data.data) {
         setDocInfo(res.data.data);
-        console.log("i am talking about this");
-        console.log(res.data.data);
+
         setDocId(res.data.data.id);
         setIsFound(true);
       } else {
@@ -192,9 +190,7 @@ const SDocumentCollection = () => {
           sub_division: "",
         });
       }
-    } catch (error) {
-      console.error(error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {

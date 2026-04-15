@@ -47,7 +47,6 @@ const FFabrication = () => {
       });
       if (res.status === 200) {
         setFabrications(res.data.data || []);
-        console.log(res.data.data);
       }
     } catch (error) {
       toast.error("Failed to load fabrication logs");

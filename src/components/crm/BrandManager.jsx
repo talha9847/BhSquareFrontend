@@ -38,7 +38,6 @@ const BrandManager = () => {
         setBrands(res.data.data);
       }
     } catch (error) {
-      console.error("Fetch Brands Error:", error);
       toast.error("Failed to load brands");
     } finally {
       setTableLoading(false);

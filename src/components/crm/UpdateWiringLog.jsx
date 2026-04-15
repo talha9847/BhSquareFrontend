@@ -212,7 +212,6 @@ const UpdateWiringLog = () => {
       setUL(true);
       // Add your API call here to change status to 'completed' or next phase
       toast.info("Moving to next stage...");
-      console.log(wiringId);
       const res = await axios.put(
         `/api/wiring/updateInventoryStatus/${wiringId}`,
         {},

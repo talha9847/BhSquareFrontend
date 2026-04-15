@@ -46,7 +46,6 @@ const AllWiring = () => {
         setWiringLogs(res.data.data || []);
       }
     } catch (err) {
-      console.error("Wiring Fetch Error:", err);
       toast.error("Failed to load wiring records");
     } finally {
       setLoading(false);

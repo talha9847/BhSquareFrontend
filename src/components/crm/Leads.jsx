@@ -207,7 +207,6 @@ const Leads = () => {
         sourceMap[v.id] = v.name;
       });
 
-      console.log(sourceMap[1]);
     } catch (error) {}
   };
 
@@ -219,12 +218,10 @@ const Leads = () => {
         withCredentials: true, // ✅ send cookies
       });
 
-      console.log(result.data);
 
       setLeads(result.data.data);
       setPageLoading(false);
     } catch (error) {
-      console.log(error);
       setPageLoading(false);
     }
   };
@@ -276,7 +273,6 @@ const Leads = () => {
           return;
         }
         setLoadSaveLead(true);
-        console.log(data);
         const res = await axios.post(
           `/api/leads/updateLead`,
           {
@@ -325,7 +321,6 @@ const Leads = () => {
     } else {
       try {
         setLoadSaveLead(true);
-        console.log(data);
         const res = await axios.post(
           `/api/leads/addLead`,
           {

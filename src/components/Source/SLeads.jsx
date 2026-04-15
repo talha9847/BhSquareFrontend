@@ -59,7 +59,6 @@ const SLeads = () => {
       });
       setLeads(result.data.data);
     } catch (error) {
-      console.error(error);
       toast.error("Failed to fetch leads");
     } finally {
       setPageLoading(false);
@@ -126,7 +125,6 @@ const SLeads = () => {
         reset();
       }
     } catch (error) {
-      console.error(error);
     } finally {
       setLoadSaveLead(false);
     }

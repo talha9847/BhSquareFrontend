@@ -91,10 +91,8 @@ const Registration = () => {
       );
       if (res.status === 200) {
         setCustomers(res.data.data || []);
-        console.log(res.data.data);
       }
     } catch (error) {
-      console.error("Fetch error:", error);
     } finally {
       setLoading(false);
     }
@@ -109,7 +107,6 @@ const Registration = () => {
         setPanels(res.data.data);
       }
     } catch (error) {
-      console.error("Fetch error:", error);
     } finally {
       setLoading(false);
     }
@@ -125,7 +122,6 @@ const Registration = () => {
         setInverters(res.data.data);
       }
     } catch (error) {
-      console.error("Fetch error:", error);
     } finally {
       setLoading(false);
     }
@@ -246,7 +242,6 @@ const Registration = () => {
         setIsModalOpen(false);
       }
     } catch (error) {
-      console.log(error);
       setLoad(false);
       toast.error("Internal server error");
       setIsModalOpen(false);
@@ -269,7 +264,6 @@ const Registration = () => {
         navigate("/kitready");
       }
     } catch (error) {
-      console.log(error);
     }
   };
   const confirmFinalize = async (data) => {
@@ -295,7 +289,6 @@ const Registration = () => {
         }
       }
     } catch (error) {
-      console.error("❌ API Error:", error);
 
       // 🔴 Extract backend message safely
       const message =
@@ -335,7 +328,6 @@ const Registration = () => {
         setDLoad(false);
       }
     } catch (error) {
-      console.error("Download failed:", error);
       setDLoad(false);
     }
   };
@@ -459,7 +451,6 @@ const Registration = () => {
                         <td className="px-6 py-4">
                           <p
                             onClick={() => {
-                              console.log(item);
                               navigate("/master", {
                                 state: {
                                   customerId: item.id,
@@ -531,7 +522,6 @@ const Registration = () => {
                                     setRId(item.registration?.id);
                                     setCId(item.id);
                                     setLId(item.lead?.id);
-                                    console.log(item.lead);
                                     setIsFinalizeModalOpen(true);
                                     rs1({
                                       inverter_capacity:
@@ -593,7 +583,6 @@ const Registration = () => {
                               "done" && (
                               <button
                                 onClick={() => {
-                                  console.log(item);
                                   setRId(item.registration?.id);
                                   handleDownloadFile(item);
                                 }}

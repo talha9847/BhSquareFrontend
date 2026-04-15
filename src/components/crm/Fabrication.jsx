@@ -48,7 +48,6 @@ const Fabrication = () => {
       });
       if (res.status === 200) setFabricators(res.data.data || []);
     } catch (error) {
-      console.error("Error fetching fabricators:", error);
     }
   };
 

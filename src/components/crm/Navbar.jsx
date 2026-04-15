@@ -10,7 +10,6 @@ const Navbar = ({ toggleSidebar }) => {
       const res = await axios.post("/api/users/logout");
       navigate("/");
     } catch (error) {}
-    console.log("Logging out...");
   };
 
   return (

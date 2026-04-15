@@ -91,7 +91,6 @@ const FinalizeWiring = () => {
         },
       );
       if (res.data.success) {
-        console.log(res.data.data);
         setSerials(res.data.data);
         setIsSerialModalOpen(true);
       }
@@ -105,7 +104,6 @@ const FinalizeWiring = () => {
   // --- Update Single Serial Function ---
   const handleUpdateSerial = async (id, type, newValue) => {
     setUpdatingSerialId(id);
-    console.log(id);
     try {
       await axios.put(
         `/api/kitready/updateSingleSerial`,

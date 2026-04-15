@@ -74,7 +74,6 @@ const FinalStage = () => {
       });
       if (res.status === 200) setSupervisor(res.data.data || []);
     } catch (error) {
-      console.error("Error fetching Supervisor:", error);
     } finally {
       setTableLoading(false);
     }
@@ -156,7 +155,6 @@ const FinalStage = () => {
       allowOutsideClick: () => !Swal.isLoading(),
       preConfirm: async () => {
         try {
-          console.log(item);
           if (field === "file_approved") {
             const res = await axios.post(
               `/api/sources/updateStage10`,
@@ -261,10 +259,7 @@ const FinalStage = () => {
     }
   };
 
-  const handleUpdate = (item) => {
-    console.log("Updated Stage Data for Database:", item);
-    toast.success(`Records updated for ${item.customer_name}`);
-  };
+
 
   const filteredItems = finalLogs.filter((item) =>
     item.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -389,7 +384,6 @@ const FinalStage = () => {
                         <td className="px-6 py-4">
                           <div
                             onClick={() => {
-                              console.log(item);
                               navigate("/master", {
                                 state: {
                                   customerId: item.customer_id,

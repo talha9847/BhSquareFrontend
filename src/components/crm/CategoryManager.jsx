@@ -51,7 +51,6 @@ const CategoryManager = () => {
         setCategories(res.data.data);
       }
     } catch (error) {
-      console.log(error);
     } finally {
       setTableLoading(false);
     }
@@ -96,7 +95,6 @@ const CategoryManager = () => {
           toast.success("Category updated!");
         }
       } else {
-        console.log(formData);
         const res = await axios.post(
           `/api/kitready/createCategory`,
           formData,

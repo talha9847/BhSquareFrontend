@@ -99,7 +99,6 @@ export default function Contact() {
       toast.success("Thank you! We will contact you soon.");
       setSubmitted(true);
     } catch (error) {
-      console.error(error);
       toast.error(
         error?.response?.data?.message ||
           "Something went wrong. Please try again.",

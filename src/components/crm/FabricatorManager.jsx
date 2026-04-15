@@ -38,7 +38,6 @@ const FabricatorManager = () => {
         setFabricators(res.data.data);
       }
     } catch (error) {
-      console.error("Fetch Fabricators Error:", error);
       toast.error("Failed to load fabricators");
     } finally {
       setTableLoading(false);

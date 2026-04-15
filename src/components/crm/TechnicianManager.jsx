@@ -38,7 +38,6 @@ const TechnicianManager = () => {
         setTechnicians(res.data.data);
       }
     } catch (error) {
-      console.error("Fetch Technicians Error:", error);
       toast.error("Failed to load technicians");
     } finally {
       setTableLoading(false);

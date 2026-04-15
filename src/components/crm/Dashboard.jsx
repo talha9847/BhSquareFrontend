@@ -161,7 +161,6 @@ const Dashboard = () => {
         windowWidth: 750, // Virtual window width
       });
     } catch (error) {
-      console.error("PDF Generation Error:", error);
     }
   };
   // 1. Fetch Summary Counts (Top Level Stats)
@@ -185,7 +184,6 @@ const Dashboard = () => {
         localStorage.setItem("solar_dash_last_fetch", now.toString());
       }
     } catch (error) {
-      console.error("Sync Error:", error);
     } finally {
       setLoading(false);
       setIsSyncing(false);
@@ -209,7 +207,6 @@ const Dashboard = () => {
         setReportData(res.data.data);
       }
     } catch (error) {
-      console.error("Report Fetch Error:", error);
     } finally {
       setReportLoading(false);
     }
@@ -226,7 +223,6 @@ const Dashboard = () => {
         setStageStats(res.data.data);
       }
     } catch (error) {
-      console.error("Stage Data Error:", error);
     } finally {
       setStageLoading(false);
     }
@@ -248,7 +244,6 @@ const Dashboard = () => {
         setAnalyticsData(res.data.data);
       }
     } catch (error) {
-      console.error("Analytics Error:", error);
     } finally {
       setAnalyticsLoading(false);
     }

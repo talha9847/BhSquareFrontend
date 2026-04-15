@@ -89,7 +89,6 @@ const PrepareKit = () => {
         const iQty = parseInt(res.data.data.inverter_qty) || 0;
         if (res.data.data.kit_status === "done") {
           setKitStatus(true);
-          console.log(res.data.data);
         }
         setPanelQty(pQty);
         setInverterQty(iQty);
@@ -97,7 +96,6 @@ const PrepareKit = () => {
         setInverterSerials(new Array(iQty).fill(""));
       }
     } catch (error) {
-      console.error("Error fetching quantities", error);
     }
   };
 
@@ -173,7 +171,6 @@ const PrepareKit = () => {
     }
 
     setModalLoading(true);
-    console.log(deltaValue);
     try {
       const res = await axios.put(
         `/api/dispatch/updateKitItemQty`,

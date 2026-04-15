@@ -43,7 +43,6 @@ const AllDispatch = () => {
         setDispatches(res.data.data || []);
       }
     } catch (error) {
-      console.error(error);
       toast.error(`Failed to fetch records`);
     } finally {
       setPageLoading(false);

@@ -211,7 +211,6 @@ const TUpdateWiringLog = () => {
     try {
       setUL(true);
       toast.info("Moving to next stage...");
-      console.log(wiringId);
       const res = await axios.put(
         `/api/wiring/updateInventoryStatus/${wiringId}`,
         {},

@@ -64,7 +64,6 @@ const KitReady = () => {
         setCustomers(res.data.data);
       }
     } catch (error) {
-      console.error(error);
     } finally {
       setPageLoading(false);
     }
@@ -79,7 +78,6 @@ const KitReady = () => {
         setPanels(res.data.data);
       }
     } catch (error) {
-      console.error("Fetch error:", error);
     } finally {
       setLoading(false);
     }
@@ -95,7 +93,6 @@ const KitReady = () => {
         setInverters(res.data.data);
       }
     } catch (error) {
-      console.error("Fetch error:", error);
     } finally {
       setLoading(false);
     }
@@ -113,8 +110,7 @@ const KitReady = () => {
   const insertKit = async (customerId, loan_status, leadId, item) => {
     try {
       if (item.file_gen == "pending") {
-        console.log("you got me right");
-        console.log(item.customer.lead);
+    
         let customerId = item.customer.id;
         let leadId = item.customer.lead.id;
         let registrationId = item.customer.registration.id;
@@ -175,7 +171,6 @@ const KitReady = () => {
   }, []);
 
   const confirmFinalize = async (data) => {
-    console.log(data);
     try {
       if (rId > 0 && cId > 0 && lId > 0 && kId > 0) {
         setLoad(true);
@@ -197,7 +192,6 @@ const KitReady = () => {
         }
       }
     } catch (error) {
-      console.error("❌ API Error:", error);
 
       // 🔴 Extract backend message safely
       const message =
@@ -334,7 +328,6 @@ const KitReady = () => {
                               <div>
                                 <p
                                   onClick={() => {
-                                    console.log(c.customer);
                                     navigate("/master", {
                                       state: {
                                         customerId: c.customer.id,
@@ -378,7 +371,6 @@ const KitReady = () => {
                               className={`text-[10px] font-black uppercase tracking-widest ${c.status === "done" ? "text-emerald-600" : "text-slate-400"}`}
                             >
                               {c.status === "done" ? "Dispatched" : "Pending"}
-                              {console.log(c)}
                             </span>
                           </td>
 

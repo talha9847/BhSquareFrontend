@@ -197,7 +197,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       });
       setLeadCount(result.data.count);
     } catch (error) {
-      console.log(error);
     }
   };
 

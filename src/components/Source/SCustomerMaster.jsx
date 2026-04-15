@@ -85,7 +85,6 @@ const SCustomerMaster = () => {
         setLead(lRes.data?.data);
         setStages(sRes.data?.data || []);
       } catch (err) {
-        console.error(err);
       } finally {
         setTimeout(() => setLoading(false), 800);
       }
