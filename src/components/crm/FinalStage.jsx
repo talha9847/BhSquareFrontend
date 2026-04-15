@@ -12,6 +12,7 @@ import {
   Eye,
   UserPlus,
   X,
+  ChevronRight,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -302,9 +303,17 @@ const FinalStage = () => {
 
         <main className="p-4 lg:p-8">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase flex items-center gap-3">
+            <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase flex items-center gap-3">
               <ShieldCheck className="text-[#1a5695]" size={28} />
               Final Stage Management
+              <button
+                onClick={() => {
+                  navigate("/allfinalstage");
+                }}
+                className="flex items-center gap-1 bg-slate-200 text-slate-600 text-[10px] px-2 py-1 rounded-full hover:bg-slate-300 transition-all cursor-pointer"
+              >
+                SHOW ALL FINAL STAGE <ChevronRight size={12} />
+              </button>
             </h1>
 
             <button

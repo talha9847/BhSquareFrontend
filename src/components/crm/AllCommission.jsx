@@ -16,8 +16,10 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const AllCommission = () => {
+  const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -184,7 +186,17 @@ const AllCommission = () => {
                     </div>
                   </div>
 
-                  <h3 className="text-2xl font-black text-slate-800 uppercase mb-2 line-clamp-1">
+                  <h3
+                    onClick={() => {
+                      navigate("/master", {
+                        state: {
+                          customerId: c.customer_id,
+                          leadId: c.lead_id,
+                        },
+                      });
+                    }}
+                    className="text-2xl font-black text-slate-800 uppercase mb-2 line-clamp-1 cursor-pointer"
+                  >
                     {c.customer_name}
                   </h3>
                   <div className="flex items-center gap-2 mb-8">

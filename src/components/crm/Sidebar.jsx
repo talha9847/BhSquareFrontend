@@ -14,6 +14,11 @@ import {
   Cable,
   Globe,
   ShieldCheck,
+  Banknote,
+  UserCheck,
+  HardHat,
+  Calculator,
+  FileCheck,
   Bolt,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -27,6 +32,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const activeRef = useRef(null);
 
   const menuItems = [
+    // --- OVERVIEW ---
     {
       name: "Dashboard",
       icon: <LayoutDashboard size={18} />,
@@ -34,10 +40,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       path: "dashboard",
       activePaths: ["/dashboard"],
     },
+
+    // --- BUSINESS DEVELOPMENT ---
     {
       name: "Leads",
       icon: <UserPlus size={18} />,
-      // count: leadCount,
       type: "Business Development",
       path: "leads",
       activePaths: ["/leads"],
@@ -52,7 +59,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     {
       name: "Customers",
       icon: <Briefcase size={18} />,
-      // count: 5,
       type: "Business Development",
       path: "customers",
       activePaths: [
@@ -63,6 +69,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         "/master",
       ],
     },
+
+    // --- PROJECT LIFECYCLE ---
     {
       name: "Registration",
       icon: <ClipboardEdit size={18} />,
@@ -109,7 +117,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <CheckCircle2 size={18} />,
       type: "Project Lifecycle",
       path: "finalstage",
+      activePaths: ["/finalstage", "/allfinalstage"],
     },
+
+    // --- LOGISTICS & STORES ---
     {
       name: "Inventory",
       icon: <Warehouse size={18} />,
@@ -124,52 +135,58 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       path: "winventory",
       activePaths: ["/winventory"],
     },
+
+    // --- FINANCE & COMMISSIONS ---
     {
       name: "Commissions",
-      icon: <Cable size={18} />,
-      type: "Logistics & Stores",
+      icon: <Banknote size={18} />,
+      type: "Finance",
       path: "commissions",
       activePaths: ["/commissions", "/allcommissions"],
     },
     {
-      name: "Supervcisor Commi.",
-      icon: <Cable size={18} />,
-      type: "Logistics & Stores",
+      name: "Supervisor Commi.",
+      icon: <UserCheck size={18} />,
+      type: "Finance",
       path: "supercommissions",
       activePaths: ["/supercommissions", "/allsupercommissions"],
     },
     {
       name: "Fabricator Commi.",
-      icon: <Cable size={18} />,
-      type: "Logistics & Stores",
+      icon: <HardHat size={18} />,
+      type: "Finance",
       path: "fabcommissions",
       activePaths: ["/fabcommissions", "/allfabcommissions"],
     },
     {
-      name: "Cost",
-      icon: <Cable size={18} />,
-      type: "Logistics & Stores",
+      name: "Cost Analysis",
+      icon: <Calculator size={18} />,
+      type: "Finance",
       path: "cost",
       activePaths: ["/cost"],
     },
+
+    // --- AFTER SALES & SYSTEM ---
     {
       name: "Completed",
-      icon: <Cable size={18} />,
-      type: "Logistics & Stores",
+      icon: <FileCheck size={18} />,
+      type: "After Sales",
       path: "completed",
       activePaths: ["/completed"],
     },
-    {
-      name: "AMC & Service",
-      icon: <ShieldCheck size={18} />,
-      type: "After Sales",
-      path: "amc",
-    },
+    // {
+    //   name: "AMC & Service",
+    //   icon: <ShieldCheck size={18} />,
+    //   type: "After Sales",
+    //   path: "amc",
+    //   activePaths: ["/amc"],
+    // },
     {
       name: "Users",
       icon: <Settings2 size={18} />,
       type: "System",
       path: "users",
+      activePaths: ["/users"],
     },
   ];
 
