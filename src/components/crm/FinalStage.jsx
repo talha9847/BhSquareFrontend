@@ -187,7 +187,11 @@ const FinalStage = () => {
 
           return true;
         } catch (error) {
-          Swal.showValidationMessage(`Request failed: ${error.message}`);
+          Swal.showValidationMessage(
+            error?.response?.data?.message ||
+              error.message ||
+              "Something went wrong",
+          );
         }
       },
       customClass: {
