@@ -56,9 +56,11 @@ const RegistrationsManager = () => {
 
   // --- OPEN EDIT MODAL ---
   const handleEditClick = (e, item) => {
-    e.stopPropagation(); // Prevent navigation to /master
-    setEditingItem({ ...item });
-    setIsEditModalOpen(true);
+    if (activeTab == "done") {
+      e.stopPropagation(); // Prevent navigation to /master
+      setEditingItem({ ...item });
+      setIsEditModalOpen(true);
+    }
   };
 
   // --- HANDLE UPDATE ---
@@ -219,12 +221,14 @@ const RegistrationsManager = () => {
                   className="bg-white rounded-[40px] border border-slate-200 p-8 hover:shadow-2xl hover:border-[#1a5695]/40 transition-all cursor-pointer group flex flex-col justify-between relative"
                 >
                   {/* EDIT BUTTON */}
-                  <button
-                    onClick={(e) => handleEditClick(e, item)}
-                    className="absolute top-8 right-8 p-2 bg-slate-50 text-slate-400 rounded-full hover:bg-[#1a5695] hover:text-white transition-all shadow-sm"
-                  >
-                    <Edit3 size={16} />
-                  </button>
+                  {activeTab == "done" && (
+                    <button
+                      onClick={(e) => handleEditClick(e, item)}
+                      className="absolute top-8 right-8 p-2 bg-slate-50 text-slate-400 rounded-full hover:bg-[#1a5695] hover:text-white transition-all shadow-sm"
+                    >
+                      <Edit3 size={16} />
+                    </button>
+                  )}
 
                   <div>
                     <div className="flex justify-between items-start mb-8">
@@ -296,7 +300,7 @@ const RegistrationsManager = () => {
                   </div>
 
                   <div className="mt-10 flex gap-3">
-                    {item.registration_status === "done" ? (
+                    {activeTab === "done" ? (
                       <button
                         disabled={dLoad}
                         onClick={(e) => handleDownloadFile(e, item)}
