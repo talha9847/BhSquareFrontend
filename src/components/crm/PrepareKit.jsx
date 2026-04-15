@@ -95,8 +95,7 @@ const PrepareKit = () => {
         setPanelSerials(new Array(pQty).fill(""));
         setInverterSerials(new Array(iQty).fill(""));
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   // --- DELETE WITH LOADER ---
@@ -194,6 +193,21 @@ const PrepareKit = () => {
     } finally {
       setModalLoading(false);
     }
+  };
+  const handleManualQty = (id, value, stock, isExtra = false) => {
+    let qty = parseInt(value, 10);
+
+    if (isNaN(qty) || qty < 0) qty = 0;
+
+    if (qty > stock) {
+      toast.error(`Only ${stock} in stock!`);
+      qty = stock;
+    }
+
+    const updateFn = (prev) =>
+      prev.map((item) => (item.id === id ? { ...item, qty } : item));
+
+    isExtra ? setExtraItems(updateFn) : setBaseKit(updateFn);
   };
 
   const updateQty = (id, delta, isExtra = false) => {
@@ -434,6 +448,7 @@ const PrepareKit = () => {
                               key={item.id}
                               item={item}
                               updateQty={updateQty}
+                              handleManualQty={handleManualQty}
                               toggleVerify={toggleVerify}
                               isVerifying={verifyingId === item.id}
                               onRemove={handleRemoveProduct}
@@ -647,6 +662,7 @@ const KitRowDesktop = ({
   onRemove,
   onEdit,
   status,
+  handleManualQty,
 }) => (
   <tr
     className={`group transition-all duration-300 ${item.verified ? "bg-emerald-50/20" : "hover:bg-slate-50/50"}`}
@@ -670,8 +686,11 @@ const KitRowDesktop = ({
     </td>
     <td className="px-8 py-6 text-center">
       <div
-        className={`inline-flex items-center bg-white border rounded-xl p-1 shadow-sm transition-opacity ${item.verified ? "opacity-30 grayscale pointer-events-none" : ""}`}
+        className={`inline-flex items-center bg-white border rounded-xl p-1 shadow-sm transition-opacity ${
+          item.verified ? "opacity-30 grayscale pointer-events-none" : ""
+        }`}
       >
+        {/* Minus Button */}
         <button
           disabled={item.verified}
           onClick={() => updateQty(item.id, -1, item.is_extra)}
@@ -679,9 +698,21 @@ const KitRowDesktop = ({
         >
           -
         </button>
-        <span className="px-4 text-sm font-black min-w-[40px]">
-          {item.qty || 0}
-        </span>
+
+        {/* Manual Input */}
+        <input
+          type="number"
+          min="0"
+          value={item.qty || 0}
+          disabled={item.verified}
+          onChange={(e) =>
+            handleManualQty(item.id, e.target.value, item.stock, item.is_extra)
+          }
+          onWheel={(e) => e.target.blur()}
+          className="w-12 text-center text-sm font-black outline-none"
+        />
+
+        {/* Plus Button */}
         <button
           disabled={item.verified}
           onClick={() => updateQty(item.id, 1, item.is_extra)}
