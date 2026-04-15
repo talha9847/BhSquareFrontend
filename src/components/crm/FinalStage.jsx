@@ -32,11 +32,38 @@ const FinalStage = () => {
   const [supervisors, setSupervisor] = useState([]);
   const [activeItem, setActiveItem] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [load, setLoad] = useState(false);
   const [editFormData, setEditFormData] = useState({
     customer_id: null,
     supervisor_id: "",
   });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [updateStatusValue, setUpdateStatusValue] = useState("done");
 
+  const handleStatusSubmit = async () => {
+    try {
+      setLoad(true);
+      const res = await axios.put(
+        `/api/sources/completeFinalStage`,
+        {
+          finalStageId: selectedItem.final_stage_id,
+          customerId: selectedItem.customer_id,
+          leadId: selectedItem.lead_id,
+        },
+        { withCredentials: true },
+      );
+
+      if (res.status == 200) {
+        toast.success("Status updated");
+      }
+    } catch (error) {
+    } finally {
+      setSelectedItem(null);
+      setIsModalOpen(false);
+      setLoad(false);
+    }
+  };
   const getSupervisors = async () => {
     setTableLoading(true);
 
@@ -106,6 +133,10 @@ const FinalStage = () => {
   }, []);
 
   const handleToggle = async (id, field, currentStatus, label, item) => {
+    if (!item.supervisor_id) {
+      toast.error("Please assing Supervisor");
+      return;
+    }
     const isReverting = currentStatus === true;
 
     const result = await Swal.fire({
@@ -266,7 +297,6 @@ const FinalStage = () => {
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="FinalStage"
       />
-
       <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
@@ -330,9 +360,12 @@ const FinalStage = () => {
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase text-center">
                         Workflow Checklist
                       </th>
-                      {/* <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase text-right">
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase text-center">
+                        Status
+                      </th>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase text-right">
                         Actions
-                      </th> */}
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
@@ -382,7 +415,6 @@ const FinalStage = () => {
                             Click to assign
                           </div>
                         </td>
-
                         <td className="px-6 py-4">
                           <div className="flex items-center justify-center gap-2">
                             <InteractiveBadge
@@ -429,14 +461,31 @@ const FinalStage = () => {
                             />
                           </div>
                         </td>
-                        {/* <td className="px-6 py-4 text-right">
-                          <button
-                            onClick={() => handleUpdate(item)}
-                            className="inline-flex items-center gap-2 px-6 py-3 bg-[#1a5695] text-white text-[10px] font-black uppercase rounded-2xl hover:bg-[#15467a] shadow-lg shadow-blue-100 active:scale-95 transition-all"
+                        <td className="px-6 py-4 text-center">
+                          <span
+                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
+                              item.status === "done"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-yellow-100 text-yellow-700"
+                            }`}
                           >
-                            <Save size={14} /> Update Record
-                          </button>
-                        </td> */}
+                            {item.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          {item.disbursal && (
+                            <button
+                              disabled={load}
+                              onClick={() => {
+                                setSelectedItem(item);
+                                setIsModalOpen(true);
+                              }}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a5695] text-white text-[10px] font-black uppercase rounded-xl hover:bg-[#15467a] transition-all"
+                            >
+                              Update Status
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -446,7 +495,6 @@ const FinalStage = () => {
           </div>
         </main>
       </div>
-
       {/* MODAL: SAME TO SAME AS FABRICATION.JSX */}
       {isFabModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
@@ -500,6 +548,45 @@ const FinalStage = () => {
                 )}
               </button>
             </form>
+          </div>
+        </div>
+      )}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h3 className="text-slate-800 font-black text-lg uppercase mb-4">
+              Update Status
+            </h3>
+
+            <div className="space-y-3">
+              <label className="text-[10px] font-black text-slate-400 uppercase">
+                Select Status
+              </label>
+              <select
+                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-[#1a5695]"
+                defaultValue="done"
+                onChange={(e) => setUpdateStatusValue(e.target.value)}
+              >
+                <option value="done">DONE</option>
+                <option value="pending">PENDING</option>
+              </select>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="flex-1 px-4 py-3 text-slate-400 font-bold text-[11px] uppercase hover:bg-slate-50 rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={load}
+                onClick={() => handleStatusSubmit()}
+                className="flex-1 px-4 py-3 bg-[#1a5695] text-white font-black text-[11px] uppercase rounded-xl shadow-lg shadow-blue-100"
+              >
+                {load ? "Saving...." : "Save Changes"}
+              </button>
+            </div>
           </div>
         </div>
       )}
