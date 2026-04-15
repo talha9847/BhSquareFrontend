@@ -153,6 +153,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       activePaths: ["/cost"],
     },
     {
+      name: "Completed",
+      icon: <Cable size={18} />,
+      type: "Logistics & Stores",
+      path: "completed",
+      activePaths: ["/completed"],
+    },
+    {
       name: "AMC & Service",
       icon: <ShieldCheck size={18} />,
       type: "After Sales",
