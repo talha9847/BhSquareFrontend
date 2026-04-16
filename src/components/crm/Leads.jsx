@@ -502,15 +502,56 @@ const Leads = () => {
     }
   };
 
+  const formatIST = (dateString) => {
+    if (!dateString) return null;
+
+    const date = new Date(dateString); // already ISO UTC (Z format)
+
+    if (isNaN(date.getTime())) return "Invalid Date";
+
+    return date.toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
   // Filter leads based on Tab + Search
   const filteredLeads = leads.filter((lead) => {
     const matchesTab = lead.status === activeTab;
-    const matchesSearch =
-      lead.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.contact_number.includes(searchQuery) ||
-      sourceMap[lead.source_id]
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+
+    // 1. Get month and year from created_at
+    const dateObj = new Date(lead.created_at);
+    const monthName = dateObj
+      .toLocaleString("en-IN", { month: "long" })
+      .toLowerCase();
+    const year = dateObj.getFullYear().toString();
+
+    // 2. Create a combined string for searching (e.g., "april 2026")
+    const combinedDate = `${monthName} ${year}`;
+
+    const query = searchQuery.toLowerCase().trim();
+
+    const matchesSearch = (() => {
+      const query = searchQuery.toLowerCase().trim();
+      if (!query) return true;
+
+      // Basic fields check
+      const basicFields =
+        lead.customer_name.toLowerCase().includes(query) ||
+        lead.contact_number.includes(query) ||
+        sourceMap[lead.source_id]?.toLowerCase().includes(query);
+      if (basicFields) return true;
+
+      // Multi-word date check (Handles "April 2026" or "2026 April")
+      const searchWords = query.split(" ");
+      return searchWords.every((word) => combinedDate.includes(word));
+    })();
+
     return matchesTab && matchesSearch;
   });
 
@@ -623,6 +664,9 @@ const Leads = () => {
                         Name & Mobile
                       </th>
                       <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                        Date Created
+                      </th>
+                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
                         Address
                       </th>
                       <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
@@ -652,6 +696,17 @@ const Leads = () => {
                           <p className="text-slate-400 text-[11px] font-medium">
                             {lead.contact_number}
                           </p>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col">
+                            <span className="text-xs font-semibold text-slate-600">
+                              {formatIST(lead.created_at)}
+                            </span>
+                            <span className="text-[9px] text-slate-400 uppercase font-bold mt-0.5">
+                              IST Entry
+                            </span>
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-1.5 text-slate-500 text-xs">
