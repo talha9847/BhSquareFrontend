@@ -109,8 +109,14 @@ const KitReady = () => {
 
   const insertKit = async (customerId, loan_status, leadId, item) => {
     try {
-      if (item.file_gen == "pending") {
-    
+      if (loan_status == "required") {
+        navigate("/loanstep", {
+          state: {
+            customerId: customerId,
+            leadId: leadId,
+          },
+        });
+      } else if (item.file_gen == "pending") {
         let customerId = item.customer.id;
         let leadId = item.customer.lead.id;
         let registrationId = item.customer.registration.id;
@@ -192,7 +198,6 @@ const KitReady = () => {
         }
       }
     } catch (error) {
-
       // 🔴 Extract backend message safely
       const message =
         error?.response?.data?.message || // your controller sends this
