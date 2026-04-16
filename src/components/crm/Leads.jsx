@@ -660,25 +660,25 @@ const Leads = () => {
                 <table className="w-full text-left border-separate border-spacing-0">
                   <thead className="bg-slate-50/50">
                     <tr>
-                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
                         Name & Mobile
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
                         Date Created
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
                         Address
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
                         Visit Date
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                      <th className="text-center px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
                         Source
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
                         Capacity
                       </th>
-                      <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">
+                      <th className=" px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100 text-center">
                         Action
                       </th>
                     </tr>
@@ -687,68 +687,83 @@ const Leads = () => {
                     {filteredLeads.map((lead) => (
                       <tr
                         key={lead.id}
-                        className="hover:bg-slate-50/80 transition-colors"
+                        className="group hover:bg-slate-50/80 transition-all"
                       >
-                        <td className="px-6 py-4">
-                          <p className="font-bold text-slate-800 text-sm">
+                        {/* 1. NAME & MOBILE */}
+                        <td className="px-6 py-5 whitespace-nowrap">
+                          <p className="font-bold text-slate-800 text-sm uppercase tracking-tight">
                             {lead.customer_name}
                           </p>
-                          <p className="text-slate-400 text-[11px] font-medium">
+                          <p className="text-slate-400 text-[11px] font-semibold mt-0.5">
                             {lead.contact_number}
                           </p>
                         </td>
 
-                        <td className="px-6 py-4">
+                        {/* 2. DATE CREATED (Fixed Row Issue) */}
+                        <td className="px-6 py-5 whitespace-nowrap">
                           <div className="flex flex-col">
-                            <span className="text-xs font-semibold text-slate-600">
+                            <span className="text-[13px] font-bold text-slate-700 leading-none">
                               {formatIST(lead.created_at)}
                             </span>
-                            <span className="text-[9px] text-slate-400 uppercase font-bold mt-0.5">
-                              IST Entry
+                            <span className="text-[9px] text-slate-400 font-black uppercase mt-1.5 tracking-wider">
+                              Entry Time (IST)
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-1.5 text-slate-500 text-xs">
-                            <MapPin size={12} className="text-slate-300" />
-                            <span className="truncate max-w-[150px]">
-                              {lead.address}
+
+                        {/* 3. ADDRESS (Flexible) */}
+                        <td className="px-6 py-5 min-w-[200px]">
+                          <div className="flex items-start gap-2 text-slate-500 text-xs">
+                            <MapPin
+                              size={14}
+                              className="text-slate-300 mt-0.5 shrink-0"
+                            />
+                            <span className="leading-relaxed italic">
+                              {lead.address || "No Address Provided"}
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+
+                        {/* 4. VISIT DATE */}
+                        <td className="px-6 py-5 whitespace-nowrap">
                           <div className="flex flex-col">
                             <span
-                              className={`text-xs uppercase tracking-tight ${getDateStyle(lead.site_visit_date)}`}
+                              className={`text-[11px] font-black px-2 py-0.5 rounded-md w-fit uppercase tracking-tighter ${getDateStyle(lead.site_visit_date)}`}
                             >
                               {lead.site_visit_date}
                             </span>
-                            <span className="text-[9px] text-slate-400 font-semibold mt-0.5">
-                              Scheduled Visit
+                            <span className="text-[9px] text-slate-400 font-bold mt-1 uppercase">
+                              Visit Schedule
                             </span>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
-                          <span className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase">
-                            {sourceMap[lead.source_id]}
+
+                        {/* 5. SOURCE */}
+                        <td className="px-6 py-5 whitespace-nowrap">
+                          <span className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200/50">
+                            {sourceMap[lead.source_id] || "Direct"}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
+
+                        {/* 6. CAPACITY */}
+                        <td className="px-6 py-5 whitespace-nowrap">
                           <span className="text-sm font-black text-[#1a5695]">
-                            {(lead.total_capacity / 1000).toFixed(2)} Kw
+                            {(lead.total_capacity / 1000).toFixed(2)}{" "}
+                            <small className="text-[10px] opacity-70">KW</small>
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {/* CONVERT IS NOW IN ALL TABS */}
+
+                        {/* 7. ACTIONS */}
+                        <td className="px-6 py-5 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-2">
                             {(activeTab === "delayed" ||
-                              activeTab == "cancelled") && (
+                              activeTab === "cancelled") && (
                               <button
-                                onClick={() => {
-                                  setConvertPendingModal({ open: true, lead });
-                                }}
-                                className="p-2 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 hover:bg-amber-600 hover:text-white transition-all"
-                                title="Convert to Pending"
+                                onClick={() =>
+                                  setConvertPendingModal({ open: true, lead })
+                                }
+                                className="p-2.5 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 hover:bg-amber-500 hover:text-white transition-all shadow-sm"
+                                title="Re-activate"
                               >
                                 <ArrowRightLeft size={16} />
                               </button>
@@ -760,8 +775,8 @@ const Leads = () => {
                                     handleAction(lead, "convert");
                                     setDispositionId(lead.id);
                                   }}
-                                  className="p-2 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all"
-                                  title="Convert to Customer"
+                                  className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl border border-emerald-100 hover:bg-emerald-500 hover:text-white transition-all shadow-sm"
+                                  title="Convert"
                                 >
                                   <ArrowRightLeft size={16} />
                                 </button>
@@ -770,7 +785,8 @@ const Leads = () => {
                                     handleAction(lead, "delay");
                                     setDispositionId(lead.id);
                                   }}
-                                  className="p-2 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 hover:bg-amber-600 hover:text-white transition-all"
+                                  className="p-2.5 bg-amber-50 text-amber-600 rounded-xl border border-amber-100 hover:bg-amber-500 hover:text-white transition-all shadow-sm"
+                                  title="Delay"
                                 >
                                   <Clock size={16} />
                                 </button>
@@ -779,25 +795,24 @@ const Leads = () => {
                                     handleAction(lead, "cancel");
                                     setDispositionId(lead.id);
                                   }}
-                                  className="p-2 bg-rose-50 text-rose-600 rounded-xl border border-rose-100 hover:bg-rose-600 hover:text-white transition-all"
+                                  className="p-2.5 bg-rose-50 text-rose-600 rounded-xl border border-rose-100 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                                  title="Cancel"
                                 >
                                   <Ban size={16} />
                                 </button>
                               </>
                             )}
+                            <div className="w-[1px] h-4 bg-slate-200 mx-1" />{" "}
+                            {/* Visual Divider */}
                             <button
-                              onClick={() => {
-                                editClick(lead);
-                              }}
-                              className="p-2 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100"
+                              onClick={() => editClick(lead)}
+                              className="p-2.5 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100 hover:bg-[#1a5695] hover:text-white transition-all"
                             >
                               <Edit size={16} />
                             </button>
                             <button
-                              onClick={() => {
-                                handleDelete(lead);
-                              }}
-                              className="p-2 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100"
+                              onClick={() => handleDelete(lead)}
+                              className="p-2.5 bg-slate-50 text-slate-400 rounded-xl border border-slate-100 hover:bg-rose-600 hover:text-white hover:border-rose-600 transition-all"
                             >
                               <Trash2 size={16} />
                             </button>
