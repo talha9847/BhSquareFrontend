@@ -109,49 +109,22 @@ const KitReady = () => {
 
   const insertKit = async (customerId, loan_status, leadId, item) => {
     try {
-      if (loan_status == "required") {
-        navigate("/loanstep", {
+      setNaviLoad(true);
+      const res = await axios.post(
+        `/api/kitready/addKitItems`,
+        {
+          customerId,
+        },
+        { withCredentials: true },
+      );
+      if (res.status == 200 || res.status == 210) {
+        setNaviLoad(false);
+        navigate(loan_status === "required" ? "/loanstep" : "/preparekit", {
           state: {
             customerId: customerId,
             leadId: leadId,
           },
         });
-      } else if (item.file_gen == "pending") {
-        let customerId = item.customer.id;
-        let leadId = item.customer.lead.id;
-        let registrationId = item.customer.registration.id;
-        let kitId = item.id;
-
-        setKId(kitId);
-        setRId(registrationId);
-        setLId(leadId);
-        setCId(customerId);
-
-        rs1({
-          inverter_capacity: item.customer.lead.inverter_capacity,
-          panel_capacity: item.customer.lead.panel_wattage,
-          panel_qty: item.customer.lead.number_of_panels,
-          inverter_qty: item.customer.lead.number_of_inverters,
-        });
-        setIsFinalizeModalOpen(true);
-      } else {
-        setNaviLoad(true);
-        const res = await axios.post(
-          `/api/kitready/addKitItems`,
-          {
-            customerId,
-          },
-          { withCredentials: true },
-        );
-        if (res.status == 200 || res.status == 210) {
-          setNaviLoad(false);
-          navigate(loan_status === "required" ? "/loanstep" : "/preparekit", {
-            state: {
-              customerId: customerId,
-              leadId: leadId,
-            },
-          });
-        }
       }
     } catch (error) {
       setNaviLoad(false);
@@ -381,29 +354,42 @@ const KitReady = () => {
 
                           {/* CONSOLIDATED ACTION BUTTON */}
                           <td className="px-6 py-4 text-right">
-                            <div className="flex justify-end">
-                              {c.file_gen == "pending" && (
+                            <div className="flex justify-end gap-2">
+                              {c.file_gen === "pending" && (
                                 <button
-                                  className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
                                   onClick={() => {
-                                    insertKit(
-                                      c.customer.id,
-                                      c.loan_status,
-                                      c.customer.lead?.id,
-                                      c,
-                                    );
+                                    let customerId = c.customer.id;
+                                    let leadId = c.customer.lead.id;
+                                    let registrationId =
+                                      c.customer.registration.id;
+                                    let kitId = c.id;
+
+                                    setKId(kitId);
+                                    setRId(registrationId);
+                                    setLId(leadId);
+                                    setCId(customerId);
+
+                                    rs1({
+                                      inverter_capacity:
+                                        c.customer.lead.inverter_capacity,
+                                      panel_capacity:
+                                        c.customer.lead.panel_wattage,
+                                      panel_qty:
+                                        c.customer.lead.number_of_panels,
+                                      inverter_qty:
+                                        c.customer.lead.number_of_inverters,
+                                    });
+                                    setIsFinalizeModalOpen(true);
                                   }}
+                                  className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
                                 >
-                                  {naviLoad ? (
-                                    <>Going.....</>
-                                  ) : (
-                                    <>
-                                      <Package size={14} /> Finalize
-                                    </>
-                                  )}
+                                  <>
+                                    <Package size={14} /> Finalize
+                                  </>
                                 </button>
                               )}
 
+                              {/* ✏️ EDIT */}
                               {!c.loan_status || c.loan_status === "pending" ? (
                                 <button
                                   onClick={() => {
@@ -415,14 +401,15 @@ const KitReady = () => {
                                   <Edit3 size={16} />
                                 </button>
                               ) : c.loan_status === "required" ? (
+                                /* 💰 GO FOR LOAN → NAVIGATE ONLY */
                                 <button
                                   onClick={() => {
-                                    insertKit(
-                                      c.customer.id,
-                                      c.loan_status,
-                                      c.customer.lead?.id,
-                                      c,
-                                    );
+                                    navigate("/loanstep", {
+                                      state: {
+                                        customerId: c.customer.id,
+                                        leadId: c.customer.lead?.id,
+                                      },
+                                    });
                                   }}
                                   className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
                                 >
@@ -439,6 +426,7 @@ const KitReady = () => {
                                   />
                                 </button>
                               ) : c.file_gen === "done" ? (
+                                /* 📦 GO FOR KIT → ONLY insertKit */
                                 <button
                                   onClick={() => {
                                     insertKit(
@@ -457,7 +445,6 @@ const KitReady = () => {
                                       <Package size={14} /> Go For Kit
                                     </>
                                   )}
-
                                   <ChevronRight
                                     size={14}
                                     className="group-hover/btn:translate-x-1 transition-transform"
@@ -465,24 +452,21 @@ const KitReady = () => {
                                 </button>
                               ) : null}
 
-                              {c.loan_status == "completed" ? (
-                                <>
-                                  <button
-                                    onClick={() => {
-                                      navigate("/loanstep", {
-                                        state: {
-                                          customerId: c.customer.id,
-                                          leadId: c.customer.lead?.id,
-                                        },
-                                      });
-                                    }}
-                                    className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
-                                  >
-                                    See Loan
-                                  </button>
-                                </>
-                              ) : (
-                                <></>
+                              {/* 👀 SEE LOAN */}
+                              {c.loan_status === "completed" && (
+                                <button
+                                  onClick={() => {
+                                    navigate("/loanstep", {
+                                      state: {
+                                        customerId: c.customer.id,
+                                        leadId: c.customer.lead?.id,
+                                      },
+                                    });
+                                  }}
+                                  className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
+                                >
+                                  See Loan
+                                </button>
                               )}
                             </div>
                           </td>
