@@ -825,20 +825,20 @@ const CustomerMaster = () => {
 
   const formatIST = (dateString) => {
     if (!dateString) return null;
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString;
-    const IST_OFFSET_MS = (5 * 60 + 30) * 60 * 1000;
-    const localDate = new Date(date.getTime() + IST_OFFSET_MS);
-    return localDate
-      .toLocaleString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      })
-      .toUpperCase();
+
+    const date = new Date(dateString); // already ISO UTC (Z format)
+
+    if (isNaN(date.getTime())) return "Invalid Date";
+
+    return date.toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
   useEffect(() => {
@@ -988,7 +988,7 @@ const CustomerMaster = () => {
                               )}
                               {stage.completed_at && (
                                 <div className="flex items-center gap-2 text-[9px] font-black text-emerald-600 bg-emerald-50 self-start px-3 py-1.5 rounded-lg border border-emerald-100 uppercase">
-                                  <CheckCircle2 size={12} /> Finished:{" "}
+                                  <CheckCircle2 size={12} /> Finished:
                                   {formatIST(stage.completed_at)}
                                 </div>
                               )}
