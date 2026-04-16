@@ -7,13 +7,12 @@ import {
   ClipboardCheck,
   Gift,
   Banknote,
-  Save,
   CheckCircle,
   Eye,
   UserPlus,
   X,
-  ChevronRight,
   Lock,
+  Inbox,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -25,7 +24,6 @@ const AllFinalStage = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [btnLoading, setBtnLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
 
@@ -35,8 +33,6 @@ const AllFinalStage = () => {
 
   // Modal States
   const [isSupervisorModalOpen, setIsSupervisorModalOpen] = useState(false);
-  const [activeItem, setActiveItem] = useState(null);
-  const [selectedSupervisor, setSelectedSupervisor] = useState("");
 
   const fetchFinalStageData = async () => {
     setLoading(true);
@@ -52,7 +48,8 @@ const AllFinalStage = () => {
         setFinalLogs(res.data.data || []);
       }
     } catch (error) {
-      toast.error("Failed to load records");
+      // Removed toast.error, using console for debugging
+      console.error("Failed to load records:", error);
     } finally {
       setLoading(false);
     }
@@ -65,6 +62,7 @@ const AllFinalStage = () => {
       });
       if (res.status === 200) setSupervisors(res.data.data || []);
     } catch (error) {
+      console.error("Failed to fetch supervisors:", error);
     }
   };
 
@@ -73,16 +71,9 @@ const AllFinalStage = () => {
     fetchSupervisors();
   }, [activeTab]);
 
-  const handleOpenSupervisorModal = (item) => {
-    // UPDATED: Block updation in both tabs
+  const handleOpenSupervisorModal = () => {
+    // Keep warning toast as it's a functional instruction for the user
     toast.warning("Assignments are locked in the Final Stage.");
-    return;
-  };
-
-  const handleUpdateSupervisor = async (e) => {
-    e.preventDefault();
-    // Double safeguard: Block API call
-    toast.error("Updates not allowed.");
   };
 
   const filteredList = finalLogs.filter((item) =>
@@ -168,7 +159,7 @@ const AllFinalStage = () => {
                 Syncing workflow logs...
               </span>
             </div>
-          ) : (
+          ) : filteredList.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
               {filteredList.map((item) => (
                 <div
@@ -223,9 +214,8 @@ const AllFinalStage = () => {
                   </div>
 
                   <div className="space-y-4 pt-6 border-t border-slate-50">
-                    {/* ASSIGNMENT SECTION (UPDATED TO READ-ONLY) */}
                     <div
-                      onClick={() => handleOpenSupervisorModal(item)}
+                      onClick={() => handleOpenSupervisorModal()}
                       className="flex items-center justify-between cursor-not-allowed opacity-70 group/item"
                     >
                       <div className="flex items-center gap-4 text-slate-400">
@@ -242,8 +232,8 @@ const AllFinalStage = () => {
                     onClick={() => {
                       navigate("/master", {
                         state: {
-                          customerId: item.customerId,
-                          leadId: item.leadId,
+                          customerId: item.customer_id,
+                          leadId: item.lead_id,
                         },
                       });
                     }}
@@ -254,11 +244,18 @@ const AllFinalStage = () => {
                 </div>
               ))}
             </div>
+          ) : (
+            <div className="py-32 flex flex-col items-center justify-center bg-white rounded-[40px] border border-dashed border-slate-200">
+              <Inbox size={48} className="text-slate-200 mb-4" />
+              <h3 className="text-slate-400 font-black uppercase tracking-widest text-xs">
+                No workflow records found
+              </h3>
+            </div>
           )}
         </main>
       </div>
 
-      {/* ASSIGN SUPERVISOR MODAL (LOCKED) */}
+      {/* MODAL (LOCKED) */}
       {isSupervisorModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
           <div

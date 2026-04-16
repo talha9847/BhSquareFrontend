@@ -502,11 +502,13 @@ const Leads = () => {
     }
   };
 
-  const formatIST = (dateString) => {
+  const formatDateIST = (dateString) => {
     if (!dateString) return null;
-
-    const date = new Date(dateString); // already ISO UTC (Z format)
-
+    const date = new Date(
+      dateString.endsWith("Z")
+        ? dateString
+        : `${dateString.replace(" ", "T")}Z`,
+    );
     if (isNaN(date.getTime())) return "Invalid Date";
 
     return date.toLocaleString("en-IN", {
@@ -514,6 +516,20 @@ const Leads = () => {
       day: "2-digit",
       month: "short",
       year: "numeric",
+    });
+  };
+
+  const formatTimeIST = (dateString) => {
+    if (!dateString) return null;
+    const date = new Date(
+      dateString.endsWith("Z")
+        ? dateString
+        : `${dateString.replace(" ", "T")}Z`,
+    );
+    if (isNaN(date.getTime())) return "";
+
+    return date.toLocaleString("en-IN", {
+      timeZone: "Asia/Kolkata",
       hour: "2-digit",
       minute: "2-digit",
       hour12: true,
@@ -673,10 +689,10 @@ const Leads = () => {
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
                         Visit Date
                       </th>
-                      <th className="text-center px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
+                      <th className="text-center px-4 py-3 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
                         Source
                       </th>
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
+                      <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
                         Capacity
                       </th>
                       <th className=" px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100 text-center">
@@ -702,13 +718,21 @@ const Leads = () => {
 
                         {/* 2. DATE CREATED (Fixed Row Issue) */}
                         <td className="px-6 py-5 whitespace-nowrap">
-                          <div className="flex flex-col">
+                          <div className="flex flex-col gap-1">
+                            {/* Upper Row: Date */}
                             <span className="text-[13px] font-bold text-slate-700 leading-none">
-                              {formatIST(lead.created_at)}
+                              {formatDateIST(lead.created_at)}
                             </span>
-                            <span className="text-[9px] text-slate-400 font-black uppercase mt-1.5 tracking-wider">
-                              Entry Time (IST)
-                            </span>
+
+                            {/* Lower Row: Time */}
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[11px] font-medium text-slate-500 uppercase tracking-tight">
+                                {formatTimeIST(lead.created_at)}
+                              </span>
+                              <span className="text-[9px] bg-slate-100 text-slate-400 px-1 rounded font-bold uppercase">
+                                IST
+                              </span>
+                            </div>
                           </div>
                         </td>
 
@@ -740,14 +764,14 @@ const Leads = () => {
                         </td>
 
                         {/* 5. SOURCE */}
-                        <td className="px-6 py-5 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <span className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200/50">
                             {sourceMap[lead.source_id] || "Direct"}
                           </span>
                         </td>
 
                         {/* 6. CAPACITY */}
-                        <td className="px-6 py-5 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <span className="text-sm font-black text-[#1a5695]">
                             {(lead.total_capacity / 1000).toFixed(2)}{" "}
                             <small className="text-[10px] opacity-70">KW</small>

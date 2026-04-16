@@ -13,16 +13,16 @@ import {
   UserPlus,
   X,
   ChevronRight,
+  Inbox,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
-import { toast } from "react-toastify";
+import { toast } from "react-toastify"; // Keeping for success messages only
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
 const FinalStage = () => {
-  const apiUrl = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [tableLoading, setTableLoading] = useState(true);
@@ -31,7 +31,6 @@ const FinalStage = () => {
 
   const [isFabModalOpen, setIsFabModalOpen] = useState(false);
   const [supervisors, setSupervisor] = useState([]);
-  const [activeItem, setActiveItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const [load, setLoad] = useState(false);
   const [editFormData, setEditFormData] = useState({
@@ -51,31 +50,32 @@ const FinalStage = () => {
           finalStageId: selectedItem.final_stage_id,
           customerId: selectedItem.customer_id,
           leadId: selectedItem.lead_id,
+          status: updateStatusValue,
         },
         { withCredentials: true },
       );
 
-      if (res.status == 200) {
+      if (res.status === 200) {
         toast.success("Status updated");
+        getFinalStageData();
       }
     } catch (error) {
+      console.error("Status update error:", error);
     } finally {
       setSelectedItem(null);
       setIsModalOpen(false);
       setLoad(false);
     }
   };
-  const getSupervisors = async () => {
-    setTableLoading(true);
 
+  const getSupervisors = async () => {
     try {
       const res = await axios.get(`/api/sources/fetchSupervisor`, {
         withCredentials: true,
       });
       if (res.status === 200) setSupervisor(res.data.data || []);
     } catch (error) {
-    } finally {
-      setTableLoading(false);
+      console.error("Fetch supervisor error:", error);
     }
   };
 
@@ -89,19 +89,20 @@ const FinalStage = () => {
         setFinalLogs(res.data.data || []);
       }
     } catch (error) {
-      toast.error("Failed to load records");
+      console.error("Fetch final stage error:", error);
     } finally {
       setTableLoading(false);
     }
   };
+
   const handleFabClick = (item) => {
-    setActiveItem(item);
     setEditFormData({
       customer_id: item.customer_id,
       supervisor_id: item.supervisor_id || "",
     });
     setIsFabModalOpen(true);
   };
+
   const handleUpdateSupervisor = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -118,10 +119,10 @@ const FinalStage = () => {
       if (res.status === 200) {
         toast.success("Supervisor Updated!");
         setIsFabModalOpen(false);
-        getFinalStageData(); // Refresh table
+        getFinalStageData();
       }
     } catch (error) {
-      toast.error("Update failed");
+      console.error("Supervisor update failed:", error);
     } finally {
       setLoading(false);
     }
@@ -134,7 +135,8 @@ const FinalStage = () => {
 
   const handleToggle = async (id, field, currentStatus, label, item) => {
     if (!item.supervisor_id) {
-      toast.error("Please assing Supervisor");
+      // Keep this toast as it's a validation warning for the user, not a system error
+      toast.warn("Please assign Supervisor first");
       return;
     }
     const isReverting = currentStatus === true;
@@ -152,76 +154,25 @@ const FinalStage = () => {
       cancelButtonText: "Cancel",
       reverseButtons: true,
       showLoaderOnConfirm: true,
-      allowOutsideClick: () => !Swal.isLoading(),
       preConfirm: async () => {
         try {
-          if (field === "file_approved") {
-            const res = await axios.post(
-              `/api/sources/updateStage10`,
-              {
-                customerId: item.customer_id,
-                flag: !currentStatus,
-              },
-              { withCredentials: true },
-            );
-            return res;
-          }
+          const endpoints = {
+            file_approved: "updateStage10",
+            file_uploaded: "updateStage11",
+            inspection: "updateStage12",
+            redeem: "updateStage13",
+            disbursal: "updateStage14",
+          };
 
-          if (field === "file_uploaded") {
-            const res = await axios.post(
-              `/api/sources/updateStage11`,
-              {
-                customerId: item.customer_id,
-                flag: !currentStatus,
-              },
-              { withCredentials: true },
-            );
-            return res;
-          }
-
-          if (field === "inspection") {
-            const res = await axios.post(
-              `/api/sources/updateStage12`,
-              {
-                customerId: item.customer_id,
-                flag: !currentStatus,
-              },
-              { withCredentials: true },
-            );
-            return res;
-          }
-
-          if (field === "redeem") {
-            const res = await axios.post(
-              `/api/sources/updateStage13`,
-              {
-                customerId: item.customer_id,
-                flag: !currentStatus,
-              },
-              { withCredentials: true },
-            );
-            return res;
-          }
-
-          if (field === "disbursal") {
-            const res = await axios.post(
-              `/api/sources/updateStage14`,
-              {
-                customerId: item.customer_id,
-                flag: !currentStatus,
-              },
-              { withCredentials: true },
-            );
-            return res;
-          }
-
-          return true;
-        } catch (error) {
-          Swal.showValidationMessage(
-            error?.response?.data?.message ||
-              error.message ||
-              "Something went wrong",
+          const res = await axios.post(
+            `/api/sources/${endpoints[field]}`,
+            { customerId: item.customer_id, flag: !currentStatus },
+            { withCredentials: true },
           );
+          return res;
+        } catch (error) {
+          console.error(`Toggle ${field} failed:`, error);
+          Swal.showValidationMessage("Request failed. Please try again.");
         }
       },
       customClass: {
@@ -234,27 +185,11 @@ const FinalStage = () => {
     });
 
     if (result.isConfirmed) {
-      if (
-        field === "file_approved" ||
-        field === "file_uploaded" ||
-        field == "inspection" ||
-        field == "redeem"
-      ) {
-        getFinalStageData();
-      } else {
-        setFinalLogs((prev) =>
-          prev.map((log) =>
-            log.final_stage_id === id
-              ? { ...log, [field]: !currentStatus }
-              : log,
-          ),
-        );
-      }
-
+      getFinalStageData();
       if (isReverting) {
-        toast.info(`${label} has been reset.`);
+        toast.info(`${label} reset.`);
       } else {
-        toast.success(`${label} updated successfully.`);
+        toast.success(`${label} updated.`);
       }
     }
   };
@@ -277,9 +212,7 @@ const FinalStage = () => {
         {label}
       </span>
       <div
-        className={`w-1.5 h-1.5 rounded-full transition-all ${
-          active ? "bg-emerald-500 scale-110" : "bg-slate-200"
-        }`}
+        className={`w-1.5 h-1.5 rounded-full transition-all ${active ? "bg-emerald-500 scale-110" : "bg-slate-200"}`}
       ></div>
     </button>
   );
@@ -293,31 +226,26 @@ const FinalStage = () => {
       />
       <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-
         <main className="p-4 lg:p-8">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase flex items-center gap-3">
               <ShieldCheck className="text-[#1a5695]" size={28} />
-              Final Stage Management
+              Final Stage
               <button
-                onClick={() => {
-                  navigate("/allfinalstage");
-                }}
+                onClick={() => navigate("/allfinalstage")}
                 className="flex items-center gap-1 bg-slate-200 text-slate-600 text-[10px] px-2 py-1 rounded-full hover:bg-slate-300 transition-all cursor-pointer"
               >
-                SHOW ALL FINAL STAGE <ChevronRight size={12} />
+                SHOW ALL <ChevronRight size={12} />
               </button>
             </h1>
-
             <button
               onClick={() => navigate("/supervisors")}
               className="flex items-center gap-2 px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
             >
-              <Eye size={16} /> View Supervisors
+              <Eye size={16} /> Supervisors
             </button>
           </div>
 
-          {/* Search */}
           <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 shadow-sm">
             <div className="relative">
               <Search
@@ -327,13 +255,12 @@ const FinalStage = () => {
               <input
                 type="text"
                 className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold placeholder:text-slate-300"
-                placeholder="Search customer name..."
+                placeholder="Search customer..."
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
           </div>
 
-          {/* Table Container */}
           <div className="bg-white rounded-[40px] border border-slate-200 overflow-hidden shadow-sm relative min-h-[450px]">
             {tableLoading ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 backdrop-blur-[2px]">
@@ -342,7 +269,7 @@ const FinalStage = () => {
                   size={32}
                 />
                 <span className="text-[10px] font-black uppercase text-slate-400">
-                  Syncing Stages...
+                  Syncing...
                 </span>
               </div>
             ) : (
@@ -371,142 +298,138 @@ const FinalStage = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
-                    {filteredItems.map((item) => (
-                      <tr
-                        key={item.final_stage_id}
-                        className="hover:bg-slate-50/50 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-center font-black text-slate-300 text-[11px]">
-                          #{item.final_stage_id}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div
-                            onClick={() => {
-                              navigate("/master", {
-                                state: {
-                                  customerId: item.customer_id,
-                                  leadId: item.lead_id,
-                                },
-                              });
-                            }}
-                            className="font-bold text-slate-800 text-sm uppercase leading-tight cursor-pointer"
-                          >
-                            {item.customer_name}
-                          </div>
-                          <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1.5 mt-1">
-                            <span className="text-[#1a5695]">
-                              {item.contact_number}
-                            </span>
-                            <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                            <span className="uppercase">{item.address}</span>
-                          </div>
-                        </td>
-                        <td
-                          onClick={() => {
-                            if (!item.file_approved) handleFabClick(item);
-                          }}
-                          className={`px-6 py-4 group ${
-                            item.file_approved
-                              ? "cursor-not-allowed opacity-50"
-                              : "cursor-pointer"
-                          }`}
+                    {filteredItems.length > 0 ? (
+                      filteredItems.map((item) => (
+                        <tr
+                          key={item.final_stage_id}
+                          className="hover:bg-slate-50/50 transition-colors"
                         >
-                          <div
-                            className={`flex items-center gap-2 font-black text-[11px] uppercase ${
-                              item.file_approved
-                                ? "text-gray-400"
-                                : "text-[#1a5695] group-hover:underline"
-                            }`}
-                          >
-                            {item.supervisor_name || "ASSIGN SUPERVISOR"}
-
-                            {!item.file_approved && (
-                              <UserPlus
-                                size={12}
-                                className="text-slate-300 group-hover:text-[#1a5695]"
-                              />
-                            )}
-                          </div>
-
-                          <div className="text-[9px] text-slate-400 font-bold uppercase">
-                            {item.file_approved
-                              ? "Locked after approval"
-                              : "Click to assign"}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center justify-center gap-2">
-                            <InteractiveBadge
-                              id={item.final_stage_id}
-                              label="Approved"
-                              field="file_approved"
-                              active={item.file_approved}
-                              icon={CheckCircle}
-                              item={item}
-                            />
-
-                            <InteractiveBadge
-                              id={item.final_stage_id}
-                              label="File Up"
-                              field="file_uploaded"
-                              active={item.file_uploaded}
-                              icon={Upload}
-                              item={item}
-                            />
-
-                            <InteractiveBadge
-                              id={item.final_stage_id}
-                              label="Inspection"
-                              field="inspection"
-                              active={item.inspection}
-                              icon={ClipboardCheck}
-                              item={item}
-                            />
-                            <InteractiveBadge
-                              id={item.final_stage_id}
-                              label="Redeem"
-                              field="redeem"
-                              active={item.redeem}
-                              icon={Gift}
-                              item={item}
-                            />
-                            <InteractiveBadge
-                              id={item.final_stage_id}
-                              label="Disbursal"
-                              field="disbursal"
-                              active={item.disbursal}
-                              icon={Banknote}
-                              item={item}
-                            />
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span
-                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
-                              item.status === "done"
-                                ? "bg-green-100 text-green-700"
-                                : "bg-yellow-100 text-yellow-700"
-                            }`}
-                          >
-                            {item.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          {item.disbursal && (
-                            <button
-                              disabled={load}
-                              onClick={() => {
-                                setSelectedItem(item);
-                                setIsModalOpen(true);
-                              }}
-                              className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a5695] text-white text-[10px] font-black uppercase rounded-xl hover:bg-[#15467a] transition-all"
+                          <td className="px-6 py-4 text-center font-black text-slate-300 text-[11px]">
+                            #{item.final_stage_id}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div
+                              onClick={() =>
+                                navigate("/master", {
+                                  state: {
+                                    customerId: item.customer_id,
+                                    leadId: item.lead_id,
+                                  },
+                                })
+                              }
+                              className="font-bold text-slate-800 text-sm uppercase leading-tight cursor-pointer"
                             >
-                              Update Status
-                            </button>
-                          )}
+                              {item.customer_name}
+                            </div>
+                            <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1.5 mt-1">
+                              <span className="text-[#1a5695]">
+                                {item.contact_number}
+                              </span>
+                              <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+                              <span className="uppercase">{item.address}</span>
+                            </div>
+                          </td>
+                          <td
+                            onClick={() =>
+                              !item.file_approved && handleFabClick(item)
+                            }
+                            className={`px-6 py-4 group ${item.file_approved ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                          >
+                            <div
+                              className={`flex items-center gap-2 font-black text-[11px] uppercase ${item.file_approved ? "text-gray-400" : "text-[#1a5695] group-hover:underline"}`}
+                            >
+                              {item.supervisor_name || "ASSIGN SUPERVISOR"}
+                              {!item.file_approved && (
+                                <UserPlus
+                                  size={12}
+                                  className="text-slate-300 group-hover:text-[#1a5695]"
+                                />
+                              )}
+                            </div>
+                            <div className="text-[9px] text-slate-400 font-bold uppercase">
+                              {item.file_approved
+                                ? "Locked"
+                                : "Click to assign"}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-center gap-2">
+                              <InteractiveBadge
+                                id={item.final_stage_id}
+                                label="Approved"
+                                field="file_approved"
+                                active={item.file_approved}
+                                icon={CheckCircle}
+                                item={item}
+                              />
+                              <InteractiveBadge
+                                id={item.final_stage_id}
+                                label="File Up"
+                                field="file_uploaded"
+                                active={item.file_uploaded}
+                                icon={Upload}
+                                item={item}
+                              />
+                              <InteractiveBadge
+                                id={item.final_stage_id}
+                                label="Inspection"
+                                field="inspection"
+                                active={item.inspection}
+                                icon={ClipboardCheck}
+                                item={item}
+                              />
+                              <InteractiveBadge
+                                id={item.final_stage_id}
+                                label="Redeem"
+                                field="redeem"
+                                active={item.redeem}
+                                icon={Gift}
+                                item={item}
+                              />
+                              <InteractiveBadge
+                                id={item.final_stage_id}
+                                label="Disbursal"
+                                field="disbursal"
+                                active={item.disbursal}
+                                icon={Banknote}
+                                item={item}
+                              />
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span
+                              className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${item.status === "done" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
+                            >
+                              {item.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            {item.disbursal && (
+                              <button
+                                onClick={() => {
+                                  setSelectedItem(item);
+                                  setIsModalOpen(true);
+                                }}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a5695] text-white text-[10px] font-black uppercase rounded-xl hover:bg-[#15467a] transition-all"
+                              >
+                                Update Status
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="py-24 text-center">
+                          <div className="flex flex-col items-center opacity-30">
+                            <Inbox size={48} className="text-slate-400 mb-2" />
+                            <span className="text-[11px] font-black uppercase tracking-widest">
+                              No Records Found
+                            </span>
+                          </div>
                         </td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -514,96 +437,83 @@ const FinalStage = () => {
           </div>
         </main>
       </div>
-      {/* MODAL: SAME TO SAME AS FABRICATION.JSX */}
+
+      {/* Modals remain same but with console.error instead of toast.error */}
       {isFabModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden">
             <div className="bg-[#1a5695] p-8 text-white flex justify-between items-center">
-              <h2 className="text-xl font-black uppercase tracking-tight">
+              <h2 className="text-xl font-black uppercase">
                 Assign Supervisor
               </h2>
               <button
                 onClick={() => setIsFabModalOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-full transition-all"
+                className="p-2 hover:bg-white/10 rounded-full"
               >
                 <X size={24} />
               </button>
             </div>
             <form onSubmit={handleUpdateSupervisor} className="p-8 space-y-6">
-              <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
-                  Select Supervisor
-                </label>
-                <select
-                  required
-                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-[#1a5695]"
-                  value={editFormData.supervisor_id}
-                  onChange={(e) =>
-                    setEditFormData({
-                      ...editFormData,
-                      supervisor_id: e.target.value,
-                    })
-                  }
-                >
-                  <option value="">Select a Supervisor</option>
-                  {supervisors.map((fab) => (
-                    <option key={fab.id} value={fab.id}>
-                      {fab.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <select
+                required
+                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold"
+                value={editFormData.supervisor_id}
+                onChange={(e) =>
+                  setEditFormData({
+                    ...editFormData,
+                    supervisor_id: e.target.value,
+                  })
+                }
+              >
+                <option value="">Select a Supervisor</option>
+                {supervisors.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
               <button
                 disabled={loading}
                 type="submit"
-                className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95"
+                className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase"
               >
                 {loading ? (
-                  <Loader2 className="animate-spin" size={18} />
+                  <Loader2 className="animate-spin mx-auto" size={18} />
                 ) : (
-                  <>
-                    <Save size={18} /> Update Assignment
-                  </>
+                  "Update Assignment"
                 )}
               </button>
             </form>
           </div>
         </div>
       )}
+
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
-            <h3 className="text-slate-800 font-black text-lg uppercase mb-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
+            <h3 className="text-slate-800 font-black uppercase mb-4">
               Update Status
             </h3>
-
-            <div className="space-y-3">
-              <label className="text-[10px] font-black text-slate-400 uppercase">
-                Select Status
-              </label>
-              <select
-                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm outline-none focus:border-[#1a5695]"
-                defaultValue="done"
-                onChange={(e) => setUpdateStatusValue(e.target.value)}
-              >
-                <option value="done">DONE</option>
-                <option value="pending">PENDING</option>
-              </select>
-            </div>
-
+            <select
+              className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold"
+              value={updateStatusValue}
+              onChange={(e) => setUpdateStatusValue(e.target.value)}
+            >
+              <option value="done">DONE</option>
+              <option value="pending">PENDING</option>
+            </select>
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="flex-1 px-4 py-3 text-slate-400 font-bold text-[11px] uppercase hover:bg-slate-50 rounded-xl"
+                className="flex-1 text-slate-400 font-bold text-[11px] uppercase"
               >
                 Cancel
               </button>
               <button
-                disabled={load}
                 onClick={() => handleStatusSubmit()}
-                className="flex-1 px-4 py-3 bg-[#1a5695] text-white font-black text-[11px] uppercase rounded-xl shadow-lg shadow-blue-100"
+                className="flex-1 px-4 py-3 bg-[#1a5695] text-white font-black text-[11px] uppercase rounded-xl"
               >
-                {load ? "Saving...." : "Save Changes"}
+                {load ? "Saving..." : "Save"}
               </button>
             </div>
           </div>
