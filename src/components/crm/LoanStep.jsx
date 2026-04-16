@@ -103,11 +103,9 @@ const LoanStep = () => {
       }
     });
     try {
-      const res = await axios.post(
-        `/api/loan/uploadLoanDocuments`,
-        formData,
-        { withCredentials: true },
-      );
+      const res = await axios.post(`/api/loan/uploadLoanDocuments`, formData, {
+        withCredentials: true,
+      });
     } catch (error) {}
 
     await new Promise((r) => setTimeout(r, 1000));
@@ -155,10 +153,9 @@ const LoanStep = () => {
 
   const approveLoan = async () => {
     try {
-      const res = await axios.patch(
-        `/api/loan/approveLoan/${customerId}`,
-        { withCredentials: true },
-      );
+      const res = await axios.patch(`/api/loan/approveLoan/${customerId}`, {
+        withCredentials: true,
+      });
 
       if (res.status == 200) {
         setIsApproved(true);
@@ -179,11 +176,9 @@ const LoanStep = () => {
         bank_remarks: loanData.bankRemark || "",
         is_approved: loanData.isApproved,
       };
-      const res = await axios.put(
-        `/api/loan/updateLoan/${customerId}`,
-        body,
-        { withCredentials: true },
-      );
+      const res = await axios.put(`/api/loan/updateLoan/${customerId}`, body, {
+        withCredentials: true,
+      });
 
       if (res.status == 200) {
         getLoan();
@@ -263,7 +258,10 @@ const LoanStep = () => {
                     className="w-full px-6 py-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-bold text-slate-700 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-all"
                     value={loanData.bankName}
                     onChange={(e) =>
-                      setLoanData({ ...loanData, bankName: e.target.value })
+                      setLoanData({
+                        ...loanData,
+                        bankName: e.target.value.toUpperCase(),
+                      })
                     }
                   />
                 </div>

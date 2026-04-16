@@ -317,7 +317,9 @@ const AllCommission = () => {
                       type="number"
                       step="any"
                       value={commissionValue}
-                      onChange={(e) => setCommissionValue(e.target.value)}
+                      onChange={(e) =>
+                        setCommissionValue(e.target.value)
+                      }
                       className="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-bold outline-none focus:border-[#1a5695]"
                     />
                   </div>

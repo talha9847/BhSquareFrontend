@@ -265,7 +265,9 @@ const NameChange = () => {
                     type="text"
                     placeholder="e.g. Marriage Certificate"
                     value={newDocName}
-                    onChange={(e) => setNewDocName(e.target.value)}
+                    onChange={(e) =>
+                      setNewDocName(e.target.value.toUpperCase())
+                    }
                     className="bg-transparent border-b-2 border-[#1a5695]/20 focus:border-[#1a5695] outline-none py-2 font-bold text-sm text-slate-700"
                     onKeyDown={(e) => e.key === "Enter" && confirmAddDoc()}
                   />

@@ -82,11 +82,9 @@ const Cars = () => {
         }
       } else {
         // Create Logic
-        const res = await axios.post(
-          `/api/dispatch/createCar`,
-          formData,
-          { withCredentials: true },
-        );
+        const res = await axios.post(`/api/dispatch/createCar`, formData, {
+          withCredentials: true,
+        });
         if (res.status === 200 || res.status === 201) {
           toast.success("Vehicle registered successfully");
           setIsModalOpen(false);
@@ -270,7 +268,10 @@ const Cars = () => {
                   placeholder="e.g. Tata Ace"
                   value={formData.name}
                   onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
+                    setFormData({
+                      ...formData,
+                      name: e.target.value.toUpperCase(),
+                    })
                   }
                 />
               </div>

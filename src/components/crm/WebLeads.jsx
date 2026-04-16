@@ -245,7 +245,10 @@ const WebLeads = () => {
                     className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:border-[#1a5695] outline-none font-medium text-sm"
                     value={selectedLead.name}
                     onChange={(e) =>
-                      setSelectedLead({ ...selectedLead, name: e.target.value })
+                      setSelectedLead({
+                        ...selectedLead,
+                        name: e.target.value.toUpperCase(),
+                      })
                     }
                   />
                 </div>

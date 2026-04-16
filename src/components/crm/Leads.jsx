@@ -206,7 +206,6 @@ const Leads = () => {
       result.data.data.map((v) => {
         sourceMap[v.id] = v.name;
       });
-
     } catch (error) {}
   };
 
@@ -217,7 +216,6 @@ const Leads = () => {
         params: { status: status },
         withCredentials: true, // ✅ send cookies
       });
-
 
       setLeads(result.data.data);
       setPageLoading(false);
@@ -781,7 +779,7 @@ const Leads = () => {
               <input
                 autoFocus
                 value={sourceName}
-                onChange={(e) => setSourceName(e.target.value)}
+                onChange={(e) => setSourceName(e.target.value.toUpperCase())}
                 placeholder="Enter source name..."
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-slate-800"
               />
@@ -856,6 +854,7 @@ const Leads = () => {
                 <input
                   {...register("customer_name", {
                     required: "Customer name is required",
+                    setValueAs: (v) => v.toUpperCase(),
                   })}
                   placeholder="e.g. Rajesh Bhai"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
@@ -868,6 +867,7 @@ const Leads = () => {
                 <input
                   {...register("contact_number", {
                     required: "Contact number is required",
+                    setValueAs: (v) => v.toUpperCase(),
                   })}
                   placeholder="+91 00000 00000"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
@@ -928,6 +928,7 @@ const Leads = () => {
                 <textarea
                   {...register("address", {
                     required: "Address is required",
+                    setValueAs: (v) => v.toUpperCase(),
                   })}
                   placeholder="Enter site address..."
                   rows="2"
@@ -943,6 +944,7 @@ const Leads = () => {
                 <textarea
                   {...register("notes", {
                     required: "Notes is required",
+                    setValueAs: (v) => v.toUpperCase(),
                   })}
                   placeholder="Specific requirements..."
                   rows="2"

@@ -343,7 +343,9 @@ const SDocumentCollection = () => {
                         autoFocus
                         type="text"
                         value={newDocName}
-                        onChange={(e) => setNewDocName(e.target.value)}
+                        onChange={(e) =>
+                          setNewDocName(e.target.value.toUpperCase())
+                        }
                         className="bg-transparent border-b border-[#1a5695] outline-none py-1 font-bold text-sm text-slate-700"
                         onKeyDown={(e) => e.key === "Enter" && confirmAddDoc()}
                       />
@@ -425,7 +427,7 @@ const CustomInput = ({ label, placeholder, icon, value, onChange, error }) => (
         type="text"
         placeholder={placeholder}
         value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value.toUpperCase())}
         className={`w-full ${icon ? "pl-11" : "px-4"} py-3.5 bg-slate-50 border ${
           error
             ? "border-rose-500 shadow-[0_0_0_1px_rgba(244,63,94,0.1)]"

@@ -288,7 +288,10 @@ const FinalizeWiring = () => {
                             setOtherDocs(
                               otherDocs.map((d) =>
                                 d.dbId === doc.dbId
-                                  ? { ...d, docName: e.target.value }
+                                  ? {
+                                      ...d,
+                                      docName: e.target.value.toUpperCase(),
+                                    }
                                   : d,
                               ),
                             )

@@ -372,7 +372,10 @@ const SLeads = () => {
                   Customer Name
                 </label>
                 <input
-                  {...register("customer_name", { required: true })}
+                  {...register("customer_name", {
+                    required: true,
+                    setValueAs: (v) => v.toUpperCase(),
+                  })}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
                 />
               </div>
@@ -400,7 +403,10 @@ const SLeads = () => {
                   Address
                 </label>
                 <textarea
-                  {...register("address", { required: true })}
+                  {...register("address", {
+                    required: true,
+                    setValueAs: (v) => v.toUpperCase(),
+                  })}
                   rows="2"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none resize-none focus:border-[#1a5695]"
                 ></textarea>

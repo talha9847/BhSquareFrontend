@@ -57,10 +57,9 @@ const WiringInventory = () => {
   const fetchAll = async () => {
     setIsTableLoading(true);
     try {
-      const res = await axios.get(
-        `/api/wiring/fetchAllWireInventory`,
-        { withCredentials: true },
-      );
+      const res = await axios.get(`/api/wiring/fetchAllWireInventory`, {
+        withCredentials: true,
+      });
       if (res.status === 200) {
         setInventory(res.data.data);
       }
@@ -383,7 +382,10 @@ const WiringInventory = () => {
                       className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold outline-none focus:bg-white focus:border-[#1a5695]"
                       value={formData.brand_name}
                       onChange={(e) =>
-                        setFormData({ ...formData, brand_name: e.target.value })
+                        setFormData({
+                          ...formData,
+                          brand_name: e.target.value.toUpperCase(),
+                        })
                       }
                     />
                   </div>

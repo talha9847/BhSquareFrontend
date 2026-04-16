@@ -78,8 +78,7 @@ const UserManagement = () => {
           sources: res.data.data.sources || [],
         });
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -395,7 +394,10 @@ const UserManagement = () => {
                       }`}
                       value={formData.email}
                       onChange={(e) =>
-                        setFormData({ ...formData, email: e.target.value })
+                        setFormData({
+                          ...formData,
+                          email: e.target.value.toLowerCase(),
+                        })
                       }
                       required
                     />

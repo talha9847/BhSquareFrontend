@@ -358,7 +358,7 @@ const RegistrationsManager = () => {
                   onChange={(e) =>
                     setEditingItem({
                       ...editingItem,
-                      customer_name: e.target.value,
+                      customer_name: e.target.value.toUpperCase(),
                     })
                   }
                 />

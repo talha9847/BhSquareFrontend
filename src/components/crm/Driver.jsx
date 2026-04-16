@@ -81,11 +81,9 @@ const Drivers = () => {
           fetchDrivers();
         }
       } else {
-        const res = await axios.post(
-          `/api/dispatch/createDriver`,
-          formData,
-          { withCredentials: true },
-        );
+        const res = await axios.post(`/api/dispatch/createDriver`, formData, {
+          withCredentials: true,
+        });
         if (res.status === 201 || res.status === 200) {
           toast.success("Driver Created successfully");
           setIsModalOpen(false);
@@ -273,7 +271,10 @@ const Drivers = () => {
                   placeholder="+91 XXXXX XXXXX"
                   value={formData.mobile}
                   onChange={(e) =>
-                    setFormData({ ...formData, mobile: e.target.value })
+                    setFormData({
+                      ...formData,
+                      mobile: e.target.value.toUpperCase(),
+                    })
                   }
                 />
               </div>

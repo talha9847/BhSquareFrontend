@@ -268,7 +268,7 @@ const BrandManager = () => {
                   className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none text-sm font-bold"
                   value={formData.name}
                   onChange={(e) =>
-                    setFormData({ name: e.target.value.toLocaleUpperCase() })
+                    setFormData({ name: e.target.value.toUpperCase() })
                   }
                 />
               </div>

@@ -209,7 +209,9 @@ export default function Contact() {
                         type="text"
                         disabled={loading}
                         value={form.name}
-                        onChange={(e) => handleChange("name", e.target.value)}
+                        onChange={(e) =>
+                          handleChange("name", e.target.value.toUpperCase())
+                        }
                         placeholder="Harsh Patel"
                         className={`w-full px-4 py-3 border rounded-xl font-body text-sm outline-none transition-colors ${errors.name ? "border-red-400 bg-red-50" : "border-gray-200 focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100"}`}
                       />

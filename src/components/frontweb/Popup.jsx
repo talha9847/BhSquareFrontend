@@ -99,7 +99,10 @@ const Popup = () => {
                 placeholder="Your Name"
                 className="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#1a5695] transition-all"
                 onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
+                  setFormData({
+                    ...formData,
+                    name: e.target.value.toUpperCase(),
+                  })
                 }
               />
             </div>
