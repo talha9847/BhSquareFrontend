@@ -507,7 +507,10 @@ const Leads = () => {
     const matchesTab = lead.status === activeTab;
     const matchesSearch =
       lead.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lead.contact_number.includes(searchQuery);
+      lead.contact_number.includes(searchQuery) ||
+      sourceMap[lead.source_id]
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
     return matchesTab && matchesSearch;
   });
 
