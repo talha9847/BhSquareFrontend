@@ -259,8 +259,6 @@ const FinalStage = () => {
     }
   };
 
-
-
   const filteredItems = finalLogs.filter((item) =>
     item.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
@@ -404,18 +402,36 @@ const FinalStage = () => {
                           </div>
                         </td>
                         <td
-                          onClick={() => handleFabClick(item)}
-                          className="px-6 py-4 cursor-pointer group"
+                          onClick={() => {
+                            if (!item.file_approved) handleFabClick(item);
+                          }}
+                          className={`px-6 py-4 group ${
+                            item.file_approved
+                              ? "cursor-not-allowed opacity-50"
+                              : "cursor-pointer"
+                          }`}
                         >
-                          <div className="flex items-center gap-2 font-black text-[11px] text-[#1a5695] uppercase group-hover:underline">
+                          <div
+                            className={`flex items-center gap-2 font-black text-[11px] uppercase ${
+                              item.file_approved
+                                ? "text-gray-400"
+                                : "text-[#1a5695] group-hover:underline"
+                            }`}
+                          >
                             {item.supervisor_name || "ASSIGN SUPERVISOR"}
-                            <UserPlus
-                              size={12}
-                              className="text-slate-300 group-hover:text-[#1a5695]"
-                            />
+
+                            {!item.file_approved && (
+                              <UserPlus
+                                size={12}
+                                className="text-slate-300 group-hover:text-[#1a5695]"
+                              />
+                            )}
                           </div>
+
                           <div className="text-[9px] text-slate-400 font-bold uppercase">
-                            Click to assign
+                            {item.file_approved
+                              ? "Locked after approval"
+                              : "Click to assign"}
                           </div>
                         </td>
                         <td className="px-6 py-4">
