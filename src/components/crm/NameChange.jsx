@@ -19,6 +19,7 @@ import Sidebar from "./Sidebar";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const NameChange = () => {
   const location = useLocation();
@@ -32,6 +33,8 @@ const NameChange = () => {
   const [isReady, setIsReady] = useState(false);
   const [ready, setReady] = useState(false);
   const [nextLoad, setNextLoad] = useState(false);
+  const [collectionStatus, setCollectionStatus] = useState([]);
+
   const apiUrl = import.meta.env.VITE_API_URL;
 
   const [documents, setDocuments] = useState([
@@ -87,8 +90,74 @@ const NameChange = () => {
     } catch (error) {}
   };
 
+  const getDocCollectStatus = async () => {
+    try {
+      const res = await axios.get(
+        `/api/namechange/getNameChangeDocumentStatus/${customerId}`,
+        { withCredentials: true },
+      );
+      if (res.status === 200) {
+        console.log(res.data.data.documents);
+
+        setCollectionStatus(res.data.data.documents);
+      }
+    } catch (error) {
+      console.error("Error fetching status", error);
+    }
+  };
+
+  const handleDocClick = (itemName, isGot, fileId) => {
+    if (!customerId) {
+      toast.error("Customer ID missing");
+      return;
+    }
+
+    console.log(itemName, isGot, fileId);
+
+    Swal.fire({
+      title: `Verify ${itemName}?`,
+      text: `Mark this as ${isGot ? "Pending" : "Received"}?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#1a5695",
+      cancelButtonColor: "#cbd5e1",
+      confirmButtonText: "Yes, Update!",
+      showLoaderOnConfirm: true,
+      preConfirm: async () => {
+        try {
+          // Replace with your actual status update API
+          const res = await axios.post(
+            `/api/namechange/toggleNameChangeDocument`,
+            {
+              customerId,
+              fileName: itemName,
+            },
+            { withCredentials: true },
+          );
+
+          if (res.status == 200) {
+            getDocCollectStatus();
+            setIsReady(false);
+            getStatus();
+          }
+          return res.data;
+        } catch (error) {
+          Swal.showValidationMessage(`Request failed: ${error.message}`);
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading(),
+    }).then((result) => {
+      if (result.isConfirmed) {
+        toast.success("Status Updated");
+        getDocCollectStatus(); // Refresh the list
+        getStatus(); // Refresh "Ready" status
+      }
+    });
+  };
+
   useEffect(() => {
     getStatus();
+    getDocCollectStatus();
   }, []);
   const saveNameChangeDocs = async () => {
     const hasFiles = documents.some((doc) => doc.file !== null);
@@ -232,6 +301,72 @@ const NameChange = () => {
               </button>
             </div>
           )}
+
+          {/* Collection Progress Checklist */}
+          <div className="bg-white p-6 lg:p-8 rounded-[40px] border border-slate-200 shadow-sm relative overflow-hidden mb-8">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+              <div>
+                <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <ClipboardCheck size={14} className="text-[#1a5695]" />
+                  Verification Checklist
+                </h2>
+                <p className="text-xs font-bold text-slate-500 mt-1">
+                  {collectionStatus.filter((d) => d.is_got).length} of{" "}
+                  {collectionStatus.length} Documents Received
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 bg-slate-50 px-5 py-2.5 rounded-2xl border border-slate-100">
+                <div className="flex flex-col items-end">
+                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+                    Completion
+                  </span>
+                  <span className="text-sm font-black text-[#1a5695]">
+                    {Math.round(
+                      (collectionStatus.filter((d) => d.is_got).length /
+                        collectionStatus.length) *
+                        100 || 0,
+                    )}
+                    %
+                  </span>
+                </div>
+                <div className="w-10 h-10 rounded-full border-4 border-slate-200 border-t-[#1a5695] animate-none"></div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {collectionStatus.map((item, index) => (
+                <div
+                  key={index}
+                  onClick={() =>
+                    handleDocClick(item.name, item.is_got, item.file_id)
+                  }
+                  className={`group flex items-center gap-3 p-3 rounded-2xl border transition-all cursor-pointer hover:shadow-md active:scale-95 ${
+                    item.is_got
+                      ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+                      : "bg-slate-50 border-slate-100 text-slate-400"
+                  }`}
+                >
+                  <div
+                    className={`p-1.5 rounded-lg shrink-0 transition-colors ${
+                      item.is_got
+                        ? "bg-emerald-500 text-white"
+                        : "bg-slate-200 text-white group-hover:bg-slate-300"
+                    }`}
+                  >
+                    {item.is_got ? (
+                      <Check size={12} strokeWidth={4} />
+                    ) : (
+                      <X size={12} strokeWidth={4} />
+                    )}
+                  </div>
+                  <span className="text-[9px] font-black uppercase tracking-tight truncate">
+                    {item.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* Document Grid */}
           <div className="bg-white p-5 lg:p-8 rounded-[40px] border border-slate-200 shadow-sm relative overflow-hidden">

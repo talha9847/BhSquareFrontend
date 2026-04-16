@@ -954,6 +954,9 @@ const Leads = () => {
                     required: "Customer name is required",
                     setValueAs: (v) => v.toUpperCase(),
                   })}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                  }}
                   placeholder="e.g. Rajesh Bhai"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
                 />
@@ -1028,6 +1031,9 @@ const Leads = () => {
                     required: "Address is required",
                     setValueAs: (v) => v.toUpperCase(),
                   })}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                  }}
                   placeholder="Enter site address..."
                   rows="2"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none resize-none focus:border-[#1a5695]"
@@ -1044,6 +1050,9 @@ const Leads = () => {
                     required: "Notes is required",
                     setValueAs: (v) => v.toUpperCase(),
                   })}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                  }}
                   placeholder="Specific requirements..."
                   rows="2"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none resize-none focus:border-[#1a5695]"
