@@ -15,6 +15,7 @@ import {
   Box,
   Zap,
   Ruler,
+  IndianRupee,
 } from "lucide-react";
 import axios from "axios";
 import Navbar from "./Navbar";
@@ -141,8 +142,7 @@ const LoanModule = ({ customerId }) => {
         withCredentials: true,
       });
       if (res.status === 200) setLoan(res.data.data);
-    } catch (err) {
-    }
+    } catch (err) {}
   };
   useEffect(() => {
     if (customerId) fetchLoan();
@@ -221,8 +221,7 @@ const TechnicalModule = ({ customerId }) => {
           { withCredentials: true },
         );
         if (res.status === 200) setTech(res.data.data);
-      } catch (err) {
-      }
+      } catch (err) {}
     };
     if (customerId) fetchTech();
   }, [customerId]);
@@ -289,8 +288,7 @@ const KitModule = ({ customerId }) => {
           { withCredentials: true },
         );
         if (res.status === 200) setKitData(res.data.data);
-      } catch (err) {
-      }
+      } catch (err) {}
     };
     if (customerId) fetchKit();
   }, [customerId]);
@@ -573,7 +571,6 @@ const FabricationModule = ({ customerId }) => {
           </div>
         ) : (
           fabData.map((item) => {
-            // Normalize status for green check
             const isDone =
               item.status?.toLowerCase() === "done" ||
               item.status?.toLowerCase() === "completed";
@@ -584,7 +581,7 @@ const FabricationModule = ({ customerId }) => {
                 className="px-8 py-7 hover:bg-slate-50/50 transition-colors"
               >
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-                  {/* FABRICATOR INFO */}
+                  {/* COLUMN 1: FABRICATOR INFO */}
                   <div>
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
                       Service Partner
@@ -596,7 +593,6 @@ const FabricationModule = ({ customerId }) => {
                       </p>
                     </div>
 
-                    {/* STATUS BADGE - NOW GREEN FOR DONE */}
                     <div
                       className={`mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest ${
                         isDone
@@ -609,7 +605,29 @@ const FabricationModule = ({ customerId }) => {
                     </div>
                   </div>
 
-                  {/* UPDATED TIMESTAMP */}
+                  {/* COLUMN 2: NEW FINANCIAL DETAIL SECTION */}
+                  <div className="md:border-l md:border-slate-100 md:pl-8">
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
+                      Fabricator Commission
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <div className="bg-blue-50 p-1.5 rounded text-blue-600">
+                        <IndianRupee size={12} />
+                      </div>
+                      <p className="text-[16px] font-black text-slate-900 tabular-nums">
+                        {item.fabricator_commission
+                          ? Number(item.fabricator_commission).toLocaleString(
+                              "en-IN",
+                            )
+                          : "0.00"}
+                      </p>
+                    </div>
+                    <p className="text-[8px] text-slate-400 mt-1 font-medium italic">
+                      * Commission subject to audit
+                    </p>
+                  </div>
+
+                  {/* COLUMN 3: UPDATED TIMESTAMP */}
                   <div className="md:text-right">
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
                       Last Site Update
@@ -648,6 +666,7 @@ const FabricationModule = ({ customerId }) => {
     </div>
   );
 };
+
 const WiringModule = ({ customerId }) => {
   const [wiringData, setWiringData] = useState(null);
   const [loading, setLoading] = useState(false);
