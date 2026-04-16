@@ -23,6 +23,7 @@ import Sidebar from "./Sidebar";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const DocumentCollection = () => {
   const location = useLocation();
@@ -42,6 +43,7 @@ const DocumentCollection = () => {
   const [docId, setDocId] = useState(0);
   const [gotoNext, setGotoNext] = useState(false);
   const [finalGo, setFinalGo] = useState(false);
+  const [collectionStatus, setCollectionStatus] = useState([]);
 
   const [documents, setDocuments] = useState([
     { id: 1, name: "Aadhar Card", file: null },
@@ -135,6 +137,74 @@ const DocumentCollection = () => {
     } catch (error) {}
   };
 
+  const getDocCollectStatus = async () => {
+    try {
+      const res = await axios.get(
+        `/api/docs/getCustomerDocumentStatus/${customerId}`,
+        { withCredentials: true },
+      );
+      if (res.status === 200) {
+        console.log(res.data.data.documents);
+        setCollectionStatus(res.data.data.documents);
+      }
+    } catch (error) {
+      console.error("Error fetching status", error);
+    }
+  };
+
+  const handleDocClick = (itemName, fileId, isGot, docId) => {
+    if (!docId) {
+      toast.error("Please fill all registration fields");
+      return;
+    }
+
+    Swal.fire({
+      title: `Verify ${itemName}?`,
+      text: `Do you want to mark this document as ${isGot ? "Pending" : "Received"}?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#1a5695",
+      cancelButtonColor: "#cbd5e1",
+      confirmButtonText: "Yes, Update it!",
+      showLoaderOnConfirm: true, // This enables the loader
+      preConfirm: async () => {
+        try {
+          // Replace with your actual API endpoint and payload
+          const response = await axios.post(
+            `/api/docs/upsertCustomerDocumentFile`,
+            {
+              doc_id: docId,
+              name: itemName,
+            },
+            { withCredentials: true },
+          );
+
+          if (response.status !== 200) {
+            throw new Error(response.data.message || "Update failed");
+          }
+          return response.data;
+        } catch (error) {
+          Swal.showValidationMessage(`Request failed: ${error.message}`);
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading(),
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // 1. Success Message
+        Swal.fire({
+          title: "Updated!",
+          text: `${itemName} status has been updated.`,
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+
+        // 2. Refresh your data so the UI toggles to Green/Red
+        getDocCollectStatus();
+      }
+    });
+  };
+
   const saveRegistratin = async () => {
     if (!validate("registration")) {
       toast.error("Please fill all registration fields");
@@ -148,6 +218,7 @@ const DocumentCollection = () => {
       if (res.status == 200) {
         getDocInfo();
         setRegLoading(false);
+        getDocCollectStatus();
         setIsFound(true);
         toast.success(
           isFound ? "Updated Successfully" : "Created Successfully",
@@ -245,6 +316,7 @@ const DocumentCollection = () => {
   useEffect(() => {
     getLeadsData();
     getDocInfo();
+    getDocCollectStatus();
   }, []);
 
   const confirmAddDoc = () => {
@@ -665,6 +737,70 @@ const DocumentCollection = () => {
                           }
                         />
                       </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              {/* Collection Progress Tracker */}
+              <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm mb-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                      <ClipboardCheck size={14} className="text-[#1a5695]" />
+                      Collection Checklist
+                    </h2>
+                    <p className="text-xs font-bold text-slate-500 mt-1">
+                      {collectionStatus.filter((d) => d.is_got).length} of{" "}
+                      {collectionStatus.length} Documents Verified
+                    </p>
+                  </div>
+
+                  {/* Progress Circle or Percentage */}
+                  <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
+                    <div className="w-8 h-8 rounded-full border-2 border-slate-200 flex items-center justify-center relative">
+                      <span className="text-[10px] font-black text-[#1a5695]">
+                        {Math.round(
+                          (collectionStatus.filter((d) => d.is_got).length /
+                            collectionStatus.length) *
+                            100 || 0,
+                        )}
+                        %
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {collectionStatus.map((item, index) => (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        console.log(item);
+                        handleDocClick(
+                          item.name,
+                          item.file_id,
+                          item.is_got,
+                          item.doc_id,
+                        );
+                      }}
+                      className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${
+                        item.is_got
+                          ? "bg-emerald-50 border-emerald-100 text-emerald-700"
+                          : "bg-slate-50 border-slate-100 text-slate-400"
+                      }`}
+                    >
+                      <div
+                        className={`p-1.5 rounded-lg ${item.is_got ? "bg-emerald-500 text-white" : "bg-slate-200 text-white"}`}
+                      >
+                        {item.is_got ? (
+                          <Check size={12} strokeWidth={4} />
+                        ) : (
+                          <X size={12} strokeWidth={4} />
+                        )}
+                      </div>
+                      <span className="text-[10px] font-black uppercase tracking-tight truncate">
+                        {item.name}
+                      </span>
                     </div>
                   ))}
                 </div>
