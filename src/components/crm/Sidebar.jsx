@@ -20,6 +20,7 @@ import {
   Calculator,
   FileCheck,
   Bolt,
+  Database,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -182,6 +183,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     //   activePaths: ["/amc"],
     // },
     {
+      name: "Backup",
+      icon: <Database size={18} />,
+      type: "System",
+      path: "backup",
+      activePaths: ["/backup"],
+    },
+    {
       name: "Users",
       icon: <Settings2 size={18} />,
       type: "System",
@@ -196,8 +204,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         withCredentials: true,
       });
       setLeadCount(result.data.count);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {

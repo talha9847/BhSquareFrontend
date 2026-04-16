@@ -71,6 +71,7 @@ import Cost from "./components/crm/Cost";
 import Completed from "./components/crm/Completed";
 import AllFinalStage from "./components/crm/AllFinalStage";
 import FCommission from "./components/Fabricator/FCommission";
+import Backup from "./components/crm/Backup";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -552,6 +553,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Completed />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/backup"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Backup />
               </ProtectedRoute>
             }
           />
