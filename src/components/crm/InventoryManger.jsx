@@ -60,8 +60,7 @@ const InventoryManager = () => {
         withCredentials: true,
       });
       if (res.status === 200) setBrands(res.data.data);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const getAllCategories = async () => {
@@ -70,8 +69,7 @@ const InventoryManager = () => {
         withCredentials: true,
       });
       if (res.status === 200) setCategories(res.data.data);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -132,7 +130,8 @@ const InventoryManager = () => {
     new Intl.NumberFormat("en-IN", {
       style: "currency",
       currency: "INR",
-      maximumFractionDigits: 0,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     }).format(num);
 
   const groupedInventory = inventory
