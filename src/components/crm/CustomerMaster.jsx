@@ -42,12 +42,20 @@ const ModuleCard = ({
 );
 
 const DataField = ({ label, value, isFull = false }) => (
-  <div className={isFull ? "col-span-full" : ""}>
-    <p className="text-[9px] font-black uppercase tracking-[0.15em] mb-2 text-slate-400">
-      {label}
-    </p>
-    <p className="text-[13px] font-black uppercase tracking-tight text-slate-800">
-      {value || <span className="text-slate-200 tracking-widest">---</span>}
+  <div
+    className={`${isFull ? "col-span-full" : "col-span-1"} py-3 border-b border-slate-100 hover:bg-slate-50/50 transition-colors px-2 rounded-lg`}
+  >
+    <div className="flex items-center gap-2 mb-1">
+      {/* Small accent dot for a "Live Data" feel */}
+      <div className="w-1 h-1 rounded-full bg-[#1a5695]/40" />
+      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+        {label}
+      </p>
+    </div>
+    <p className="text-[15px] font-semibold text-slate-800 ml-3">
+      {value || (
+        <span className="text-slate-300 font-normal">Not specified</span>
+      )}
     </p>
   </div>
 );
@@ -925,6 +933,11 @@ const CustomerMaster = () => {
                       />
                       <DataField label="Source Name" value={lead?.source} />
                       <DataField
+                        label="Panel Wattage"
+                        value={lead?.panel_wattage}
+                      />
+
+                      <DataField
                         label="Number of Panels"
                         value={lead?.number_of_panels}
                       />
@@ -946,12 +959,10 @@ const CustomerMaster = () => {
                         }
                       />
                       {/* Full Width Field */}
-                      <div className="sm:col-span-2">
-                        <DataField
-                          label="Installation Address"
-                          value={lead?.address}
-                        />
-                      </div>
+                      <DataField
+                        label="Installation Address"
+                        value={lead?.address}
+                      />
                     </div>
                   </ModuleCard>
                   <NameChangeModule customerId={customerId} />
