@@ -317,18 +317,40 @@ const FinalStage = () => {
                                   },
                                 })
                               }
-                              className="font-bold text-slate-800 text-sm uppercase leading-tight cursor-pointer"
+                              className="font-bold text-slate-800 text-sm uppercase leading-tight cursor-pointer hover:text-[#1a5695] transition-colors"
                             >
                               {item.customer_name}
                             </div>
+
                             <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1.5 mt-1">
                               <span className="text-[#1a5695]">
                                 {item.contact_number}
                               </span>
                               <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-                              <span className="uppercase">{item.address}</span>
+                              <span className="uppercase truncate max-w-[150px]">
+                                {item.address}
+                              </span>
+
+                              {/* Colorful Type Badge */}
+                              <span
+                                className={`
+                                text-[9px] px-1 rounded font-bold uppercase border ml-0.5
+                                ${
+                                  item.installation_type === "Residential"
+                                    ? "bg-blue-50 text-blue-600 border-blue-100"
+                                    : item.installation_type === "Commercial"
+                                      ? "bg-purple-50 text-purple-600 border-purple-100"
+                                      : item.installation_type === "Industrial"
+                                        ? "bg-amber-50 text-amber-700 border-amber-100"
+                                        : "bg-slate-50 text-slate-400 border-slate-100"
+                                }
+                                    `}
+                              >
+                                {item.installation_type?.substring(0, 3)}
+                              </span>
                             </div>
                           </td>
+
                           <td
                             onClick={() =>
                               !item.file_approved && handleFabClick(item)

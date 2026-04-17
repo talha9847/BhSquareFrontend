@@ -182,6 +182,7 @@ const DocumentCollection = () => {
           if (response.status !== 200) {
             throw new Error(response.data.message || "Update failed");
           }
+          getLeadsData();
           return response.data;
         } catch (error) {
           Swal.showValidationMessage(`Request failed: ${error.message}`);
@@ -195,12 +196,9 @@ const DocumentCollection = () => {
           title: "Updated!",
           text: `${itemName} status has been updated.`,
           icon: "success",
-          timer: 1500,
+          timer: 3000,
           showConfirmButton: false,
         });
-
-        // 2. Refresh your data so the UI toggles to Green/Red
-        getDocCollectStatus();
       }
     });
   };

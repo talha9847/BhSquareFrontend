@@ -260,10 +260,13 @@ const Customer = () => {
                         >
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-3">
+                              {/* Avatar Icon */}
                               <div className="w-10 h-10 bg-blue-50 text-[#1a5695] rounded-2xl flex items-center justify-center font-black text-xs border border-blue-100 uppercase">
                                 {c.lead?.customer_name?.charAt(0)}
                               </div>
+
                               <div>
+                                {/* Name with Click Action */}
                                 <p
                                   onClick={() => {
                                     navigate("/master", {
@@ -273,13 +276,38 @@ const Customer = () => {
                                       },
                                     });
                                   }}
-                                  className="font-bold text-slate-800 text-sm leading-tight cursor-pointer"
+                                  className="font-bold text-slate-800 text-sm leading-tight cursor-pointer hover:text-blue-600 transition-colors"
                                 >
                                   {c.lead?.customer_name}
                                 </p>
-                                <p className="text-slate-400 text-[11px] font-medium">
-                                  {c.lead?.contact_number}
-                                </p>
+
+                                {/* Mobile & Colorful Short Badge */}
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                  <p className="text-slate-400 text-[11px] font-medium">
+                                    {c.lead?.contact_number}
+                                  </p>
+
+                                  {/* Dynamic Colorful Badge */}
+                                  <span
+                                    className={`
+                                    text-[9px] px-1 rounded font-bold uppercase border
+                                    ${
+                                      c.lead?.installation_type ===
+                                      "Residential"
+                                        ? "bg-blue-50 text-blue-500 border-blue-100"
+                                        : c.lead?.installation_type ===
+                                            "Commercial"
+                                          ? "bg-purple-50 text-purple-500 border-purple-100"
+                                          : c.lead?.installation_type ===
+                                              "Industrial"
+                                            ? "bg-amber-50 text-amber-600 border-amber-100"
+                                            : "bg-slate-50 text-slate-400 border-slate-100"
+                                    }
+                     `}
+                                  >
+                                    {c.lead?.installation_type?.substring(0, 3)}
+                                  </span>
+                                </div>
                               </div>
                             </div>
                           </td>

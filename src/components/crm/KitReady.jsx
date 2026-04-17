@@ -300,25 +300,56 @@ const KitReady = () => {
                         >
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
+                              {/* Avatar */}
                               <div className="w-10 h-10 bg-blue-50 text-[#1a5695] rounded-2xl flex items-center justify-center font-black border border-blue-100 uppercase">
                                 {c.customer.lead.customer_name.charAt(0)}
                               </div>
+
                               <div>
-                                <p
-                                  onClick={() => {
-                                    navigate("/master", {
-                                      state: {
-                                        customerId: c.customer.id,
-                                        leadId: c.customer.lead.id,
-                                      },
-                                    });
-                                  }}
-                                  className="font-bold text-slate-800 text-sm cursor-pointer"
-                                >
-                                  {c.customer.lead.customer_name}
-                                </p>
-                                <div className="flex items-center gap-1 text-slate-400 text-[11px]">
-                                  <MapPin size={10} /> {c.customer.lead.address}
+                                {/* Name & Badge Row */}
+                                <div className="flex items-center gap-2">
+                                  <p
+                                    onClick={() => {
+                                      navigate("/master", {
+                                        state: {
+                                          customerId: c.customer.id,
+                                          leadId: c.customer.lead.id,
+                                        },
+                                      });
+                                    }}
+                                    className="font-bold text-slate-800 text-sm cursor-pointer hover:text-[#1a5695] transition-colors leading-tight"
+                                  >
+                                    {c.customer.lead.customer_name}
+                                  </p>
+
+                                  {/* Colorful Short-form Badge */}
+                                  <span
+                                    className={`
+            text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border
+            ${
+              c.customer.lead.installation_type === "Residential"
+                ? "bg-blue-50 text-blue-600 border-blue-100"
+                : c.customer.lead.installation_type === "Commercial"
+                  ? "bg-purple-50 text-purple-600 border-purple-100"
+                  : c.customer.lead.installation_type === "Industrial"
+                    ? "bg-amber-50 text-amber-700 border-amber-100"
+                    : "bg-slate-50 text-slate-400 border-slate-100"
+            }
+          `}
+                                  >
+                                    {c.customer.lead.installation_type?.substring(
+                                      0,
+                                      3,
+                                    )}
+                                  </span>
+                                </div>
+
+                                {/* Address Row */}
+                                <div className="flex items-center gap-1 text-slate-400 text-[11px] mt-0.5">
+                                  <MapPin size={10} />
+                                  <span className="truncate max-w-[200px]">
+                                    {c.customer.lead.address}
+                                  </span>
                                 </div>
                               </div>
                             </div>

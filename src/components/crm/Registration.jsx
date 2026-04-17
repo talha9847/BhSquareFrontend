@@ -263,8 +263,7 @@ const Registration = () => {
       if (res.status == 200) {
         navigate("/kitready");
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
   const confirmFinalize = async (data) => {
     try {
@@ -289,7 +288,6 @@ const Registration = () => {
         }
       }
     } catch (error) {
-
       // 🔴 Extract backend message safely
       const message =
         error?.response?.data?.message || // your controller sends this
@@ -462,9 +460,30 @@ const Registration = () => {
                           >
                             {item.lead?.customer_name}
                           </p>
-                          <p className="text-slate-400 text-[11px] font-medium">
-                            {item.lead?.contact_number}
-                          </p>
+
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <p className="text-slate-400 text-[11px] font-medium">
+                              {item.lead?.contact_number}
+                            </p>
+
+                            {/* Small Colorful Type Badge */}
+                            <span
+                              className={`
+        text-[9px] px-1 rounded font-bold uppercase border
+        ${
+          item.lead?.installation_type === "Residential"
+            ? "bg-blue-50 text-blue-500 border-blue-100"
+            : item.lead?.installation_type === "Commercial"
+              ? "bg-purple-50 text-purple-500 border-purple-100"
+              : item.lead?.installation_type === "Industrial"
+                ? "bg-amber-50 text-amber-600 border-amber-100"
+                : "bg-slate-50 text-slate-400 border-slate-100"
+        }
+      `}
+                            >
+                              {item.lead?.installation_type?.substring(0, 3)}
+                            </span>
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <p className="text-slate-500 text-xs font-medium max-w-[200px] truncate">

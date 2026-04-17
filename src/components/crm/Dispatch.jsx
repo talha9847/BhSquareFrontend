@@ -211,19 +211,42 @@ const Dispatch = () => {
                           className="hover:bg-slate-50/80 transition-colors group"
                         >
                           <td className="px-6 py-4">
-                            <p
-                              onClick={() =>
-                                navigate("/master", {
-                                  state: {
-                                    customerId: d.customer_id,
-                                    leadId: d.lead_id,
-                                  },
-                                })
-                              }
-                              className="font-bold text-slate-800 text-sm cursor-pointer hover:text-[#1a5695]"
-                            >
-                              {d.customer_name}
-                            </p>
+                            {/* Name & Badge Container */}
+                            <div className="flex items-center gap-2">
+                              <p
+                                onClick={() =>
+                                  navigate("/master", {
+                                    state: {
+                                      customerId: d.customer_id,
+                                      leadId: d.lead_id,
+                                    },
+                                  })
+                                }
+                                className="font-bold text-slate-800 text-sm cursor-pointer hover:text-[#1a5695] transition-colors leading-tight"
+                              >
+                                {d.customer_name}
+                              </p>
+
+                              {/* Colorful Type Badge */}
+                              <span
+                                className={`
+        text-[9px] px-1 rounded font-bold uppercase border
+        ${
+          d.installation_type === "Residential"
+            ? "bg-blue-50 text-blue-600 border-blue-100"
+            : d.installation_type === "Commercial"
+              ? "bg-purple-50 text-purple-600 border-purple-100"
+              : d.installation_type === "Industrial"
+                ? "bg-amber-50 text-amber-700 border-amber-100"
+                : "bg-slate-50 text-slate-400 border-slate-100"
+        }
+      `}
+                              >
+                                {d.installation_type?.substring(0, 3)}
+                              </span>
+                            </div>
+
+                            {/* Address Row */}
                             <div className="flex items-center gap-1.5 text-slate-400 text-[11px] mt-1">
                               <MapPin size={10} />
                               <span className="truncate max-w-[150px]">

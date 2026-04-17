@@ -708,12 +708,36 @@ const Leads = () => {
                       >
                         {/* 1. NAME & MOBILE */}
                         <td className="px-6 py-5 whitespace-nowrap">
-                          <p className="font-bold text-slate-800 text-sm uppercase tracking-tight">
-                            {lead.customer_name}
-                          </p>
-                          <p className="text-slate-400 text-[11px] font-semibold mt-0.5">
-                            {lead.contact_number}
-                          </p>
+                          {/* Name */}
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-slate-800 text-sm uppercase tracking-tight">
+                              {lead.customer_name}
+                            </p>
+                          </div>
+
+                          {/* Mobile & Colorful Short-form Badge */}
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <p className="text-slate-400 text-[11px] font-semibold">
+                              {lead.contact_number}
+                            </p>
+
+                            <span
+                              className={`
+      text-[9px] px-1 rounded font-bold uppercase transition-colors
+      ${
+        lead.installation_type === "Residential"
+          ? "bg-blue-50 text-blue-500/80 border border-blue-100"
+          : lead.installation_type === "Commercial"
+            ? "bg-purple-50 text-purple-500/80 border border-purple-100"
+            : lead.installation_type === "Industrial"
+              ? "bg-amber-50 text-amber-600/80 border border-amber-100"
+              : "bg-slate-100 text-slate-400"
+      }
+    `}
+                            >
+                              {lead.installation_type?.substring(0, 3)}
+                            </span>
+                          </div>
                         </td>
 
                         {/* 2. DATE CREATED (Fixed Row Issue) */}

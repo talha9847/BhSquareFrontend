@@ -47,8 +47,7 @@ const Fabrication = () => {
         withCredentials: true,
       });
       if (res.status === 200) setFabricators(res.data.data || []);
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   const fetchFabrications = async () => {
@@ -218,12 +217,33 @@ const Fabrication = () => {
                                 },
                               })
                             }
-                            className="font-bold text-slate-800 text-sm uppercase cursor-pointer"
+                            className="font-bold text-slate-800 text-sm uppercase cursor-pointer hover:text-[#1a5695] transition-colors"
                           >
                             {item.customer_name}
                           </div>
-                          <div className="text-[10px] text-slate-400 font-bold">
-                            {item.contact_number}
+
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <div className="text-[10px] text-slate-400 font-bold">
+                              {item.contact_number}
+                            </div>
+
+                            {/* Colorful Short-form Badge */}
+                            <span
+                              className={`
+        text-[9px] px-1 rounded font-bold uppercase border
+        ${
+          item.installation_type === "Residential"
+            ? "bg-blue-50 text-blue-600 border-blue-100"
+            : item.installation_type === "Commercial"
+              ? "bg-purple-50 text-purple-600 border-purple-100"
+              : item.installation_type === "Industrial"
+                ? "bg-amber-50 text-amber-700 border-amber-100"
+                : "bg-slate-50 text-slate-400 border-slate-100"
+        }
+      `}
+                            >
+                              {item.installation_type?.substring(0, 3)}
+                            </span>
                           </div>
                         </td>
                         <td
