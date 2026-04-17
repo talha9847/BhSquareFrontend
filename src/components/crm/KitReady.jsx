@@ -166,10 +166,62 @@ const KitReady = () => {
   }, [statusFilter]);
 
   const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this kit?")) {
-      // await axios.delete(...)
-      toast.success("Record deleted");
-      getCustomers();
+    console.log(id);
+    const result = await Swal.fire({
+      title: "ARE YOU SURE?",
+      text: "This action will permanently delete this kit record. This cannot be undone!",
+      icon: "error",
+      showCancelButton: true,
+      confirmButtonColor: "#e11d48", // Rose-600
+      cancelButtonColor: "#f1f5f9",
+      confirmButtonText: "YES, DELETE PERMANENTLY",
+      cancelButtonText: "CANCEL",
+      customClass: {
+        confirmButton:
+          "rounded-xl font-black text-[10px] uppercase tracking-widest px-6 py-3",
+        cancelButton:
+          "rounded-xl font-black text-[10px] uppercase tracking-widest px-6 py-3 text-slate-500",
+        popup: "rounded-[40px] border-none shadow-2xl font-syne",
+      },
+    });
+    if (result.isConfirmed) {
+      // Show Loader
+      Swal.fire({
+        title: "DELETING...",
+        html: "Removing record from database",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+      try {
+        const res = await axios.delete(
+          `/api/kitready/deleteCustomerData/${id}`,
+          {
+            withCredentials: true,
+          },
+        );
+        if (res.status === 200) {
+          Swal.fire({
+            title: "DELETED!",
+            text: "The kit record has been removed.",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
+            customClass: {
+              popup: "rounded-[40px] font-syne",
+            },
+          });
+          getCustomers(); // Refresh the table
+        }
+      } catch (error) {
+        Swal.fire({
+          title: "ACTION FAILED",
+          text: error.response?.data?.message || "Could not delete the record.",
+          icon: "error",
+          confirmButtonColor: "#1a5695",
+        });
+      }
     }
   };
 
@@ -280,12 +332,11 @@ const KitReady = () => {
         { withCredentials: true },
       );
       if (res.status === 200) {
-        getCustomers();
-        toast.success("Status updated successfully");
-        setIsModalOpen(false);
         navigate("/loanstep", {
-          customerId: selectedCustomer.customer.id,
-          leadId: selectedCustomer.customer.lead.id,
+          state: {
+            customerId: selectedCustomer.customer.id,
+            leadId: selectedCustomer.customer.lead.id,
+          },
         });
       }
     } catch (error) {
@@ -648,7 +699,7 @@ const KitReady = () => {
 
                                 {/* DELETE ACTION */}
                                 <button
-                                  onClick={() => handleDelete(c.id)}
+                                  onClick={() => handleDelete(c.customer?.id)}
                                   title="Delete Record"
                                   className="p-2.5 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all border border-rose-100 flex items-center justify-center group/del relative"
                                 >
