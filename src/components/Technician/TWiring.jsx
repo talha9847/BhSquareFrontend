@@ -19,7 +19,7 @@ import {
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import Sidebar from "./Sidebar";
+import Sidebar from "../Supervisor/Sidebar";
 import Navbar from "../crm/Navbar";
 
 const TWiring = () => {

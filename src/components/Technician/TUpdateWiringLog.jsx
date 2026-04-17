@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import Navbar from "../crm/Navbar";
-import Sidebar from "./Sidebar";
+import Sidebar from "../Supervisor/Sidebar";
 import axios from "axios";
 import Swal from "sweetalert2";
 

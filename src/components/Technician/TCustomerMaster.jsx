@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import Navbar from "../crm/Navbar";
-import Sidebar from "./Sidebar";
+import Sidebar from "../Supervisor/Sidebar";
 
 // --- SHARED UI COMPONENTS ---
 

@@ -21,7 +21,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import Navbar from "../crm/Navbar";
-import Sidebar from "./Sidebar";
+import Sidebar from "../Supervisor/Sidebar";
 import { useAuth } from "../../context/authContext";
 
 const TFinalizeWiring = () => {

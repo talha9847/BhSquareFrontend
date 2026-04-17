@@ -54,7 +54,6 @@ export default function Login() {
       );
 
       if (result.status == 200) {
-
         if (result.data.data.role == "technician") {
           navigate("/technician/wiring");
         }
@@ -66,6 +65,9 @@ export default function Login() {
         }
         if (result.data.data.role == "source") {
           navigate("/source/leads");
+        }
+        if (result.data.data.role == "supervisor") {
+          navigate("/supervisor/commission");
         }
         login(result.data.data);
         setLoading(false);

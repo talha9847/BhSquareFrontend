@@ -17,6 +17,7 @@ import {
   X,
   FileSignal,
   Users2,
+  IndianRupee,
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -30,15 +31,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   const menuItems = [
     {
-      name: "Wiring",
-      icon: <HardHat size={18} />,
+      name: "Commission",
+      icon: <IndianRupee size={18} />,
       type: "Installation",
-      path: "/technician/wiring",
-      activePaths: [
-        "/technician/wiring",
-        "/technician/updatewiring",
-        "/technician/finalizewiring",
-      ],
+      path: "/supervisor/commission",
+      activePaths: ["/supervisor/commission"],
     },
   ];
 
