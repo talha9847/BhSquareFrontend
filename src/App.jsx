@@ -72,6 +72,7 @@ import Completed from "./components/crm/Completed";
 import AllFinalStage from "./components/crm/AllFinalStage";
 import FCommission from "./components/Fabricator/FCommission";
 import Backup from "./components/crm/Backup";
+import TCustomerMaster from "./components/Technician/TCustomerMaster";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -333,6 +334,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["technician"]}>
                 <TUpdateWiringLog />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/technician/master"
+            element={
+              <ProtectedRoute allowedRoles={["technician"]}>
+                <TCustomerMaster />
               </ProtectedRoute>
             }
           />

@@ -42,7 +42,6 @@ const TWiring = () => {
         setWiringLogs(res.data.data);
       }
     } catch (error) {
-
       // Extract proper error message
       const message =
         error.response?.data?.message || // backend error message
@@ -138,7 +137,17 @@ const TWiring = () => {
                           #{item.wiring_id}
                         </td>
                         <td className="px-6 py-4">
-                          <div className="font-bold text-slate-800 text-sm uppercase cursor-pointer">
+                          <div
+                            onClick={() => {
+                              navigate("/technician/master", {
+                                state: {
+                                  customerId: item.customer_id,
+                                  leadId: item.lead_id,
+                                },
+                              });
+                            }}
+                            className="font-bold text-slate-800 text-sm uppercase cursor-pointer"
+                          >
                             {item.customer_name}
                           </div>
                           <div className="text-[10px] text-slate-400 font-bold">

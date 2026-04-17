@@ -18,7 +18,7 @@ import {
   IndianRupee,
 } from "lucide-react";
 import axios from "axios";
-import Navbar from "./Navbar";
+import Navbar from "../crm/Navbar";
 import Sidebar from "./Sidebar";
 
 // --- SHARED UI COMPONENTS ---
@@ -51,87 +51,7 @@ const DataField = ({ label, value, isFull = false }) => (
     </p>
   </div>
 );
-const NameChangeModule = ({ customerId }) => {
-  const [nameChangeDocs, setNameChangeDocs] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchNameChange = async () => {
-      setLoading(true);
-      try {
-        const res = await axios.get(
-          `/api/namechange/getNameChangeDocs/${customerId}`,
-          { withCredentials: true },
-        );
-        if (res.status === 200) {
-          setNameChangeDocs(res.data.data || []);
-        }
-      } catch (err) {
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (customerId) fetchNameChange();
-  }, [customerId]);
-
-  if (!loading && nameChangeDocs.length === 0) return null;
-
-  return (
-    <ModuleCard
-      title="Name Change Documentation"
-      icon={<User size={18} />}
-      accentColor="text-rose-600"
-    >
-      <div className="space-y-4">
-        {loading ? (
-          <div className="animate-pulse space-y-3">
-            <div className="h-16 bg-slate-50 rounded-3xl" />
-            <div className="h-16 bg-slate-50 rounded-3xl" />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-4">
-            {nameChangeDocs.map((doc) => (
-              <a
-                key={doc.id}
-                href={doc.document_url}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-between p-5 rounded-[32px] bg-slate-50 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all group"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                    <FileText
-                      size={20}
-                      className="text-slate-400 group-hover:text-rose-600"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest">
-                      {doc.document_name}
-                    </p>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-1">
-                      Identity Verification Doc
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="opacity-0 group-hover:opacity-100 text-[9px] font-black text-rose-600 uppercase tracking-widest transition-opacity">
-                    View Document
-                  </span>
-                  <Eye
-                    size={18}
-                    className="text-slate-300 group-hover:text-rose-600"
-                  />
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
-      </div>
-    </ModuleCard>
-  );
-};
 // --- FEATURE MODULES ---
 
 const LoanModule = ({ customerId }) => {
@@ -217,7 +137,7 @@ const TechnicalModule = ({ customerId }) => {
     const fetchTech = async () => {
       try {
         const res = await axios.get(
-          `/api/docs/fetchCustomerDocuments/${customerId}`,
+          `/api/docs/getCustomerDocumentsWithoutFiles/${customerId}`,
           { withCredentials: true },
         );
         if (res.status === 200) setTech(res.data.data);
@@ -241,38 +161,6 @@ const TechnicalModule = ({ customerId }) => {
           <DataField label="GPS Coordinates" value={tech.geo_coordinate} />
         </div>
       </ModuleCard>
-
-      {tech.files?.length > 0 && (
-        <div className="bg-white rounded-[40px] p-10 border border-slate-200 shadow-sm">
-          <h3 className="text-[11px] font-black text-amber-600 uppercase tracking-[0.2em] flex items-center gap-3 mb-10">
-            <FileText size={18} /> Master Vault
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-            {tech.files.map((file) => (
-              <a
-                key={file.id}
-                href={file.file_url}
-                target="_blank"
-                rel="noreferrer"
-                className="group relative flex flex-col p-6 rounded-[32px] bg-slate-50 border-2 border-transparent hover:border-[#1a5695] hover:bg-white transition-all shadow-sm"
-              >
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
-                  <FileText
-                    className="text-slate-400 group-hover:text-[#1a5695]"
-                    size={24}
-                  />
-                </div>
-                <span className="text-[10px] font-black text-slate-800 uppercase tracking-tight truncate mb-1">
-                  {file.file_name}
-                </span>
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Eye size={16} className="text-[#1a5695]" />
-                </div>
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
     </>
   );
 };
@@ -813,7 +701,7 @@ const WiringModule = ({ customerId }) => {
   );
 };
 
-const CustomerMaster = () => {
+const TCustomerMaster = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { customerId, leadId } = location.state || {};
@@ -821,7 +709,6 @@ const CustomerMaster = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [lead, setLead] = useState(null);
-  const [stages, setStages] = useState([]);
 
   const formatIST = (dateString) => {
     if (!dateString) return null;
@@ -848,12 +735,8 @@ const CustomerMaster = () => {
           axios.get(`/api/leads/fetchLeadById/${leadId}`, {
             withCredentials: true,
           }),
-          axios.get(`/api/customers/fetchCustomerStages/${customerId}`, {
-            withCredentials: true,
-          }),
         ]);
         setLead(lRes.data?.data);
-        setStages(sRes.data?.data || []);
       } catch (err) {
       } finally {
         setTimeout(() => setLoading(false), 800);
@@ -954,67 +837,11 @@ const CustomerMaster = () => {
                       </div>
                     </div>
                   </ModuleCard>
-                  <NameChangeModule customerId={customerId} />
                   <TechnicalModule customerId={customerId} />
-                  <LoanModule customerId={customerId} />
                   <KitModule customerId={customerId} />
                   <DispatchModule customerId={customerId} />
                   <FabricationModule customerId={customerId} />
                   <WiringModule customerId={customerId} />
-                </div>
-
-                <div className="lg:col-span-5">
-                  <div className="bg-white rounded-[40px] border border-slate-200 shadow-xl overflow-hidden sticky top-10">
-                    <div className="p-8 border-b border-slate-100 bg-[#1a5695] text-white flex justify-between items-center">
-                      <h3 className="text-sm font-black uppercase tracking-widest">
-                        Project Timeline
-                      </h3>
-                      <Clock size={20} className="opacity-50" />
-                    </div>
-                    <div className="p-10 relative">
-                      <div className="absolute left-[51px] top-12 bottom-12 w-[2px] bg-slate-100" />
-                      {stages.map((stage) => (
-                        <div
-                          key={stage.id}
-                          className="relative flex items-start gap-8 pb-12 last:pb-0"
-                        >
-                          <div
-                            className={`relative z-10 w-8 h-8 rounded-xl flex items-center justify-center transition-all ${stage.status === "done" ? "bg-emerald-500 text-white shadow-lg" : stage.status === "pending" ? "bg-[#1a5695] text-white animate-pulse" : "bg-slate-100 text-slate-300"}`}
-                          >
-                            {stage.status === "done" ? (
-                              <CheckCircle2 size={16} />
-                            ) : (
-                              <Clock size={16} />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h4
-                              className={`text-[12px] font-black uppercase tracking-widest mb-3 ${stage.status === "not_used" ? "text-slate-300" : "text-slate-800"}`}
-                            >
-                              {stage.name}
-                            </h4>
-                            <div className="flex flex-col gap-2">
-                              {stage.started_at && (
-                                <div className="flex items-center gap-2 text-[9px] font-black text-slate-400 bg-slate-50 self-start px-3 py-1.5 rounded-lg border border-slate-100 uppercase">
-                                  <Calendar
-                                    size={12}
-                                    className="text-blue-50"
-                                  />
-                                  Started: {formatIST(stage.started_at)}
-                                </div>
-                              )}
-                              {stage.completed_at && (
-                                <div className="flex items-center gap-2 text-[9px] font-black text-emerald-600 bg-emerald-50 self-start px-3 py-1.5 rounded-lg border border-emerald-100 uppercase">
-                                  <CheckCircle2 size={12} /> Finished:
-                                  {formatIST(stage.completed_at)}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -1025,4 +852,4 @@ const CustomerMaster = () => {
   );
 };
 
-export default CustomerMaster;
+export default TCustomerMaster;

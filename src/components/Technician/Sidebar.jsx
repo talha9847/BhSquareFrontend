@@ -25,7 +25,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const [active, setActive] = useState("dashboard");
   const navigate = useNavigate();
   const location = useLocation();
-  const [leadCount, setLeadCount] = useState(0);
 
   const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -42,20 +41,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       ],
     },
   ];
-
-  const fetchPendingLeadsCount = async () => {
-    try {
-      const result = await axios.get(`/api/leads/fetchPendingLeadsCount`, {
-        withCredentials: true,
-      });
-      setLeadCount(result.data.count);
-    } catch (error) {
-    }
-  };
-
-  useEffect(() => {
-    fetchPendingLeadsCount();
-  }, []);
 
   const categories = [...new Set(menuItems.map((item) => item.type))];
 
