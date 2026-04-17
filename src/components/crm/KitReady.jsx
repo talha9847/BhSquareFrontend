@@ -325,17 +325,22 @@ const KitReady = () => {
                                   {/* Colorful Short-form Badge */}
                                   <span
                                     className={`
-            text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border
-            ${
-              c.customer.lead.installation_type === "Residential"
-                ? "bg-blue-50 text-blue-600 border-blue-100"
-                : c.customer.lead.installation_type === "Commercial"
-                  ? "bg-purple-50 text-purple-600 border-purple-100"
-                  : c.customer.lead.installation_type === "Industrial"
-                    ? "bg-amber-50 text-amber-700 border-amber-100"
-                    : "bg-slate-50 text-slate-400 border-slate-100"
-            }
-          `}
+                                        text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border
+                                        ${
+                                          c.customer.lead.installation_type ===
+                                          "Residential"
+                                            ? "bg-blue-50 text-blue-600 border-blue-100"
+                                            : c.customer.lead
+                                                  .installation_type ===
+                                                "Commercial"
+                                              ? "bg-purple-50 text-purple-600 border-purple-100"
+                                              : c.customer.lead
+                                                    .installation_type ===
+                                                  "Industrial"
+                                                ? "bg-amber-50 text-amber-700 border-amber-100"
+                                                : "bg-slate-50 text-slate-400 border-slate-100"
+                                        }
+                                        `}
                                   >
                                     {c.customer.lead.installation_type?.substring(
                                       0,
@@ -804,10 +809,10 @@ const KitReady = () => {
                 </div>
                 <div className="space-y-1">
                   <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
-                    Inverter Quantity
+                    Panel Quantity
                   </label>
                   <input
-                    {...re1("inverter_qty", {
+                    {...re1("panel_qty", {
                       required: "Capacity is required",
                     })}
                     readOnly
@@ -819,12 +824,13 @@ const KitReady = () => {
                     </p>
                   )} */}
                 </div>
+
                 <div className="space-y-1">
                   <label className="text-[9px] font-black text-slate-400 uppercase ml-1">
-                    Panel Quantity
+                    Inverter Quantity
                   </label>
                   <input
-                    {...re1("panel_qty", {
+                    {...re1("inverter_qty", {
                       required: "Capacity is required",
                     })}
                     readOnly
