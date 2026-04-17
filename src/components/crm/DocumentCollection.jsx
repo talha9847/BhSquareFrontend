@@ -192,6 +192,9 @@ const DocumentCollection = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         // 1. Success Message
+
+        getDocCollectStatus();
+
         Swal.fire({
           title: "Updated!",
           text: `${itemName} status has been updated.`,
