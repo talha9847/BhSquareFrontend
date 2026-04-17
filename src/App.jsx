@@ -553,7 +553,7 @@ function App() {
           <Route
             path="/supervisor/commission"
             element={
-              <ProtectedRoute allowedRoles={["admin"]}>
+              <ProtectedRoute allowedRoles={["supervisor"]}>
                 <SuperCommission />
               </ProtectedRoute>
             }
