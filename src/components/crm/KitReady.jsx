@@ -13,6 +13,7 @@ import {
   CheckCircle,
   Clock,
   ArrowRightLeft,
+  Trash2,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -130,7 +131,7 @@ const KitReady = () => {
       );
       if (res.status == 200 || res.status == 210) {
         setNaviLoad(false);
-        navigate(loan_status === "required" ? "/loanstep" : "/preparekit", {
+        navigate("/preparekit", {
           state: {
             customerId: customerId,
             leadId: leadId,
@@ -164,8 +165,12 @@ const KitReady = () => {
     getCustomers();
   }, [statusFilter]);
 
-  const handleActive = async (id, status) => {
-    console.log(id, status);
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this kit?")) {
+      // await axios.delete(...)
+      toast.success("Record deleted");
+      getCustomers();
+    }
   };
 
   const handleDelay = async (id, status) => {
@@ -176,7 +181,7 @@ const KitReady = () => {
       showCancelButton: true,
       confirmButtonColor: "#1a5695",
       cancelButtonColor: "#f1f5f9",
-      confirmButtonText: "YES, DELAY IT",
+      confirmButtonText: `YES, ${status} IT`,
       cancelButtonText: "CANCEL",
       customClass: {
         confirmButton:
@@ -261,7 +266,10 @@ const KitReady = () => {
   };
 
   const handleUpdateStatus = async () => {
-    setLoading(true);
+    // setLoading(true);
+    console.log(selectedCustomer);
+    console.log(selectedCustomer.customer.id);
+    console.log(selectedCustomer.customer.lead.id);
     try {
       const res = await axios.post(
         `/api/kitready/updateLoan`,
@@ -275,6 +283,10 @@ const KitReady = () => {
         getCustomers();
         toast.success("Status updated successfully");
         setIsModalOpen(false);
+        navigate("/loanstep", {
+          customerId: selectedCustomer.customer.id,
+          leadId: selectedCustomer.customer.lead.id,
+        });
       }
     } catch (error) {
       toast.error("Error updating status");
@@ -619,14 +631,34 @@ const KitReady = () => {
                           )}
 
                           {c.status == "delay" && (
-                            <td className="px-6 py-4 text-right">
-                              <button
-                                onClick={() => handleDelay(c.id, "pending")}
-                                title="Mark as Delayed"
-                                className="p-2.5 bg-green-50 text-green-600 hover:bg-green-100 rounded-xl transition-all border border-amber-100"
-                              >
-                                <ArrowRightLeft size={16} />
-                              </button>
+                            <td className="px-6 py-4">
+                              <div className="flex justify-end items-center gap-2">
+                                {/* DELAY / MOVE ACTION */}
+                                <button
+                                  onClick={() => handleDelay(c.id, "pending")}
+                                  title="Move to Delayed"
+                                  className="p-2.5 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded-xl transition-all border border-amber-100 flex items-center justify-center group/delay relative"
+                                >
+                                  <ArrowRightLeft size={16} />
+                                  {/* Tooltip */}
+                                  <span className="absolute bottom-full mb-2 hidden group-hover/delay:block bg-slate-800 text-white text-[9px] px-2 py-1 rounded whitespace-nowrap uppercase tracking-wider font-bold z-10 shadow-lg">
+                                    Move to Delay
+                                  </span>
+                                </button>
+
+                                {/* DELETE ACTION */}
+                                <button
+                                  onClick={() => handleDelete(c.id)}
+                                  title="Delete Record"
+                                  className="p-2.5 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all border border-rose-100 flex items-center justify-center group/del relative"
+                                >
+                                  <Trash2 size={16} />
+                                  {/* Tooltip */}
+                                  <span className="absolute bottom-full mb-2 hidden group-hover/del:block bg-rose-600 text-white text-[9px] px-2 py-1 rounded whitespace-nowrap uppercase tracking-wider font-bold z-10 shadow-lg">
+                                    Delete
+                                  </span>
+                                </button>
+                              </div>
                             </td>
                           )}
                         </tr>
@@ -714,7 +746,9 @@ const KitReady = () => {
                   </div>
                 </div>
                 <button
-                  onClick={handleUpdateStatus}
+                  onClick={() => {
+                    handleUpdateStatus();
+                  }}
                   disabled={loading}
                   className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:bg-[#15467a] transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-70"
                 >
