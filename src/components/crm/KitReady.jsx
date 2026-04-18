@@ -225,7 +225,7 @@ const KitReady = () => {
       }
     }
   };
-  const handleEdit = async (id, currentNote = "") => {
+  const handleEdit = async (id, currentNote) => {
     const { value: text } = await Swal.fire({
       title: "UPDATE NOTE",
       input: "textarea",
@@ -253,9 +253,9 @@ const KitReady = () => {
       showLoaderOnConfirm: true,
       preConfirm: async (newNote) => {
         try {
-          const response = await axios.post(
-            `/api/kitready/updateNote`,
-            { id, note: newNote },
+          const response = await axios.put(
+            `/api/kitready/updateKitReadyNote/${id}`,
+            { note: newNote },
             { withCredentials: true },
           );
           return response.data;
@@ -500,6 +500,12 @@ const KitReady = () => {
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
                         Customer
                       </th>
+
+                      {statusFilter == "delay" && (
+                        <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-center">
+                          Note
+                        </th>
+                      )}
                       <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-center">
                         Loan Status
                       </th>
@@ -579,6 +585,12 @@ const KitReady = () => {
                               </div>
                             </div>
                           </td>
+
+                          {statusFilter == "delay" && (
+                            <td className="px-6 py-5 text-[12px] text-center">
+                              {c.note}
+                            </td>
+                          )}
 
                           {/* LOAN STATUS */}
                           <td className="px-6 py-4 text-center">
@@ -744,9 +756,7 @@ const KitReady = () => {
                                 {/* DELAY / MOVE ACTION */}
 
                                 <button
-                                  onClick={() =>
-                                    handleEdit(c.customer?.id, "note")
-                                  }
+                                  onClick={() => handleEdit(c.id, c.note)}
                                   title="Delete Record"
                                   className="p-2.5 bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white rounded-xl transition-all border border-rose-100 flex items-center justify-center group/del relative"
                                 >
