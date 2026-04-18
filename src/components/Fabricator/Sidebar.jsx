@@ -17,7 +17,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <HardHat size={18} />,
       type: "Installation",
       path: "/fabricator/fabrication",
-      activePaths: ["/fabricator/fabrication"],
+      activePaths: ["/fabricator/fabrication", "/fabricator/master"],
     },
     {
       name: "Commission",
@@ -27,8 +27,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       activePaths: ["/fabricator/commission"],
     },
   ];
-
-
 
   const categories = [...new Set(menuItems.map((item) => item.type))];
 

@@ -10,12 +10,15 @@ import {
   Zap,
   Clock,
   ChevronRight,
+  Download,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
 const Completed = () => {
   const navigate = useNavigate();
@@ -38,6 +41,55 @@ const Completed = () => {
       .split("T")[0];
   });
 
+  const downloadExcel = async () => {
+    if (filteredItems.length === 0) {
+      toast.error("No data available to download");
+      return;
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Completed Projects");
+
+    // Define Columns (Headers)
+    worksheet.columns = [
+      { header: "SR NO.", key: "srNo", width: 10 },
+      { header: "CUSTOMER NAME", key: "name", width: 30 },
+      { header: "CONTACT", key: "mobile", width: 20 },
+      { header: "ADDRESS", key: "address", width: 40 },
+      { header: "TOTAL CAPACITY (kW)", key: "capacity", width: 20 },
+      { header: "DURATION (DAYS)", key: "days", width: 15 },
+      { header: "DATE", key: "date", width: 15 },
+    ];
+
+    // Add Rows
+    filteredItems.forEach((item, index) => {
+      worksheet.addRow({
+        srNo: index + 1,
+        name: item.customer_name?.toUpperCase() || "N/A",
+        mobile: item.mobile || "N/A",
+        address: item.address || "N/A",
+        capacity: (item.total_capacity / 1000).toFixed(2),
+        days: item.days,
+        date: new Date(item.created_at).toLocaleDateString(),
+      });
+    });
+
+    // Style the header row (Bold & Blue background)
+    worksheet.getRow(1).font = { bold: true, color: { argb: "FFFFFF" } };
+    worksheet.getRow(1).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "1A5695" }, // Matches your app's blue
+    };
+
+    // Generate and Download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const data = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    saveAs(data, `Completed_Projects_${new Date().getTime()}.xlsx`);
+  };
+
   const getCompletedProjects = async () => {
     setLoading(true);
     try {
@@ -47,6 +99,26 @@ const Completed = () => {
       });
       if (res.status === 200) {
         setData(res.data.data || []);
+        setData([
+          {
+            id: 101,
+            customerId: 55,
+            leadId: 78,
+
+            customer_name: "Ravi Patel",
+            mobile: "9876543210",
+            address: "Adajan, Surat, Gujarat",
+
+            sourceId: 3,
+            sourceName: "Facebook Ads",
+
+            total_capacity: 5500,
+
+            days: 12,
+
+            created_at: "2026-04-18T10:30:00.000Z",
+          },
+        ]);
       }
     } catch (error) {
       toast.error("Error fetching completed projects");
@@ -166,6 +238,32 @@ const Completed = () => {
                   className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 ring-blue-100 transition-all"
                 />
               </div>
+            </div>
+
+            <div className="p-6 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="relative w-full max-w-xs">
+                <Search
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={16}
+                />
+                <input
+                  type="text"
+                  placeholder="SEARCH NAME OR MOBILE..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 ring-blue-100 transition-all"
+                />
+              </div>
+
+              {/* 3. The Download Button */}
+              <button
+                onClick={downloadExcel}
+                disabled={loading || filteredItems.length === 0}
+                className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all shadow-md active:scale-95"
+              >
+                <Download size={16} />
+                Export Excel
+              </button>
             </div>
 
             <div className="overflow-x-auto">

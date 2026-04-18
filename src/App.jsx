@@ -74,6 +74,7 @@ import FCommission from "./components/Fabricator/FCommission";
 import Backup from "./components/crm/Backup";
 import TCustomerMaster from "./components/Technician/TCustomerMaster";
 import SuperCommission from "./components/Supervisor/SuperCommission";
+import FCustomerMaster from "./components/Fabricator/FCustomerMaster";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -287,6 +288,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["fabricator"]}>
                 <FCommission />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/fabricator/master"
+            element={
+              <ProtectedRoute allowedRoles={["fabricator"]}>
+                <FCustomerMaster />
               </ProtectedRoute>
             }
           />

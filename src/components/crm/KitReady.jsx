@@ -14,6 +14,7 @@ import {
   Clock,
   ArrowRightLeft,
   Trash2,
+  Edit3Icon,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -224,7 +225,63 @@ const KitReady = () => {
       }
     }
   };
+  const handleEdit = async (id, currentNote = "") => {
+    const { value: text } = await Swal.fire({
+      title: "UPDATE NOTE",
+      input: "textarea",
+      inputLabel: "Project Remarks",
+      inputValue: currentNote,
+      inputPlaceholder: "Enter project notes or updates here...",
+      showCancelButton: true,
+      confirmButtonText: "UPDATE NOTE",
+      cancelButtonText: "CANCEL",
+      reverseButtons: true,
+      confirmButtonColor: "#1a5695", // Lapis Blue
+      inputAttributes: {
+        "aria-label": "Type your note here",
+      },
+      customClass: {
+        popup: "rounded-[32px] border-none shadow-2xl font-syne",
+        confirmButton:
+          "rounded-xl font-black text-[10px] uppercase tracking-widest px-8 py-4",
+        cancelButton:
+          "rounded-xl font-black text-[10px] uppercase tracking-widest px-8 py-4 text-slate-500",
+        input:
+          "rounded-2xl border-slate-200 text-sm focus:ring-[#1a5695] focus:border-[#1a5695]",
+      },
+      // The "PreConfirm" handles the loader and the API call
+      showLoaderOnConfirm: true,
+      preConfirm: async (newNote) => {
+        try {
+          const response = await axios.post(
+            `/api/kitready/updateNote`,
+            { id, note: newNote },
+            { withCredentials: true },
+          );
+          return response.data;
+        } catch (error) {
+          Swal.showValidationMessage(
+            `Request failed: ${error.response?.data?.message || error.message}`,
+          );
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading(),
+    });
 
+    if (text) {
+      Swal.fire({
+        title: "UPDATED!",
+        text: "The note has been saved successfully.",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+        customClass: {
+          popup: "rounded-[32px]",
+        },
+      });
+      getCustomers(); // Refresh your list
+    }
+  };
   const handleDelay = async (id, status) => {
     const result = await Swal.fire({
       title: `Move to ${status}?`,
@@ -685,6 +742,21 @@ const KitReady = () => {
                             <td className="px-6 py-4">
                               <div className="flex justify-end items-center gap-2">
                                 {/* DELAY / MOVE ACTION */}
+
+                                <button
+                                  onClick={() =>
+                                    handleEdit(c.customer?.id, "note")
+                                  }
+                                  title="Delete Record"
+                                  className="p-2.5 bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white rounded-xl transition-all border border-rose-100 flex items-center justify-center group/del relative"
+                                >
+                                  <Edit3Icon size={16} />
+                                  {/* Tooltip */}
+                                  <span className="absolute bottom-full mb-2 hidden group-hover/del:block bg-blue-600 text-white text-[9px] px-2 py-1 rounded whitespace-nowrap uppercase tracking-wider font-bold z-10 shadow-lg">
+                                    Edit
+                                  </span>
+                                </button>
+
                                 <button
                                   onClick={() => handleDelay(c.id, "pending")}
                                   title="Move to Delayed"
