@@ -99,26 +99,6 @@ const Completed = () => {
       });
       if (res.status === 200) {
         setData(res.data.data || []);
-        setData([
-          {
-            id: 101,
-            customerId: 55,
-            leadId: 78,
-
-            customer_name: "Ravi Patel",
-            mobile: "9876543210",
-            address: "Adajan, Surat, Gujarat",
-
-            sourceId: 3,
-            sourceName: "Facebook Ads",
-
-            total_capacity: 5500,
-
-            days: 12,
-
-            created_at: "2026-04-18T10:30:00.000Z",
-          },
-        ]);
       }
     } catch (error) {
       toast.error("Error fetching completed projects");
