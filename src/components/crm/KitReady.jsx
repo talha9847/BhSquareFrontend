@@ -388,7 +388,7 @@ const KitReady = () => {
         },
         { withCredentials: true },
       );
-      if (res.status === 200) {
+      if (res.status === 200 && loanRequired) {
         navigate("/loanstep", {
           state: {
             customerId: selectedCustomer.customer.id,
@@ -400,6 +400,8 @@ const KitReady = () => {
       toast.error("Error updating status");
     } finally {
       setLoading(false);
+      getCustomers();
+      setIsModalOpen(false);
     }
   };
 
