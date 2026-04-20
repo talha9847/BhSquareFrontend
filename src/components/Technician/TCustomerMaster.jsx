@@ -494,7 +494,7 @@ const FabricationModule = ({ customerId }) => {
                   </div>
 
                   {/* COLUMN 2: NEW FINANCIAL DETAIL SECTION */}
-                  <div className="md:border-l md:border-slate-100 md:pl-8">
+                  {/* <div className="md:border-l md:border-slate-100 md:pl-8">
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">
                       Fabricator Commission
                     </p>
@@ -513,7 +513,7 @@ const FabricationModule = ({ customerId }) => {
                     <p className="text-[8px] text-slate-400 mt-1 font-medium italic">
                       * Commission subject to audit
                     </p>
-                  </div>
+                  </div> */}
 
                   {/* COLUMN 3: UPDATED TIMESTAMP */}
                   <div className="md:text-right">
