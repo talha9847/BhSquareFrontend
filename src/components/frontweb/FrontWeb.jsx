@@ -1,40 +1,109 @@
-import React from "react";
-import Navbar from "../frontweb/Navbar";
-import Hero from "../frontweb/Hero";
-import Services from "../frontweb/Services";
-import About from "../frontweb/About";
-import Process from "../frontweb/Process";
-import Projects from "../frontweb/Projects";
-import Testimonials from "../frontweb/Testimonials";
-import Footer from "../frontweb/Footer";
-import Contact from "../frontweb/Contact";
-import Popup from "./Popup";
+import { useState } from "react";
+
+import TryLoader from "./TryLoader";
+import TryNav from "./TryNav";
+import TryCanvasScene from "./TryCanvasScene";
 import SunCursor from "./SunCursor";
+import Popup from "./Popup";
+
+import { HeroSun, Earth, Problem, Solution } from "./TryStoryTop";
+
+import { HowItWorks, PMSuryaGhar, Family } from "./TryStoryMid";
+
+// import { WhyBHsquare, Projects, ROICalculator } from "./TryShowcase";
+
+// import { Dashboard, Testimonials, FAQ } from "./TryDataSections";
+
+// import { Contact, Footer, FloatingWhatsApp } from "./TryContact";
+
+const MARQUEE = [
+  "Tier-1 Panels",
+  "PM Surya Ghar",
+  "25-Year Warranty",
+  "Net Metering",
+  "Smart Monitoring",
+  "MNRE Approved",
+  "Free Site Visit",
+];
+
+function Marquee() {
+  return (
+    <div className="relative z-10 overflow-hidden border-y border-white/10 bg-[#0F172A]/60 py-5">
+      <div className="marquee-track">
+        {[0, 1].map((rep) => (
+          <div
+            key={rep}
+            className="flex shrink-0 items-center"
+            aria-hidden={rep === 1}
+          >
+            {MARQUEE.map((item, index) => (
+              <div
+                key={`${rep}-${index}`}
+                className="mx-8 flex shrink-0 items-center gap-8 whitespace-nowrap font-display text-2xl font-bold text-white/80 md:text-3xl"
+              >
+                {item}
+
+                <span className="text-[var(--orange)]">✦</span>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 const FrontWeb = () => {
+  const [loaded, setLoaded] = useState(false);
+
   return (
     <div className="select-none cursor-none">
+      {!loaded && <TryLoader onDone={() => setLoaded(true)} />}
+
+      <TryCanvasScene />
+
       <SunCursor />
-      {/* Hide default arrow */} <Popup />
-      <Navbar />
+
+      <Popup />
+
+      {/* <FloatingWhatsApp /> */}
+
       <section id="home">
-        <Hero />
-      </section>
-      <section id="services">
-        <Services />
-      </section>
-      <section id="about">
-        <About />
-      </section>
-      <Process />
-      <section id="projects">
+        <TryNav />
+
+        <HeroSun />
+
+        <Earth />
+
+        <Problem />
+
+        <Solution />
+
+        {/* EXACTLY like the original App */}
+        <Marquee />
+
+        <HowItWorks />
+
+        <PMSuryaGhar />
+
+        <Family />
+
+        {/* <WhyBHsquare />
+
+        <ROICalculator />
+
         <Projects />
+
+        <Dashboard />
+
+        <Testimonials />
+
+        <FAQ /> */}
+
+        {/* <Contact /> */}
       </section>
-      <Testimonials />
-      <section id="contact">
-        <Contact />
-      </section>
-      <Footer />
+
+      {/* <Footer /> */}
     </div>
   );
 };
