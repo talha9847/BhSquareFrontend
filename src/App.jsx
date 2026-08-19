@@ -92,7 +92,14 @@ function App() {
       />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<FrontWeb />} />
+          <Route
+            path="/"
+            element={
+              <div className="website-theme">
+                <FrontWeb />
+              </div>
+            }
+          />
           <Route path="/login" element={<Login />} />
 
           <Route

@@ -1,292 +1,170 @@
-@import "tailwindcss";
-
-/* =========================================================
-   TAILWIND THEME
-========================================================= */
-
+@import "tailwindcss"; /* ========================================================= TAILWIND THEME ========================================================= */
 @theme {
   --animate-blink: blink 1s step-end infinite;
-
   @keyframes blink {
     0%,
     100% {
       opacity: 1;
     }
-
     50% {
       opacity: 0;
     }
   }
-}
-
-/* =========================================================
-   GLOBAL VARIABLES
-========================================================= */
-
-:root {
-  --bg: #0b1220;
-  --bg-2: #0f172a;
-  --bg-3: #111827;
-
-  --orange: #ff8a00;
-  --gold: #ffd54a;
-  --blue: #3b82f6;
-
-  --ink: #e8edf5;
-  --muted: #93a0b4;
-
-  /* Tailwind / shadcn style tokens */
-  --background: 222 47% 8%;
-  --foreground: 210 30% 94%;
-
-  --card: 222 40% 11%;
-  --card-foreground: 210 30% 94%;
-
-  --popover: 222 40% 11%;
-  --popover-foreground: 210 30% 94%;
-
-  --primary: 33 100% 50%;
-  --primary-foreground: 222 47% 8%;
-
-  --secondary: 217 33% 17%;
-  --secondary-foreground: 210 30% 94%;
-
-  --muted-bg: 217 33% 17%;
-  --muted-foreground: 215 15% 65%;
-
-  --accent: 45 100% 64%;
-  --accent-foreground: 222 47% 8%;
-
-  --destructive: 0 72% 51%;
-  --destructive-foreground: 0 0% 98%;
-
-  --border: 217 33% 20%;
-  --input: 217 33% 20%;
-  --ring: 33 100% 50%;
-
-  --radius: 0.85rem;
-}
-
-/* =========================================================
-   RESET / BASE
-========================================================= */
-
+} /* ========================================================= GLOBAL RESET Keep this section neutral. DO NOT put website-specific colors here. ========================================================= */
 * {
   box-sizing: border-box;
-  border-color: hsl(var(--border));
 }
-
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
 }
-
 body {
   margin: 0;
   min-width: 320px;
-  background: var(--bg);
-  color: var(--ink);
   font-family: "Manrope", sans-serif;
   overflow-x: hidden;
 }
-
-button,
-a,
-input,
-textarea,
-select {
-  font: inherit;
-}
-
 button {
   cursor: pointer;
-}
-
-.font-display {
+} /* ========================================================= WEBSITE THEME Everything below this section belongs ONLY to the public website. Wrap FrontWeb/Login with: <div className="website-theme"> ... </div> ========================================================= */
+.website-theme {
+  --bg: #0b1220;
+  --bg-2: #0f172a;
+  --bg-3: #111827;
+  --orange: #ff8a00;
+  --gold: #ffd54a;
+  --blue: #3b82f6;
+  --ink: #e8edf5;
+  --muted: #93a0b4; /* Tailwind / shadcn style tokens */
+  --background: 222 47% 8%;
+  --foreground: 210 30% 94%;
+  --card: 222 40% 11%;
+  --card-foreground: 210 30% 94%;
+  --popover: 222 40% 11%;
+  --popover-foreground: 210 30% 94%;
+  --primary: 33 100% 50%;
+  --primary-foreground: 222 47% 8%;
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 30% 94%;
+  --muted-bg: 217 33% 17%;
+  --muted-foreground: 215 15% 65%;
+  --accent: 45 100% 64%;
+  --accent-foreground: 222 47% 8%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 217 33% 20%;
+  --input: 217 33% 20%;
+  --ring: 33 100% 50%;
+  --radius: 0.85rem;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+} /* ========================================================= WEBSITE FONT ========================================================= */
+.website-theme .font-display {
   font-family: "Outfit", sans-serif;
-}
-
-/* =========================================================
-   SELECTION
-========================================================= */
-
-::selection {
+} /* ========================================================= WEBSITE SELECTION ========================================================= */
+.website-theme ::selection {
   background: var(--orange);
   color: #0b1220;
-}
-
-/* =========================================================
-   SCROLLBAR
-========================================================= */
-
-::-webkit-scrollbar {
+} /* ========================================================= WEBSITE SCROLLBAR ========================================================= */
+.website-theme ::-webkit-scrollbar {
   width: 8px;
 }
-
-::-webkit-scrollbar-track {
+.website-theme ::-webkit-scrollbar-track {
   background: #0b1220;
 }
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    #ff8a00,
-    #ffd54a
-  );
+.website-theme ::-webkit-scrollbar-thumb {
+  background: linear-gradient(#ff8a00, #ffd54a);
   border-radius: 8px;
 }
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(
-    #ffd54a,
-    #ff8a00
-  );
-}
-
-/* Firefox */
-
-html {
-  scrollbar-width: thin;
-  scrollbar-color: #ff8a00 #0b1220;
-}
-
-/* =========================================================
-   LENIS
-========================================================= */
-
+.website-theme ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(#ffd54a, #ff8a00);
+} /* ========================================================= WEBSITE LENIS ========================================================= */
+.website-theme.lenis,
+.website-theme .lenis {
+  scroll-behavior: auto !important;
+} /* Keep these global because Lenis adds the classes to html/body. They don't contain any website colors. */
 html.lenis,
 html.lenis body {
   height: auto;
 }
-
 .lenis.lenis-smooth {
   scroll-behavior: auto !important;
 }
-
 .lenis.lenis-stopped {
   overflow: hidden;
 }
-
 .lenis.lenis-scrolling iframe {
   pointer-events: none;
-}
-
-/* =========================================================
-   GLASS EFFECTS
-========================================================= */
-
-.glass {
+} /* ========================================================= GLASS EFFECTS ========================================================= */
+.website-theme .glass {
   background: rgba(17, 24, 39, 0.55);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
-
-.glass-strong {
+.website-theme .glass-strong {
   background: rgba(15, 23, 42, 0.75);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
-
-.glass-light {
+.website-theme .glass-light {
   background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(11, 18, 32, 0.08);
-}
-
-/* =========================================================
-   SUN GRADIENT TEXT
-========================================================= */
-
-.text-gradient-sun {
-  background: linear-gradient(
-    100deg,
-    #ffd54a 0%,
-    #ff8a00 60%,
-    #ff6a00 100%
-  );
-
+} /* ========================================================= SUN GRADIENT TEXT ========================================================= */
+.website-theme .text-gradient-sun {
+  background: linear-gradient(100deg, #ffd54a 0%, #ff8a00 60%, #ff6a00 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-}
-
-/* =========================================================
-   GLOW
-========================================================= */
-
-.glow-orange {
+} /* ========================================================= GLOW ========================================================= */
+.website-theme .glow-orange {
   box-shadow: 0 0 60px -12px rgba(255, 138, 0, 0.55);
 }
-
-.glow-gold {
+.website-theme .glow-gold {
   box-shadow: 0 0 60px -12px rgba(255, 213, 74, 0.45);
-}
-
-/* =========================================================
-   GRAIN EFFECT
-========================================================= */
-
-.grain {
+} /* ========================================================= GRAIN EFFECT ========================================================= */
+.website-theme .grain {
   position: relative;
 }
-
-.grain::before {
+.website-theme .grain::before {
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 1;
   opacity: 0.05;
-
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* =========================================================
-   MARQUEE
-========================================================= */
-
-.marquee-track {
+} /* ========================================================= MARQUEE ========================================================= */
+.website-theme .marquee-track {
   display: flex;
   width: max-content;
   will-change: transform;
   animation: marquee 30s linear infinite;
 }
-
 @keyframes marquee {
   from {
     transform: translateX(0);
   }
-
   to {
     transform: translateX(-50%);
   }
-}
-
-/* =========================================================
-   HERO MASK
-========================================================= */
-
-.hero-mask-line {
+} /* ========================================================= HERO MASK ========================================================= */
+.website-theme .hero-mask-line {
   display: block;
   overflow: hidden;
-}
-
-/* =========================================================
-   REDUCED MOTION
-========================================================= */
-
+} /* ========================================================= REDUCED MOTION ========================================================= */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-
-  .marquee-track {
+  .website-theme .marquee-track {
     animation: none;
   }
-
   *,
   *::before,
   *::after {
