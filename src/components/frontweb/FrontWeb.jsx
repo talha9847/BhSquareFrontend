@@ -10,8 +10,9 @@ import { HeroSun, Earth, Problem, Solution } from "./TryStoryTop";
 
 import { HowItWorks, PMSuryaGhar, Family } from "./TryStoryMid";
 
-// import { WhyBHsquare, Projects, ROICalculator } from "./TryShowcase";
+import { WhyBHsquare, Projects, ROICalculator } from "./TryShowcase";
 
+import { Testimonials } from "./TryDataSection";
 // import { Dashboard, Testimonials, FAQ } from "./TryDataSections";
 
 // import { Contact, Footer, FloatingWhatsApp } from "./TryContact";
@@ -88,15 +89,17 @@ const FrontWeb = () => {
 
         <Family />
 
-        {/* <WhyBHsquare />
+        <WhyBHsquare />
 
         <ROICalculator />
+        <Testimonials />
+        {/*
+
 
         <Projects />
 
         <Dashboard />
 
-        <Testimonials />
 
         <FAQ /> */}
 
