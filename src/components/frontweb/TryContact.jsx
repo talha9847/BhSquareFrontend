@@ -3,9 +3,9 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Phone, MessageCircle, Mail, MapPin, Send, Sun } from "lucide-react";
 import { MaskText, Reveal, Magnetic } from "../../lib/motion";
+import logo from "../../assets/logo2.png";
 
 import axios from "axios";
-
 const PHONE = "+919824431526";
 const WA = "919824431526";
 const EMAIL = "harshwork2422@gmail.com";
@@ -282,11 +282,25 @@ function Field({ label, children }) {
   );
 }
 
-/* ---------------- FOOTER / SUNSET FINALE ---------------- */
 export function Footer() {
+  const go = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  };
+
   return (
-    <footer data-testid="site-footer" className="relative z-10 overflow-hidden">
+    <footer
+      data-testid="site-footer"
+      className="relative z-10 overflow-hidden bg-[#0B1220]"
+    >
+      {/* ================= HERO FOOTER SECTION ================= */}
       <div className="relative h-[60vh] min-h-[420px]">
+        {/* Sunset Background */}
         <div
           className="absolute inset-0"
           style={{
@@ -294,20 +308,33 @@ export function Footer() {
               "linear-gradient(0deg, #0B1220 0%, #2a1c34 45%, #7a3a1e 72%, #FF8A00 92%, #FFD54A 100%)",
           }}
         />
+
+        {/* Animated Sun */}
         <motion.div
-          className="absolute left-1/2 h-40 w-40 -translate-x-1/2 rounded-full"
+          className="
+            absolute
+            bottom-[8%]
+            left-1/2
+            h-28 w-28
+            sm:h-36 sm:w-36
+            md:h-40 md:w-40
+            -translate-x-1/2
+            rounded-full
+            shadow-[0_0_60px_rgba(255,138,0,0.35)]
+          "
           style={{
-            bottom: "8%",
             background: "radial-gradient(circle,#FFF3C4,#FFD54A 55%,#FF8A00)",
           }}
           animate={{ y: [10, -6, 10] }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
         />
+
+        {/* Hero Taglines */}
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-5 text-center">
           <MaskText
             testId="footer-tagline"
             lines={["Powering Homes."]}
-            className="font-display text-4xl font-extrabold tracking-tight text-white sm:text-6xl"
+            className="font-display text-4xl font-extrabold tracking-tight text-white sm:text-6xl drop-shadow-sm"
           />
           <MaskText
             lines={["Empowering Tomorrow."]}
@@ -317,17 +344,27 @@ export function Footer() {
         </div>
       </div>
 
+      {/* ================= BOTTOM METADATA BAR ================= */}
       <div className="border-t border-white/10 bg-[#0B1220]">
-        <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-4 px-5 py-8 md:flex-row md:px-10">
-          <div className="flex items-center gap-2 font-display text-lg font-extrabold">
-            <Sun size={22} weight="fill" color="#FFD54A" />
-            <span className="text-white">BH</span>
-            <span className="text-gradient-sun">square</span>
-            <span className="ml-1 text-xs font-light text-[var(--muted)]">
-              Solar Installation &amp; Services
-            </span>
+        <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-6 px-5 py-8 sm:px-8 md:flex-row md:py-6">
+          {/* Logo & Tagline Wrapper */}
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 text-center sm:text-left">
+            <button
+              data-testid="nav-logo"
+              onClick={() => go("sun")}
+              className="relative flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--orange,#f97316)] rounded-lg"
+              aria-label="Back to top"
+            >
+              <img
+                src={logo}
+                alt="BHSquare Logo"
+                className="h-8 scale-[4.0] sm:h-10 w-auto object-contain transition-transform duration-300 hover:scale-105"
+              />
+            </button>
           </div>
-          <div className="text-sm text-[var(--muted)]">
+
+          {/* Location & Copyright */}
+          <div className="text-center text-xs sm:text-sm text-[var(--muted,#94a3b8)] md:text-right">
             Navsari, Gujarat · www.bhsquare.in · © {new Date().getFullYear()}
           </div>
         </div>
