@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Quote,
+  ChevronDown,
 } from "lucide-react";
 import { MaskText, Reveal, CountUp } from "../../lib/motion";
 // import { getLiveDashboard } from "../../lib/api";
@@ -296,34 +297,68 @@ const FAQS = [
   },
 ];
 
-// export function FAQ() {
-//   return (
-//     <section data-testid="section-faq" className="relative z-10 py-28">
-//       <div className="mx-auto w-full max-w-3xl px-5 md:px-10">
-//         <span className="mb-4 inline-block font-display text-xs tracking-[0.25em] text-[var(--gold)]">
-//           FREQUENTLY ASKED
-//         </span>
-//         <h2 className="font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
-//           Questions, Answered
-//         </h2>
-//         <Accordion type="single" collapsible className="mt-10 w-full">
-//           {FAQS.map((f, i) => (
-//             <AccordionItem
-//               key={i}
-//               value={`item-${i}`}
-//               data-testid={`faq-item-${i}`}
-//               className="border-white/10"
-//             >
-//               <AccordionTrigger className="text-left font-display text-lg text-white hover:text-[var(--gold)] hover:no-underline">
-//                 {f.q}
-//               </AccordionTrigger>
-//               <AccordionContent className="text-base text-[var(--muted)]">
-//                 {f.a}
-//               </AccordionContent>
-//             </AccordionItem>
-//           ))}
-//         </Accordion>
-//       </div>
-//     </section>
-//   );
-// }
+export function FAQ() {
+  const [openIndex, setOpenIndex] = useState(null);
+
+  const toggleFAQ = (index) => {
+    setOpenIndex((current) => (current === index ? null : index));
+  };
+
+  return (
+    <section data-testid="section-faq" className="relative z-10 py-28">
+      <div className="mx-auto w-full max-w-3xl px-5 md:px-10">
+        <span className="mb-4 inline-block font-display text-xs tracking-[0.25em] text-[var(--gold)]">
+          FREQUENTLY ASKED
+        </span>
+
+        <h2 className="font-display text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+          Questions, Answered
+        </h2>
+
+        <div className="mt-10 w-full">
+          {FAQS.map((f, i) => {
+            const isOpen = openIndex === i;
+
+            return (
+              <div
+                key={i}
+                data-testid={`faq-item-${i}`}
+                className="border-b border-white/10"
+              >
+                <button
+                  type="button"
+                  onClick={() => toggleFAQ(i)}
+                  aria-expanded={isOpen}
+                  className="flex w-full items-center justify-between gap-6 py-6 text-left font-bold text-white font-display text-lg transition-colors hover:text-[var(--gold)]"
+                >
+                  <span>{f.q}</span>
+
+                  <ChevronDown
+                    size={22}
+                    className={`shrink-0 transition-transform duration-300 ${
+                      isOpen ? "rotate-180 text-[var(--gold)]" : ""
+                    }`}
+                  />
+                </button>
+
+                <div
+                  className={`grid transition-all duration-300 ease-in-out ${
+                    isOpen
+                      ? "grid-rows-[1fr] opacity-100"
+                      : "grid-rows-[0fr] opacity-0"
+                  }`}
+                >
+                  <div className="overflow-hidden">
+                    <p className="pb-6 text-lg font-bold leading-relaxed  text-[var(--muted)]">
+                      {f.a}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}

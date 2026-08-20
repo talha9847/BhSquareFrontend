@@ -12,10 +12,10 @@ import { HowItWorks, PMSuryaGhar, Family } from "./TryStoryMid";
 
 import { WhyBHsquare, Projects, ROICalculator } from "./TryShowcase";
 
-import { Testimonials } from "./TryDataSection";
+import { Testimonials, FAQ } from "./TryDataSection";
 // import { Dashboard, Testimonials, FAQ } from "./TryDataSections";
 
-// import { Contact, Footer, FloatingWhatsApp } from "./TryContact";
+import { Contact, Footer, FloatingWhatsApp } from "./TryContact";
 
 const MARQUEE = [
   "Tier-1 Panels",
@@ -67,7 +67,7 @@ const FrontWeb = () => {
 
       <Popup />
 
-      {/* <FloatingWhatsApp /> */}
+      <FloatingWhatsApp />
 
       <section id="home">
         <TryNav />
@@ -92,21 +92,17 @@ const FrontWeb = () => {
         <WhyBHsquare />
 
         <ROICalculator />
-        <Testimonials />
-        {/*
-
-
         <Projects />
-
+        <Testimonials />
+        <FAQ />
+        {/*
         <Dashboard />
+        */}
 
-
-        <FAQ /> */}
-
-        {/* <Contact /> */}
+        <Contact />
       </section>
 
-      {/* <Footer /> */}
+      <Footer />
     </div>
   );
 };
