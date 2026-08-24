@@ -26,10 +26,15 @@ export default function Login() {
 
   const validate = () => {
     const e = {};
-    if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email))
+
+    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+$/.test(form.email)) {
       e.email = "Enter a valid email address";
-    if (!form.password || form.password.length < 6)
+    }
+
+    if (!form.password || form.password.length < 6) {
       e.password = "Password must be at least 6 characters";
+    }
+
     return e;
   };
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -203,7 +208,7 @@ export default function Login() {
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                 />
                 <input
-                  type="email"
+                  type="input"
                   value={form.email}
                   onChange={(e) => handleChange("email", e.target.value)}
                   placeholder="you@bhsquare.in"
