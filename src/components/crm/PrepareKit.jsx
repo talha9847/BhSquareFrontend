@@ -281,7 +281,10 @@ const PrepareKit = () => {
         `/api/kitready/fetchAvailableProducts/${customerId}`,
         { withCredentials: true },
       );
-      if (res.status === 200) setInventoryLookup(res.data.data || []);
+      if (res.status === 200) {
+        setInventoryLookup(res.data.data || []);
+        console.log(res.data.data);
+      }
     } catch (error) {
       toast.error("Error fetching inventory");
     } finally {
@@ -290,6 +293,7 @@ const PrepareKit = () => {
   };
 
   const addItemToKit = async (product) => {
+    console.log(product);
     try {
       setIsModalOpen(false);
       const res = await axios.post(
@@ -297,6 +301,8 @@ const PrepareKit = () => {
         {
           kit_id: product.kit_id,
           inventory_id: product.id,
+          brand_id: product.brandId,
+          category_id:product.categoryId
         },
         { withCredentials: true },
       );

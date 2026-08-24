@@ -36,6 +36,7 @@ const InventoryManager = () => {
     name: "",
     brand_id: "",
     category_id: "",
+    wattage: "",
     qty: 0,
     price: "",
     tax: 18,
@@ -84,6 +85,7 @@ const InventoryManager = () => {
       name: item.name,
       brand_id: item.brand_id,
       category_id: item.category_id || "",
+      wattage: item.wattage || 0,
       qty: 0,
       price: item.price || "",
       tax: item.tax || 18,
@@ -145,6 +147,14 @@ const InventoryManager = () => {
       return acc;
     }, {});
 
+  // Find active category name in modal
+  const selectedCategoryObj = categories.find(
+    (c) => String(c.id) === String(formData.category_id),
+  );
+  const selectedCategoryName = selectedCategoryObj?.name?.toUpperCase() || "";
+  const showWattage =
+    selectedCategoryName === "PANEL" || selectedCategoryName === "INVERTER";
+
   return (
     <div className="min-h-screen bg-slate-50 flex">
       <Sidebar
@@ -183,6 +193,7 @@ const InventoryManager = () => {
                       name: "",
                       brand_id: "",
                       category_id: "",
+                      wattage: "",
                       qty: 0,
                       price: "",
                       tax: 18,
@@ -277,6 +288,11 @@ const InventoryManager = () => {
                             <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase min-w-[200px]">
                               Product
                             </th>
+                            {category === "PANEL" || category === "INVERTER" ? (
+                              <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-32">
+                                wattage
+                              </th>
+                            ) : null}
                             <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-24 text-center">
                               Qty
                             </th>
@@ -320,6 +336,12 @@ const InventoryManager = () => {
                                     {item.brand_name || "Generic"}
                                   </div>
                                 </td>
+                                {category === "PANEL" ||
+                                category === "INVERTER" ? (
+                                  <td className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-32 text-center">
+                                    {item.wattage}
+                                  </td>
+                                ) : null}
                                 <td className="px-6 py-4 text-center">
                                   <span
                                     className={`text-sm font-black px-3 py-1 rounded-lg ${item.qty < 10 ? "text-red-600 bg-red-50" : "text-slate-700 bg-slate-100"}`}
@@ -472,7 +494,25 @@ const InventoryManager = () => {
                 </div>
               </div>
 
-              {/* Fix: Three equal columns for Price, Tax, and Qty */}
+              {/* Wattage Input displayed conditional on PANEL or INVERTER */}
+              {showWattage && (
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
+                    Wattage (W)
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold"
+                    placeholder="e.g. 540"
+                    value={formData.wattage}
+                    onChange={(e) =>
+                      setFormData({ ...formData, wattage: e.target.value })
+                    }
+                  />
+                </div>
+              )}
+
+              {/* Three equal columns for Price, Tax, and Qty */}
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
