@@ -1,16 +1,24 @@
 import React, { useState } from "react";
 import axios from "axios";
-import html2pdf from "html2pdf.js";
 import {
   Zap,
   Calculator,
-  Download,
+  Printer,
   Loader2,
   Layers,
   FileText,
+  IndianRupee,
+  Package,
 } from "lucide-react";
+import Sidebar from "./Sidebar";
+import Navbar from "./Navbar";
+import { useNavigate } from "react-router-dom";
 
 const EstimationGenerator = () => {
+  // Sidebar state to control responsive toggle across Navbar and Sidebar
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+
   // Input State
   const [inputData, setInputData] = useState({
     panel_qty: 10,
@@ -21,7 +29,6 @@ const EstimationGenerator = () => {
   // Response Data State
   const [estimationResult, setEstimationResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [pdfGenerating, setPdfGenerating] = useState(false);
 
   // Handle Input Changes
   const handleInputChange = (e) => {
@@ -46,102 +53,7 @@ const EstimationGenerator = () => {
         setEstimationResult(response.data.data);
       }
     } catch (error) {
-      console.error("API Error, loading fallback mock data:", error);
-      // Fallback response matching your JSON output
-      setEstimationResult({
-        panel_qty: inputData.panel_qty,
-        panel_wattage: inputData.panel_wattage,
-        panel_rate_per_watt: inputData.panel_rate_per_watt,
-        total_kw: (inputData.panel_qty * inputData.panel_wattage) / 1000,
-        items: [
-          {
-            id: 1,
-            type_id: 1,
-            type: "Material",
-            name: "40*60 HOT DIP",
-            qty: 10,
-            price: 1600,
-            gst: 18,
-            amount: 16000,
-            gst_amount: 2880,
-            total: 18880,
-          },
-          {
-            id: 2,
-            type_id: 1,
-            type: "Material",
-            name: "J BOLT",
-            qty: 40,
-            price: 13,
-            gst: 18,
-            amount: 520,
-            gst_amount: 93.6,
-            total: 613.6,
-          },
-          {
-            id: 3,
-            type_id: 1,
-            type: "Material",
-            name: "SILICON",
-            qty: 1,
-            price: 130,
-            gst: 18,
-            amount: 130,
-            gst_amount: 23.4,
-            total: 153.4,
-          },
-          {
-            id: 4,
-            type_id: 1,
-            type: "Material",
-            name: "SPRAY",
-            qty: 1,
-            price: 85,
-            gst: 18,
-            amount: 85,
-            gst_amount: 15.3,
-            total: 100.3,
-          },
-          {
-            id: 5,
-            type_id: 1,
-            type: "Labour",
-            name: "LABOURE CHARGE",
-            qty: 5.5,
-            price: 800,
-            gst: 0,
-            amount: 4400,
-            gst_amount: 0,
-            total: 4400,
-          },
-          {
-            id: 6,
-            type_id: 2,
-            type: "Equipment",
-            name: "PANEL",
-            qty: inputData.panel_qty,
-            price: inputData.panel_wattage * inputData.panel_rate_per_watt,
-            gst: 5,
-            amount:
-              inputData.panel_qty *
-              inputData.panel_wattage *
-              inputData.panel_rate_per_watt,
-            gst_amount:
-              inputData.panel_qty *
-              inputData.panel_wattage *
-              inputData.panel_rate_per_watt *
-              0.05,
-            total:
-              inputData.panel_qty *
-              inputData.panel_wattage *
-              inputData.panel_rate_per_watt *
-              1.05,
-          },
-        ],
-        subtotal: 158635,
-        total_gst: 9887.6,
-        grand_total: 168522.6,
-      });
+      console.error("API Error, loading fallback data:", error);
     } finally {
       setLoading(false);
     }
@@ -163,342 +75,344 @@ const EstimationGenerator = () => {
     return acc;
   }, {});
 
-  // Function to build HTML template string and generate PDF
-  const handleDownloadPDF = () => {
-    if (!estimationResult) return;
-    setPdfGenerating(true);
-
-    // Dynamic HTML String Construction
-    const tableRowsHtml = Object.entries(groupedItems || {})
-      .map(
-        ([groupName, items]) => `
-        <div style="margin-bottom: 20px;">
-          <h3 style="color: #1a5695; font-size: 14px; text-transform: uppercase; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
-            ${groupName} Breakdown
-          </h3>
-          <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
-            <thead>
-              <tr style="background-color: #f8fafc; border-bottom: 1px solid #cbd5e1;">
-                <th style="padding: 8px;">Item Name</th>
-                <th style="padding: 8px; text-align: center;">Qty</th>
-                <th style="padding: 8px; text-align: right;">Price</th>
-                <th style="padding: 8px; text-align: right;">GST %</th>
-                <th style="padding: 8px; text-align: right;">GST Amt</th>
-                <th style="padding: 8px; text-align: right;">Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${items
-                .map(
-                  (item) => `
-                <tr style="border-bottom: 1px solid #f1f5f9;">
-                  <td style="padding: 8px; font-weight: bold;">${item.name}</td>
-                  <td style="padding: 8px; text-align: center;">${item.qty}</td>
-                  <td style="padding: 8px; text-align: right;">${formatCurrency(item.price)}</td>
-                  <td style="padding: 8px; text-align: right;">${item.gst}%</td>
-                  <td style="padding: 8px; text-align: right;">${formatCurrency(item.gst_amount)}</td>
-                  <td style="padding: 8px; text-align: right; font-weight: bold;">${formatCurrency(item.total)}</td>
-                </tr>
-              `,
-                )
-                .join("")}
-            </tbody>
-          </table>
-        </div>
-      `,
-      )
-      .join("");
-
-    // Full Quoted <html></html> Page String
-    const htmlString = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8" />
-          <title>Solar Estimation Quotation</title>
-          <style>
-            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; padding: 20px; }
-            .header { display: flex; justify-content: space-between; border-bottom: 2px solid #1a5695; padding-bottom: 15px; margin-bottom: 20px; }
-            .title { font-size: 22px; font-weight: bold; color: #1a5695; text-transform: uppercase; }
-            .subtitle { font-size: 12px; color: #64748b; font-weight: bold; margin-top: 4px; }
-            .summary-box { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; margin-bottom: 25px; }
-            .summary-item { font-size: 11px; text-transform: uppercase; color: #64748b; }
-            .summary-value { font-size: 14px; font-weight: bold; color: #0f172a; margin-top: 2px; }
-            .totals-container { margin-top: 20px; text-align: right; border-top: 2px solid #cbd5e1; padding-top: 15px; }
-            .total-row { display: flex; justify-content: flex-end; gap: 40px; font-size: 12px; color: #475569; margin-bottom: 5px; }
-            .grand-total { font-size: 16px; font-weight: bold; color: #059669; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div>
-              <div class="title">Solar System Quotation</div>
-              <div class="subtitle">System Capacity: ${estimationResult.total_kw} KW</div>
-            </div>
-            <div style="text-align: right;">
-              <span style="background-color: #fef3c7; color: #92400e; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold;">
-                ${estimationResult.panel_qty} x ${estimationResult.panel_wattage}W
-              </span>
-            </div>
-          </div>
-
-          <div class="summary-box">
-            <div>
-              <div class="summary-item">Total Panels</div>
-              <div class="summary-value">${estimationResult.panel_qty} Units</div>
-            </div>
-            <div>
-              <div class="summary-item">Panel Wattage</div>
-              <div class="summary-value">${estimationResult.panel_wattage} W</div>
-            </div>
-            <div>
-              <div class="summary-item">Rate / Watt</div>
-              <div class="summary-value">₹${estimationResult.panel_rate_per_watt}</div>
-            </div>
-          </div>
-
-          ${tableRowsHtml}
-
-          <div class="totals-container">
-            <div class="total-row">
-              <span>Subtotal:</span>
-              <span style="width: 100px;">${formatCurrency(estimationResult.subtotal)}</span>
-            </div>
-            <div class="total-row">
-              <span>Total GST Tax:</span>
-              <span style="width: 100px;">${formatCurrency(estimationResult.total_gst)}</span>
-            </div>
-            <div class="total-row grand-total" style="margin-top: 10px;">
-              <span>Grand Total:</span>
-              <span style="width: 100px;">${formatCurrency(estimationResult.grand_total)}</span>
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
-    // pdf configuration options
-    const opt = {
-      margin: 10,
-      filename: `Solar_Estimation_${estimationResult.total_kw}KW.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    };
-
-    // Convert htmlString to PDF
-    html2pdf()
-      .set(opt)
-      .from(htmlString)
-      .save()
-      .then(() => setPdfGenerating(false))
-      .catch((err) => {
-        console.error("PDF generation failed:", err);
-        setPdfGenerating(false);
-      });
+  // Trigger Native Browser Print Dialog (Save to PDF)
+  const handlePrint = () => {
+    window.print();
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 p-4 lg:p-8 text-slate-800">
-      <div className="max-w-5xl mx-auto space-y-8">
-        {/* INPUT FORM SECTION */}
-        <div className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-slate-200">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 bg-amber-500 text-white rounded-2xl">
-              <Zap size={24} />
-            </div>
-            <div>
-              <h1 className="text-xl font-black uppercase tracking-tight">
-                Solar System Cost Calculator
-              </h1>
-              <p className="text-xs text-slate-400 font-bold uppercase">
-                Input Panel Specifications
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-slate-50 flex">
+      {/* Sidebar Navigation */}
+      <Sidebar
+        isOpen={sidebarOpen}
+        toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        activePage="Estimator"
+      />
 
-          <form
-            onSubmit={handleGenerateEstimation}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6"
-          >
-            <div>
-              <label className="block text-xs font-black uppercase text-slate-500 mb-2">
-                Panel Quantity
-              </label>
-              <input
-                type="number"
-                name="panel_qty"
-                min="1"
-                required
-                value={inputData.panel_qty}
-                onChange={handleInputChange}
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-slate-800 focus:ring-2 focus:ring-[#1a5695]"
-              />
-            </div>
+      {/* Main Content Area */}
+      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+        <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-            <div>
-              <label className="block text-xs font-black uppercase text-slate-500 mb-2">
-                Panel Wattage (Wp)
-              </label>
-              <input
-                type="number"
-                name="panel_wattage"
-                min="1"
-                required
-                value={inputData.panel_wattage}
-                onChange={handleInputChange}
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-slate-800 focus:ring-2 focus:ring-[#1a5695]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-black uppercase text-slate-500 mb-2">
-                Rate Per Watt (₹)
-              </label>
-              <input
-                type="number"
-                name="panel_rate_per_watt"
-                step="0.01"
-                min="0"
-                required
-                value={inputData.panel_rate_per_watt}
-                onChange={handleInputChange}
-                className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-bold text-slate-800 focus:ring-2 focus:ring-[#1a5695]"
-              />
-            </div>
-
-            <div className="md:col-span-3 flex justify-end">
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex items-center gap-2 px-8 py-4 bg-[#1a5695] text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all shadow-lg disabled:opacity-50"
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin" size={18} />
-                ) : (
-                  <>
-                    <Calculator size={18} /> Generate Estimation
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* RESULTS SECTION */}
-        {estimationResult && (
-          <div className="space-y-6">
-            <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-              <div className="flex items-center gap-2 text-slate-600 font-bold text-sm">
-                <FileText size={18} className="text-[#1a5695]" />
-                Estimation Generated ({estimationResult.total_kw} KW System)
-              </div>
-              <button
-                onClick={handleDownloadPDF}
-                disabled={pdfGenerating}
-                className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl font-black text-xs uppercase tracking-wider hover:bg-emerald-700 transition-all shadow-md disabled:opacity-50"
-              >
-                {pdfGenerating ? (
-                  <Loader2 className="animate-spin" size={16} />
-                ) : (
-                  <>
-                    <Download size={16} /> Download PDF
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* SCREEN VIEW OF ESTIMATION */}
-            <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-8">
-              <div className="flex justify-between items-start border-b border-slate-100 pb-6">
+        <main className="p-4 lg:p-8 space-y-6 text-slate-800 print:p-0 print:m-0">
+          {/* INPUT FORM PANEL - Hidden when printing */}
+          <div className="bg-white rounded-[24px] p-6 border border-slate-200 shadow-sm print:hidden">
+            {/* Form Header Area */}
+            <div className="flex items-start justify-between gap-4 mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-amber-500 text-white rounded-xl shadow-sm">
+                  <Zap size={20} />
+                </div>
                 <div>
-                  <h2 className="text-2xl font-black text-[#1a5695] uppercase tracking-tight">
-                    Solar Energy Estimation
+                  <h2 className="text-lg font-black uppercase tracking-tight text-slate-800">
+                    System Estimation Calculator
                   </h2>
-                  <p className="text-xs font-bold text-slate-400 uppercase mt-1">
-                    System Size: {estimationResult.total_kw} KW
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    Configure Panel Specifications & Parameters
                   </p>
                 </div>
-                <span className="text-xs font-black uppercase bg-amber-100 text-amber-800 px-3 py-1.5 rounded-lg">
-                  {estimationResult.panel_qty} x{" "}
-                  {estimationResult.panel_wattage}W Panels
-                </span>
               </div>
 
-              {Object.entries(groupedItems || {}).map(([groupName, items]) => (
-                <div key={groupName} className="space-y-3">
-                  <div className="flex items-center gap-2 text-xs font-black text-[#1a5695] uppercase tracking-wider">
-                    <Layers size={14} /> {groupName} Breakdown
-                  </div>
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="border-b border-slate-200 bg-slate-50/50">
-                        <th className="py-3 px-3 text-[10px] font-black text-slate-400 uppercase">
-                          Item Name
-                        </th>
-                        <th className="py-3 px-3 text-[10px] font-black text-slate-400 uppercase text-center">
-                          Qty
-                        </th>
-                        <th className="py-3 px-3 text-[10px] font-black text-slate-400 uppercase text-right">
-                          Unit Price
-                        </th>
-                        <th className="py-3 px-3 text-[10px] font-black text-slate-400 uppercase text-right">
-                          GST %
-                        </th>
-                        <th className="py-3 px-3 text-[10px] font-black text-slate-400 uppercase text-right">
-                          GST Amt
-                        </th>
-                        <th className="py-3 px-3 text-[10px] font-black text-slate-400 uppercase text-right">
-                          Total
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {items.map((item) => (
-                        <tr
-                          key={item.id}
-                          className="text-xs font-bold text-slate-700"
-                        >
-                          <td className="py-3 px-3 font-black text-slate-800">
-                            {item.name}
-                          </td>
-                          <td className="py-3 px-3 text-center">{item.qty}</td>
-                          <td className="py-3 px-3 text-right">
-                            {formatCurrency(item.price)}
-                          </td>
-                          <td className="py-3 px-3 text-right">{item.gst}%</td>
-                          <td className="py-3 px-3 text-right text-slate-500">
-                            {formatCurrency(item.gst_amount)}
-                          </td>
-                          <td className="py-3 px-3 text-right font-black text-slate-900">
-                            {formatCurrency(item.total)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              ))}
+              {/* Manage Data Button positioned at top-right */}
+              <button
+                type="button"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#1a5695] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#144477] transition-all shadow-md active:scale-95 disabled:opacity-50 shrink-0"
+                onClick={() => {
+                  navigate("/estimationmanage");
+                }}
+              >
+                Manage Data
+              </button>
+            </div>
 
-              <div className="border-t-2 border-slate-200 pt-6 flex justify-end">
-                <div className="w-full max-w-xs space-y-2">
-                  <div className="flex justify-between text-xs font-bold text-slate-500">
-                    <span>Subtotal:</span>
-                    <span>{formatCurrency(estimationResult.subtotal)}</span>
+            <form onSubmit={handleGenerateEstimation} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                    Panel Quantity
+                  </label>
+                  <input
+                    type="number"
+                    name="panel_qty"
+                    min="1"
+                    required
+                    value={inputData.panel_qty}
+                    onChange={handleInputChange}
+                    className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-800 uppercase focus:border-slate-400 transition-all"
+                    placeholder="QTY..."
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                    Panel Wattage (Wp)
+                  </label>
+                  <input
+                    type="number"
+                    name="panel_wattage"
+                    min="1"
+                    required
+                    value={inputData.panel_wattage}
+                    onChange={handleInputChange}
+                    className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-800 uppercase focus:border-slate-400 transition-all"
+                    placeholder="WATTAGE..."
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                    Rate Per Watt (₹)
+                  </label>
+                  <input
+                    type="number"
+                    name="panel_rate_per_watt"
+                    step="0.01"
+                    min="0"
+                    required
+                    value={inputData.panel_rate_per_watt}
+                    onChange={handleInputChange}
+                    className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-800 uppercase focus:border-slate-400 transition-all"
+                    placeholder="RATE..."
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-1">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex items-center gap-2 px-6 py-3 bg-[#1a5695] text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#144477] transition-all shadow-md active:scale-95 disabled:opacity-50"
+                >
+                  {loading ? (
+                    <Loader2 className="animate-spin" size={16} />
+                  ) : (
+                    <>
+                      <Calculator size={16} /> Calculate Bill of Materials
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          {/* ESTIMATION RESULTS BLOCK */}
+          {estimationResult && (
+            <div className="space-y-6 print:space-y-4">
+              {/* TOP METRIC CARDS ROW - Hidden when printing */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 print:hidden">
+                <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex items-center gap-3.5">
+                  <div className="p-2.5 bg-slate-50 text-[#1a5695] rounded-xl">
+                    <FileText size={18} />
                   </div>
-                  <div className="flex justify-between text-xs font-bold text-slate-500">
-                    <span>Total GST Tax:</span>
-                    <span>{formatCurrency(estimationResult.total_gst)}</span>
+                  <div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+                      Capacity
+                    </p>
+                    <p className="text-base font-black text-slate-800 tracking-tight">
+                      {estimationResult.total_kw} KW
+                    </p>
                   </div>
-                  <div className="flex justify-between text-base font-black text-emerald-600 border-t border-slate-200 pt-2">
-                    <span>Grand Total:</span>
-                    <span>{formatCurrency(estimationResult.grand_total)}</span>
+                </div>
+
+                <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex items-center gap-3.5">
+                  <div className="p-2.5 bg-slate-50 text-[#1a5695] rounded-xl">
+                    <Package size={18} />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+                      Panels Needed
+                    </p>
+                    <p className="text-base font-black text-slate-800 tracking-tight">
+                      {estimationResult.panel_qty} Units
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex items-center gap-3.5">
+                  <div className="p-2.5 bg-slate-50 text-[#1a5695] rounded-xl">
+                    <Layers size={18} />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+                      Rating & Price
+                    </p>
+                    <p className="text-base font-black text-slate-800 tracking-tight">
+                      {estimationResult.panel_wattage}W @ ₹
+                      {estimationResult.panel_rate_per_watt}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex items-center gap-3.5">
+                  <div className="p-2.5 bg-green-50 text-green-600 rounded-xl">
+                    <IndianRupee size={18} />
+                  </div>
+                  <div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
+                      Grand Total
+                    </p>
+                    <p className="text-base font-black text-slate-800 tracking-tight">
+                      {formatCurrency(estimationResult.grand_total)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* PRINT ONLY HEADER */}
+              <div className="hidden print:flex justify-between items-center bg-[#1a5695] text-white p-6 rounded-2xl mb-6">
+                <div>
+                  <h1 className="text-xl font-black uppercase tracking-tight">
+                    Solar System Quotation
+                  </h1>
+                  <p className="text-xs uppercase font-bold tracking-widest text-slate-200 mt-1">
+                    System Capacity: {estimationResult.total_kw} KW
+                  </p>
+                </div>
+                <div className="bg-white/10 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest">
+                  {estimationResult.panel_qty} x{" "}
+                  {estimationResult.panel_wattage}W
+                </div>
+              </div>
+
+              {/* PRINT ONLY SUMMARY BOX */}
+              <div className="hidden print:grid grid-cols-3 gap-4 bg-slate-100 p-4 rounded-xl mb-6">
+                <div>
+                  <p className="text-[9px] font-black text-slate-400 uppercase">
+                    Total Panels
+                  </p>
+                  <p className="text-sm font-black text-slate-800">
+                    {estimationResult.panel_qty} Units
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-black text-slate-400 uppercase">
+                    Panel Wattage
+                  </p>
+                  <p className="text-sm font-black text-slate-800">
+                    {estimationResult.panel_wattage} W
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[9px] font-black text-slate-400 uppercase">
+                    Rate / Watt
+                  </p>
+                  <p className="text-sm font-black text-slate-800">
+                    ₹{estimationResult.panel_rate_per_watt}
+                  </p>
+                </div>
+              </div>
+
+              {/* BOM INVENTORY TABLE CONTAINER */}
+              <div className="bg-white p-6 rounded-[24px] border border-slate-200 shadow-sm space-y-6 print:border-none print:shadow-none print:p-0">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-5 print:hidden">
+                  <div>
+                    <h3 className="text-base font-black text-slate-800 uppercase tracking-tight">
+                      Material & Cost Breakdown
+                    </h3>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                      Generated BOM for {estimationResult.total_kw} KW
+                      Installation
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={handlePrint}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-700 border border-slate-200 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-100 transition-all active:scale-95"
+                  >
+                    <Printer size={14} /> Print / Save PDF
+                  </button>
+                </div>
+
+                {Object.entries(groupedItems || {}).map(
+                  ([groupName, items]) => (
+                    <div key={groupName} className="space-y-3 print:space-y-2">
+                      <div className="flex items-center gap-2 text-[10px] font-black text-[#1a5695] uppercase tracking-widest border-b border-slate-100 pb-2">
+                        <Layers size={14} className="print:hidden" />{" "}
+                        {groupName} Breakdown
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead>
+                            <tr className="border-b border-slate-100 bg-slate-50/50 print:bg-slate-100">
+                              <th className="py-2.5 px-3 text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                Item Description
+                              </th>
+                              <th className="py-2.5 px-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">
+                                Qty
+                              </th>
+                              <th className="py-2.5 px-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">
+                                Rate
+                              </th>
+                              <th className="py-2.5 px-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">
+                                GST %
+                              </th>
+                              <th className="py-2.5 px-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">
+                                GST Tax
+                              </th>
+                              <th className="py-2.5 px-3 text-[9px] font-black text-slate-400 uppercase tracking-widest text-right">
+                                Total Amount
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {items.map((item) => (
+                              <tr
+                                key={item.id}
+                                className="text-xs font-bold text-slate-700"
+                              >
+                                <td className="py-3 px-3 font-black text-slate-800 uppercase">
+                                  {item.name}
+                                </td>
+                                <td className="py-3 px-3 text-center">
+                                  {item.qty}
+                                </td>
+                                <td className="py-3 px-3 text-right">
+                                  {formatCurrency(item.price)}
+                                </td>
+                                <td className="py-3 px-3 text-right">
+                                  {item.gst}%
+                                </td>
+                                <td className="py-3 px-3 text-right text-slate-400 print:text-slate-600">
+                                  {formatCurrency(item.gst_amount)}
+                                </td>
+                                <td className="py-3 px-3 text-right font-black text-slate-800">
+                                  {formatCurrency(item.total)}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ),
+                )}
+
+                {/* TOTALS SUMMARY */}
+                <div className="border-t border-slate-100 pt-5 flex justify-end">
+                  <div className="w-full max-w-xs space-y-2">
+                    <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      <span>Subtotal:</span>
+                      <span className="text-slate-700">
+                        {formatCurrency(estimationResult.subtotal)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                      <span>GST Total:</span>
+                      <span className="text-slate-700">
+                        {formatCurrency(estimationResult.total_gst)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-base font-black text-slate-800 uppercase tracking-tight border-t border-slate-100 pt-3">
+                      <span>Net Total:</span>
+                      <span className="text-[#1a5695]">
+                        {formatCurrency(estimationResult.grand_total)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </main>
       </div>
     </div>
   );
