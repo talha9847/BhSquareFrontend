@@ -22,6 +22,7 @@ import {
   Calendar,
   CalendarRange,
   FileDown,
+  Calculator,
 } from "lucide-react";
 import {
   AreaChart,
@@ -160,8 +161,7 @@ const Dashboard = () => {
         width: 550, // Target width in the PDF
         windowWidth: 750, // Virtual window width
       });
-    } catch (error) {
-    }
+    } catch (error) {}
   };
   // 1. Fetch Summary Counts (Top Level Stats)
   const fetchCounts = useCallback(async (force = false) => {
@@ -324,6 +324,7 @@ const Dashboard = () => {
               <h1 className="text-3xl font-black text-slate-900">
                 Solar<span className="text-[#1a5695]">OS</span> Dashboard
               </h1>
+
               <p className="text-slate-500 font-medium mt-1 flex items-center gap-2">
                 <TrendingUp size={16} className="text-green-500" />
                 System operational: {counts?.active_customers || 0} active
@@ -331,17 +332,32 @@ const Dashboard = () => {
               </p>
             </div>
 
-            <button
-              onClick={() => fetchCounts(true)}
-              disabled={isSyncing}
-              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#1a5695] text-white text-sm font-bold hover:bg-[#15467a] shadow-lg shadow-blue-900/20 transition-all active:scale-95 disabled:opacity-50"
-            >
-              <RefreshCcw
-                size={18}
-                className={isSyncing ? "animate-spin" : ""}
-              />
-              {isSyncing ? "Syncing..." : "Sync Data"}
-            </button>
+            <div className="flex items-center gap-3">
+              {/* Sync Data */}
+              <button
+                onClick={() => fetchCounts(true)}
+                disabled={isSyncing}
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#1a5695] text-white text-sm font-bold hover:bg-[#15467a] shadow-lg shadow-blue-900/20 transition-all active:scale-95 disabled:opacity-50"
+              >
+                <RefreshCcw
+                  size={18}
+                  className={isSyncing ? "animate-spin" : ""}
+                />
+
+                {isSyncing ? "Syncing..." : "Sync Data"}
+              </button>
+
+              {/* Generate Estimation */}
+              <button
+                onClick={() => {
+                  navigate("/estimation");
+                }}
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-green-600 text-white text-sm font-bold hover:bg-green-700 shadow-lg shadow-green-900/20 transition-all active:scale-95"
+              >
+                <Calculator size={18} />
+                Generate Estimation
+              </button>
+            </div>
           </header>
 
           {/* --- ANALYTICS CHART SECTION --- */}
