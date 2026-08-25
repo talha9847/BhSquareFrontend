@@ -312,7 +312,9 @@ const EstimationManager = () => {
                                     : "—"}
                                 </td>
                                 <td className="px-6 py-4 font-black text-emerald-600 text-sm">
-                                  {formatCurrency(itemTotal)}
+                                  {formatCurrency(
+                                    Math.round(Math.abs(itemTotal)),
+                                  )}
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                   <button
@@ -335,7 +337,7 @@ const EstimationManager = () => {
                               Type Subtotal (Incl. GST):
                             </td>
                             <td className="px-6 py-4 text-sm text-[#1a5695]">
-                              {formatCurrency(groupTotal)}
+                              {formatCurrency(Math.round(Math.abs(groupTotal)))}
                             </td>
                             <td></td>
                           </tr>
