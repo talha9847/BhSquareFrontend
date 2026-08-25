@@ -76,6 +76,7 @@ import TCustomerMaster from "./components/Technician/TCustomerMaster";
 import SuperCommission from "./components/Supervisor/SuperCommission";
 import FCustomerMaster from "./components/Fabricator/FCustomerMaster";
 import EstimationManager from "./components/crm/EstimationManager";
+import EstimationGenerator from "./components/crm/EstimationGenerator";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -228,10 +229,18 @@ function App() {
             }
           />
           <Route
-            path="/estimation"
+            path="/estimationmanage"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <EstimationManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/estimation"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <EstimationGenerator />
               </ProtectedRoute>
             }
           />
