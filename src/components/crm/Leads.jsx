@@ -721,7 +721,6 @@ const Leads = () => {
                             <p className="text-slate-400 text-[11px] font-semibold">
                               {lead.contact_number}
                             </p>
-
                             <span
                               className={`
       text-[9px] px-1 rounded font-bold uppercase transition-colors
@@ -737,6 +736,16 @@ const Leads = () => {
     `}
                             >
                               {lead.installation_type?.substring(0, 3)}
+                            </span>
+                            <span
+                              className="
+                                inline-flex items-center gap-1 px-1.5 py-[2px] rounded-full bg-amber-50/80 border-amber-200/70  text-amber-700 text-[9px] font-bold leading-none shadow-[0_1px_2px_rgba(245,158,11,0.08)]"
+                            >
+                              <span className="text-amber-500">⚡</span>
+                              <span>{lead.panel_wattage}</span>
+                              <span className="text-amber-500/70 text-[8px]">
+                                W
+                              </span>
                             </span>
                           </div>
                         </td>
