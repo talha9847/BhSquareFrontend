@@ -302,7 +302,8 @@ const PrepareKit = () => {
           kit_id: product.kit_id,
           inventory_id: product.id,
           brand_id: product.brandId,
-          category_id:product.categoryId
+          category_id: product.categoryId,
+          customer_id: customerId,
         },
         { withCredentials: true },
       );

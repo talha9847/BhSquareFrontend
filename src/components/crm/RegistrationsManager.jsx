@@ -26,7 +26,7 @@ const RegistrationsManager = () => {
   const [dLoad, setDLoad] = useState(false);
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState("pending");
+  const [activeTab, setActiveTab] = useState("done");
 
   // --- MODAL STATES ---
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);

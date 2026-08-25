@@ -77,7 +77,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       icon: <ClipboardEdit size={18} />,
       type: "Project Lifecycle",
       path: "registration",
-      activePaths: ["/registration", "/allregistration"],
+      activePaths: ["/registration", ""],
     },
     {
       name: "Kit Ready",
@@ -91,6 +91,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         "/preparekit",
         "/allkitready",
       ],
+    },
+    {
+      name: "Complete Registration",
+      icon: <ClipboardEdit size={18} />,
+      type: "Project Lifecycle",
+      path: "allregistration",
+      // activePaths: ["/registration", "/allregistration"],
     },
     {
       name: "Dispatch",

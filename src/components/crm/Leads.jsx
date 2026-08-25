@@ -560,6 +560,7 @@ const Leads = () => {
       const basicFields =
         lead.customer_name.toLowerCase().includes(query) ||
         lead.contact_number.includes(query) ||
+        lead.panel_wattage.includes(query) ||
         (lead.total_capacity / 1000).toFixed(2).includes(query) ||
         sourceMap[lead.source_id]?.toLowerCase().includes(query);
       if (basicFields) return true;
