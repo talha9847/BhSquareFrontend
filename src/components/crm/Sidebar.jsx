@@ -93,7 +93,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       ],
     },
     {
-      name: "Complete Registration",
+      name: "File Generation",
       icon: <ClipboardEdit size={18} />,
       type: "Project Lifecycle",
       path: "allregistration",
