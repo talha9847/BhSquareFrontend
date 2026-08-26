@@ -8,6 +8,7 @@ import {
   Save,
   Layers,
   IndianRupee,
+  Zap,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -24,6 +25,16 @@ const EstimationManager = () => {
   const [estimationTypes, setEstimationTypes] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingId, setEditingId] = useState(null);
+
+  // Inverter States
+  const [inverters, setInverters] = useState([]);
+  const [isInverterModalOpen, setIsInverterModalOpen] = useState(false);
+  const [inverterLoading, setInverterLoading] = useState(false);
+  const [inverterFormData, setInverterFormData] = useState({
+    id: null,
+    kw: "",
+    price: "",
+  });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -60,9 +71,23 @@ const EstimationManager = () => {
     } catch (error) {}
   };
 
+  const getInverters = async () => {
+    try {
+      const res = await axios.get("/api/estimation/getInverters", {
+        withCredentials: true,
+      });
+      if (res.data?.success) {
+        setInverters(res.data.data);
+      }
+    } catch (error) {
+      toast.error("Failed to load inverters");
+    }
+  };
+
   useEffect(() => {
     getEstimations();
     getEstimationTypes();
+    getInverters();
   }, []);
 
   const handleEditClick = (item) => {
@@ -115,6 +140,60 @@ const EstimationManager = () => {
       toast.error("Operation failed");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Open modal for CREATING a new inverter
+  const handleAddInverterClick = () => {
+    setInverterFormData({
+      id: null,
+      kw: "",
+      price: "",
+    });
+    setIsInverterModalOpen(true);
+  };
+
+  // Open modal for EDITING an existing inverter
+  const handleEditInverterClick = (inverter) => {
+    setInverterFormData({
+      id: inverter.id,
+      kw: inverter.kw,
+      price: inverter.price,
+    });
+    setIsInverterModalOpen(true);
+  };
+
+  // Handle both ADD and EDIT submissions
+  const handleInverterSubmit = async (e) => {
+    e.preventDefault();
+    setInverterLoading(true);
+
+    const isEditing = Boolean(inverterFormData.id);
+
+    try {
+      const res = isEditing
+        ? await axios.put(
+            `/api/estimation/updateInverter/${inverterFormData.id}`,
+            inverterFormData,
+            { withCredentials: true },
+          )
+        : await axios.post("/api/estimation/addInverter", inverterFormData, {
+            withCredentials: true,
+          });
+
+      if (res.status === 200 || res.status === 201 || res.data?.success) {
+        toast.success(
+          isEditing ? "Inverter rate updated!" : "Inverter rate added!",
+        );
+        setIsInverterModalOpen(false);
+        getInverters();
+      }
+    } catch (error) {
+      toast.error(
+        isEditing ? "Failed to update inverter" : "Failed to add inverter",
+      );
+    } finally {
+      setInverterLoading(false);
     }
   };
 
@@ -199,7 +278,7 @@ const EstimationManager = () => {
           </div>
 
           {/* Search */}
-          <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-8 flex items-center gap-3 shadow-sm">
+          <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
             <div className="flex-1 relative">
               <Search
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -211,6 +290,69 @@ const EstimationManager = () => {
                 placeholder="Search estimations by name..."
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+            </div>
+          </div>
+
+          {/* Inverter Rates Section */}
+          <div className="mb-8 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-amber-50 text-amber-500 rounded-xl">
+                  <Zap size={18} />
+                </div>
+                <h2 className="text-sm font-black text-slate-800 uppercase tracking-widest">
+                  Standard Inverter Rates
+                </h2>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 px-3 py-1 rounded-full hidden sm:inline-block">
+                  {inverters.length} System Ratings
+                </span>
+
+                {/* ADD INVERTER BUTTON */}
+                <button
+                  onClick={handleAddInverterClick}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all shadow-sm active:scale-95"
+                >
+                  <Plus size={14} /> Add Inverter
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {inverters.map((inv) => (
+                <div
+                  key={inv.id}
+                  className="flex items-center justify-between p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:border-slate-300 transition-all"
+                >
+                  <div>
+                    <span className="text-xs font-black text-slate-400 uppercase tracking-wider block mb-0.5">
+                      Capacity
+                    </span>
+                    <span className="text-base font-black text-slate-800">
+                      {parseFloat(inv.kw).toFixed(2)} kW
+                    </span>
+                  </div>
+                  <div className="text-right flex items-center gap-3">
+                    <div>
+                      <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-0.5">
+                        Base Price
+                      </span>
+                      <span className="text-base font-black text-emerald-600">
+                        {formatCurrency(parseFloat(inv.price))}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleEditInverterClick(inv)}
+                      className="p-2.5 bg-white border border-slate-200 hover:bg-[#1a5695] hover:text-white hover:border-[#1a5695] text-slate-500 rounded-xl transition-all shadow-sm"
+                      title="Edit Inverter Price"
+                    >
+                      <Edit3 size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -352,7 +494,85 @@ const EstimationManager = () => {
         </main>
       </div>
 
-      {/* MODAL FORM */}
+      {/* EDIT INVERTER MODAL */}
+      {isInverterModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden border border-white/20 animate-in zoom-in duration-300">
+            <div className="p-8 text-white flex justify-between items-center bg-amber-500">
+              <div>
+                <h2 className="text-xl font-black uppercase">
+                  Edit Inverter Rate
+                </h2>
+                <p className="text-white/60 text-[10px] font-bold uppercase mt-1">
+                  Inverter System Configuration
+                </p>
+              </div>
+              <button
+                onClick={() => setIsInverterModalOpen(false)}
+                className="p-2 hover:bg-white/10 rounded-full"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleInverterSubmit} className="p-8 space-y-5">
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
+                  System kW Rating
+                </label>
+                <input
+                  required
+                  type="number"
+                  step="0.01"
+                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold"
+                  value={inverterFormData.kw}
+                  onChange={(e) =>
+                    setInverterFormData({
+                      ...inverterFormData,
+                      kw: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
+                  Price (₹)
+                </label>
+                <input
+                  required
+                  type="number"
+                  step="0.01"
+                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold"
+                  value={inverterFormData.price}
+                  onChange={(e) =>
+                    setInverterFormData({
+                      ...inverterFormData,
+                      price: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <button
+                disabled={inverterLoading}
+                type="submit"
+                className="w-full py-4 bg-amber-500 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg flex items-center justify-center gap-3 transition-transform active:scale-95"
+              >
+                {inverterLoading ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  <>
+                    <Save size={18} /> Update Inverter Rate
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ESTIMATION MODAL FORM */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden border border-white/20 animate-in zoom-in duration-300">
