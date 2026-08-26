@@ -272,6 +272,23 @@ const EstimationGenerator = () => {
 
                 <div>
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                    Inverter Wattage (kW)
+                  </label>
+                  <input
+                    type="number"
+                    name="inverter_wattage"
+                    min="1"
+                    step="0.01"
+                    required
+                    value={inputData.inverter_wattage}
+                    onChange={handleInputChange}
+                    className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-800 uppercase focus:border-slate-400 transition-all"
+                    placeholder="WATTAGE..."
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
                     Rate Per Watt (₹)
                   </label>
                   <input
