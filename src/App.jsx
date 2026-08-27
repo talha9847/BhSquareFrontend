@@ -77,6 +77,7 @@ import SuperCommission from "./components/Supervisor/SuperCommission";
 import FCustomerMaster from "./components/Fabricator/FCustomerMaster";
 import EstimationManager from "./components/crm/EstimationManager";
 import EstimationGenerator from "./components/crm/EstimationGenerator";
+// import Test from "./components/crm/Test";
 function App() {
   const [count, setCount] = useState(0);
 
@@ -608,6 +609,14 @@ function App() {
               </ProtectedRoute>
             }
           />
+          {/* <Route
+            path="/testData"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Test />
+              </ProtectedRoute>
+            }
+          /> */}
           <Route
             path="/backup"
             element={

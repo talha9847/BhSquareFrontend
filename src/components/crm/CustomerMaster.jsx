@@ -16,7 +16,10 @@ import {
   Zap,
   Ruler,
   IndianRupee,
+  Edit3,
+  X,
 } from "lucide-react";
+
 import axios from "axios";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -28,6 +31,7 @@ const ModuleCard = ({
   icon,
   children,
   accentColor = "text-[#1a5695]",
+  headerAction,
 }) => (
   <div className="bg-white rounded-[40px] p-10 border border-slate-200 shadow-sm relative transition-all hover:shadow-md animate-in fade-in slide-in-from-bottom-2 duration-500">
     <div className="flex justify-between items-center mb-10">
@@ -36,7 +40,10 @@ const ModuleCard = ({
       >
         {icon} {title}
       </h3>
+
+      {headerAction && <div>{headerAction}</div>}
     </div>
+
     {children}
   </div>
 );
@@ -821,6 +828,319 @@ const WiringModule = ({ customerId }) => {
   );
 };
 
+const EditCustomerModal = ({ lead, onClose, onUpdated }) => {
+  const [formData, setFormData] = useState({
+    customer_name: lead?.customer_name || "",
+    contact_number: lead?.contact_number || "",
+    installation_type: lead?.installation_type || "",
+    source: lead?.source || "",
+    panel_wattage: lead?.panel_wattage || "",
+    number_of_panels: lead?.number_of_panels || "",
+    number_of_inverters: lead?.number_of_inverters || "",
+    total_capacity: lead?.total_capacity || "",
+    inverter_capacity: lead?.inverter_capacity || "",
+    address: lead?.address || "",
+  });
+  const getSources = async () => {
+    try {
+      const result = await axios.get(`/api/sources/fetchSources`, {
+        withCredentials: true,
+      });
+
+      setSources(result.data.data);
+
+      result.data.data.map((v) => {
+        sourceMap[v.id] = v.name;
+      });
+    } catch (error) {}
+  };
+  useEffect(() => {
+    getSources();
+  }, []);
+  const [sources, setSources] = useState([]);
+
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    setSaving(true);
+    setError("");
+
+    try {
+      const res = await axios.put(
+        `/api/leads/updateLead/${lead.id}`,
+        formData,
+        {
+          withCredentials: true,
+        },
+      );
+
+      if (res.status === 200) {
+        onUpdated(res.data?.data || formData);
+        onClose();
+      }
+    } catch (err) {
+      console.error("Failed to update customer:", err);
+
+      setError(
+        err?.response?.data?.message ||
+          "Failed to update customer details. Please try again.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* BACKDROP */}
+      <div
+        className="absolute inset-0 bg-slate-950/50 backdrop-blur-sm"
+        onClick={!saving ? onClose : undefined}
+      />
+
+      {/* MODAL */}
+      <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-white rounded-[32px] shadow-2xl animate-in fade-in zoom-in-95 duration-300">
+        {/* HEADER */}
+        <div className="sticky top-0 z-10 px-8 py-6 bg-white border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black text-[#1a5695] uppercase tracking-[0.2em] mb-2">
+              Customer Management
+            </p>
+
+            <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+              Edit Customer Bio & Site
+            </h2>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={saving}
+            className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors disabled:opacity-50"
+          >
+            <X size={18} className="text-slate-600" />
+          </button>
+        </div>
+
+        {/* FORM */}
+        <form onSubmit={handleSubmit} className="p-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* CUSTOMER DETAILS */}
+
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Full Name
+              </label>
+
+              <input
+                type="text"
+                name="customer_name"
+                value={formData.customer_name}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Phone Number
+              </label>
+
+              <input
+                type="text"
+                name="contact_number"
+                value={formData.contact_number}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold"
+              />
+            </div>
+
+            {/* Project Category */}
+            <div className="md:col-span-2 space-y-1">
+              <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">
+                Project Category
+              </label>
+
+              <select
+                name="installation_type"
+                value={formData.installation_type}
+                onChange={handleChange}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
+              >
+                <option value="Residential">Residential</option>
+                <option value="Commercial">Commercial</option>
+                <div>
+                  <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                    Source Name
+                  </label>
+
+                  <select
+                    name="source_id"
+                    value={formData.source_id}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold appearance-none"
+                  >
+                    {sources.map((v, i) => (
+                      <option key={i} value={v.id}>
+                        {v.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <option value="Industrial">Industrial</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Source Name
+              </label>
+
+              <select
+                name="source_id"
+                value={formData.source_id}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold appearance-none"
+              >
+                {sources.map((v, i) => (
+                  <option key={i} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Panel Wattage
+              </label>
+
+              <input
+                type="text"
+                name="panel_wattage"
+                value={formData.panel_wattage}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Number of Panels
+              </label>
+
+              <input
+                type="number"
+                name="number_of_panels"
+                value={formData.number_of_panels}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Number of Inverters
+              </label>
+
+              <input
+                type="number"
+                name="number_of_inverters"
+                value={formData.number_of_inverters}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold"
+              />
+            </div>
+
+            {/* <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Total Capacity (Watts)
+              </label>
+
+              <input
+                type="number"
+                name="total_capacity"
+                value={formData.total_capacity}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold"
+              />
+            </div> */}
+
+            <div>
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Inverter Capacity
+              </label>
+
+              <input
+                type="text"
+                name="inverter_capacity"
+                value={formData.inverter_capacity}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold"
+              />
+            </div>
+
+            {/* ADDRESS */}
+            <div className="md:col-span-2">
+              <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
+                Installation Address
+              </label>
+
+              <textarea
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                rows={4}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold resize-none"
+              />
+            </div>
+          </div>
+
+          {/* ERROR */}
+          {error && (
+            <div className="mt-6 px-4 py-3 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-semibold">
+              {error}
+            </div>
+          )}
+
+          {/* ACTIONS */}
+          <div className="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-100">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-7 py-3 rounded-xl bg-[#1a5695] hover:bg-[#144579] text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-100 transition-all disabled:opacity-50"
+            >
+              {saving ? "Saving Changes..." : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const CustomerMaster = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -830,6 +1150,7 @@ const CustomerMaster = () => {
   const [loading, setLoading] = useState(true);
   const [lead, setLead] = useState(null);
   const [stages, setStages] = useState([]);
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   const formatIST = (dateString) => {
     if (!dateString) return null;
@@ -915,6 +1236,16 @@ const CustomerMaster = () => {
                   <ModuleCard
                     title="Customer Bio & Site"
                     icon={<User size={18} />}
+                    headerAction={
+                      <button
+                        type="button"
+                        onClick={() => setEditModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-[#1a5695] hover:bg-[#1a5695] hover:text-white border border-blue-100 transition-all text-[10px] font-black uppercase tracking-widest"
+                      >
+                        <Edit3 size={14} />
+                        Edit
+                      </button>
+                    }
                   >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-6">
                       {/* Section: Customer Details */}
@@ -1031,6 +1362,19 @@ const CustomerMaster = () => {
             </div>
           )}
         </main>
+
+        {editModalOpen && lead && (
+          <EditCustomerModal
+            lead={lead}
+            onClose={() => setEditModalOpen(false)}
+            onUpdated={(updatedLead) => {
+              setLead((prev) => ({
+                ...prev,
+                ...updatedLead,
+              }));
+            }}
+          />
+        )}
       </div>
     </div>
   );

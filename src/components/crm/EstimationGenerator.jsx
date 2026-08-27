@@ -20,23 +20,34 @@ const EstimationGenerator = () => {
   const navigate = useNavigate();
   const printRef = useRef(null);
 
-  // Input State
+  // =========================================================
+  // INPUT STATE
+  // =========================================================
+
   const [inputData, setInputData] = useState({
     panel_qty: 9,
     panel_wattage: 615,
     panel_rate_per_watt: 25,
+    inverter_wattage: 3.6,
     customer_name: "Valued Customer",
     customer_address: "Site Address Details, Navsari",
     customer_mobile: "+91 9876543210",
   });
 
-  // Response Data State
+  // =========================================================
+  // RESPONSE DATA
+  // =========================================================
+
   const [estimationResult, setEstimationResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Handle Input Changes
+  // =========================================================
+  // HANDLE INPUT CHANGES
+  // =========================================================
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     setInputData((prev) => ({
       ...prev,
       [name]:
@@ -50,7 +61,10 @@ const EstimationGenerator = () => {
     }));
   };
 
-  // Call Estimation API
+  // =========================================================
+  // GENERATE ESTIMATION
+  // =========================================================
+
   const handleGenerateEstimation = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -60,20 +74,24 @@ const EstimationGenerator = () => {
         "/api/estimation/generateEstimation",
         inputData,
       );
+
       if (response.data?.success) {
         setEstimationResult(response.data.data);
       }
     } catch (error) {
       console.error("API Error, using current calculation baseline:", error);
-      // Fallback object matching template logic
+
+      // Fallback calculation
       const totalKw = (
         (inputData.panel_qty * inputData.panel_wattage) /
         1000
       ).toFixed(3);
+
       const totalCost =
         inputData.panel_qty *
         inputData.panel_wattage *
         inputData.panel_rate_per_watt;
+
       const discount = 10000;
       const payable = totalCost - discount;
       const subsidy = 78000;
@@ -85,13 +103,14 @@ const EstimationGenerator = () => {
         panel_wattage: inputData.panel_wattage,
         panel_rate_per_watt: inputData.panel_rate_per_watt,
         total_cost: totalCost,
-        discount: discount,
+        discount,
         payable_amount: payable,
         subsidy_amount: subsidy,
         net_cost: netCost,
         subtotal: payable,
         total_gst: payable * 0.12,
         grand_total: payable * 1.12,
+
         items: [
           {
             id: 1,
@@ -115,67 +134,181 @@ const EstimationGenerator = () => {
     }
   };
 
-  // Currency Formatter
+  // =========================================================
+  // CURRENCY FORMATTER
+  // =========================================================
+
   const formatCurrency = (val) =>
     new Intl.NumberFormat("en-IN", {
       maximumFractionDigits: 0,
     }).format(val || 0);
 
-  // Print/Download PDF Trigger
+  // =========================================================
+  // PRINT / PDF
+  // =========================================================
+
   const handleDownloadPDF = () => {
+    if (!printRef.current) return;
+
+    document.body.classList.add("printing");
+
+    const handleAfterPrint = () => {
+      document.body.classList.remove("printing");
+      window.removeEventListener("afterprint", handleAfterPrint);
+    };
+
+    window.addEventListener("afterprint", handleAfterPrint);
+
     window.print();
   };
 
   return (
     <div className="min-h-screen bg-slate-50 flex">
-      {/* Dynamic Print Styles for exact A4 template rendering */}
+      {/* =====================================================
+          PRINT CSS
+      ===================================================== */}
+
       <style>{`
         @media print {
-          body * {
-            visibility: hidden;
+          @page {
+            size: A4 portrait;
+            margin: 0;
           }
-          #printable-a4-template, #printable-a4-template * {
-            visibility: visible;
+
+          html,
+          body {
+            width: 210mm !important;
+            min-width: 210mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
-          #printable-a4-template {
-            position: absolute;
-            left: 0;
-            top: 0;
+
+          body.printing {
+            overflow: visible !important;
+          }
+
+          /*
+           * Hide only application UI.
+           * Do NOT use body * { visibility: hidden }.
+           */
+          body.printing .print\\:hidden,
+          body.printing .no-print {
+            display: none !important;
+          }
+
+          /*
+           * Remove the normal application layout from the
+           * printable flow.
+           */
+          body.printing > #root {
+            width: 210mm !important;
+            min-width: 210mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+
+          body.printing .pdf-wrapper {
+            display: block !important;
             width: 210mm !important;
             height: 297mm !important;
             margin: 0 !important;
             padding: 0 !important;
           }
-          @page {
-            size: A4 portrait;
-            margin: 0;
+
+          /*
+           * Exact A4 page.
+           */
+          body.printing .print-page {
+            display: block !important;
+            position: relative !important;
+            width: 210mm !important;
+            height: 297mm !important;
+            min-width: 210mm !important;
+            min-height: 297mm !important;
+            max-width: 210mm !important;
+            max-height: 297mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: 0 !important;
+            box-shadow: none !important;
+            transform: none !important;
+            overflow: hidden !important;
+            page-break-after: avoid !important;
+            break-after: avoid-page !important;
+          }
+
+          body.printing .pdf-page {
+            display: block !important;
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid-page !important;
+          }
+
+          body.printing .pdf-section {
+            page-break-inside: avoid !important;
+            break-inside: avoid-page !important;
+          }
+
+          body.printing .pdf-footer {
+            page-break-inside: avoid !important;
+            break-inside: avoid-page !important;
+          }
+
+          /*
+           * Prevent the browser from inserting an additional
+           * page after the A4 template.
+           */
+          body.printing .pdf-wrapper::after {
+            display: none !important;
+            content: none !important;
           }
         }
       `}</style>
 
-      {/* Sidebar Navigation */}
-      <Sidebar
-        isOpen={sidebarOpen}
-        toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        activePage="Estimator"
-      />
+      {/* =====================================================
+          SIDEBAR
+      ===================================================== */}
 
-      {/* Main Content Area */}
+      <div className="no-print">
+        <Sidebar
+          isOpen={sidebarOpen}
+          toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          activePage="Estimator"
+        />
+      </div>
+
+      {/* =====================================================
+          MAIN CONTENT
+      ===================================================== */}
+
       <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
-        <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        {/* Navbar hidden automatically during print */}
+        <div className="print:hidden">
+          <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        </div>
 
         <main className="p-4 lg:p-8 space-y-6 text-slate-800 print:p-0 print:m-0">
-          {/* INPUT FORM PANEL */}
+          {/* =================================================
+              INPUT FORM
+          ================================================= */}
+
           <div className="bg-white rounded-[24px] p-6 border border-slate-200 shadow-sm print:hidden">
             <div className="flex items-start justify-between gap-4 mb-6">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-amber-500 text-white rounded-xl shadow-sm">
                   <Zap size={20} />
                 </div>
+
                 <div>
                   <h2 className="text-lg font-black uppercase tracking-tight text-slate-800">
                     System Estimation Calculator
                   </h2>
+
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                     Configure Panel Specifications & Customer Details
                   </p>
@@ -193,10 +326,12 @@ const EstimationGenerator = () => {
 
             <form onSubmit={handleGenerateEstimation} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* Customer Name */}
                 <div>
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
                     Customer Name
                   </label>
+
                   <input
                     type="text"
                     name="customer_name"
@@ -208,10 +343,12 @@ const EstimationGenerator = () => {
                   />
                 </div>
 
+                {/* Customer Address */}
                 <div>
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
                     Customer Address
                   </label>
+
                   <input
                     type="text"
                     name="customer_address"
@@ -223,10 +360,12 @@ const EstimationGenerator = () => {
                   />
                 </div>
 
+                {/* Customer Mobile */}
                 <div>
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
                     Customer Mobile
                   </label>
+
                   <input
                     type="text"
                     name="customer_mobile"
@@ -238,10 +377,12 @@ const EstimationGenerator = () => {
                   />
                 </div>
 
+                {/* Panel Quantity */}
                 <div>
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
                     Panel Quantity
                   </label>
+
                   <input
                     type="number"
                     name="panel_qty"
@@ -254,10 +395,12 @@ const EstimationGenerator = () => {
                   />
                 </div>
 
+                {/* Panel Wattage */}
                 <div>
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
                     Panel Wattage (Wp)
                   </label>
+
                   <input
                     type="number"
                     name="panel_wattage"
@@ -270,10 +413,12 @@ const EstimationGenerator = () => {
                   />
                 </div>
 
+                {/* Inverter Wattage */}
                 <div>
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
                     Inverter Wattage (kW)
                   </label>
+
                   <input
                     type="number"
                     name="inverter_wattage"
@@ -287,10 +432,12 @@ const EstimationGenerator = () => {
                   />
                 </div>
 
+                {/* Rate */}
                 <div>
                   <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
                     Rate Per Watt (₹)
                   </label>
+
                   <input
                     type="number"
                     name="panel_rate_per_watt"
@@ -315,14 +462,18 @@ const EstimationGenerator = () => {
                     <Loader2 className="animate-spin" size={16} />
                   ) : (
                     <>
-                      <Calculator size={16} /> Calculate Bill of Materials
+                      <Calculator size={16} />
+                      Calculate Bill of Materials
                     </>
                   )}
                 </button>
               </div>
             </form>
 
-            {/* Dynamic API Itemized Table */}
+            {/* =================================================
+                ITEMIZED TABLE
+            ================================================= */}
+
             <div className="overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-slate-50/50 border-b border-slate-200">
@@ -330,10 +481,11 @@ const EstimationGenerator = () => {
                     <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-16 text-center">
                       No.
                     </th>
+
                     <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase min-w-[200px]">
                       Product
                     </th>
-                    {/* Conditional Wattage Header */}
+
                     {estimationResult?.items?.some(
                       (item) =>
                         item.type === "PANEL" ||
@@ -344,21 +496,27 @@ const EstimationGenerator = () => {
                         Wattage
                       </th>
                     ) : null}
+
                     <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-24 text-center">
                       Qty
                     </th>
+
                     <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-32">
                       Unit Price
                     </th>
+
                     <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-32">
                       Subtotal
                     </th>
+
                     <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-20 text-center">
                       Tax %
                     </th>
+
                     <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-32">
                       Tax Amt
                     </th>
+
                     <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-32">
                       Total
                     </th>
@@ -367,13 +525,16 @@ const EstimationGenerator = () => {
 
                 <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
                   {estimationResult?.items?.map((item, index) => {
-                    // Calculate subtotal, GST, and totals per item if not calculated by backend
                     const qty = item.qty || 1;
                     const price = item.price || 0;
+
                     const subtotal = qty * price;
+
                     const taxRate = item.gst || 12;
+
                     const taxAmt =
                       item.gst_amount || (subtotal * taxRate) / 100;
+
                     const itemTotal = item.total || subtotal + taxAmt;
 
                     const showWattage = estimationResult.items.some(
@@ -388,14 +549,13 @@ const EstimationGenerator = () => {
                         key={item.id || index}
                         className="hover:bg-slate-50/80 transition-colors"
                       >
-                        {/* 1. No. */}
                         <td className="px-6 py-4 text-center font-bold text-slate-400">
                           {index + 1}
                         </td>
 
-                        {/* 2. Product Name */}
                         <td className="px-6 py-4 font-bold text-slate-800">
                           {item.name}
+
                           {item.type && (
                             <span className="block text-[10px] text-slate-400 font-semibold tracking-wide">
                               Category: {item.type}
@@ -403,7 +563,6 @@ const EstimationGenerator = () => {
                           )}
                         </td>
 
-                        {/* 3. Conditional Wattage Column */}
                         {showWattage ? (
                           <td className="px-6 py-4 text-slate-600">
                             {item.type === "PANEL" ||
@@ -414,30 +573,24 @@ const EstimationGenerator = () => {
                           </td>
                         ) : null}
 
-                        {/* 4. Qty */}
                         <td className="px-6 py-4 text-center font-black text-slate-800">
                           {qty}
                         </td>
 
-                        {/* 5. Unit Price */}
                         <td className="px-6 py-4">₹{formatCurrency(price)}</td>
 
-                        {/* 6. Subtotal */}
                         <td className="px-6 py-4 text-slate-800">
                           ₹{formatCurrency(subtotal)}
                         </td>
 
-                        {/* 7. Tax % */}
                         <td className="px-6 py-4 text-center font-bold text-slate-500">
                           {taxRate}%
                         </td>
 
-                        {/* 8. Tax Amount */}
                         <td className="px-6 py-4 text-slate-600">
                           ₹{formatCurrency(taxAmt)}
                         </td>
 
-                        {/* 9. Total */}
                         <td className="px-6 py-4 font-black text-slate-900">
                           ₹{formatCurrency(itemTotal)}
                         </td>
@@ -446,7 +599,6 @@ const EstimationGenerator = () => {
                   })}
                 </tbody>
 
-                {/* Table Footer Summary */}
                 <tfoot className="bg-slate-50/80 font-black text-xs text-slate-800 border-t border-slate-200">
                   <tr>
                     <td
@@ -464,6 +616,7 @@ const EstimationGenerator = () => {
                     >
                       Grand Totals:
                     </td>
+
                     <td className="px-6 py-4">
                       ₹
                       {formatCurrency(
@@ -472,10 +625,13 @@ const EstimationGenerator = () => {
                           0,
                       )}
                     </td>
+
                     <td className="px-6 py-4 text-center">-</td>
+
                     <td className="px-6 py-4 text-slate-600">
                       ₹{formatCurrency(estimationResult?.total_gst || 0)}
                     </td>
+
                     <td className="px-6 py-4 text-emerald-700 text-sm">
                       ₹
                       {formatCurrency(
@@ -490,46 +646,58 @@ const EstimationGenerator = () => {
             </div>
           </div>
 
-          {/* DASHBOARD PREVIEW METRICS */}
+          {/* =================================================
+              DASHBOARD PREVIEW
+          ================================================= */}
+
           {estimationResult && (
             <div className="space-y-6 print:hidden">
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                {/* Capacity */}
                 <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex items-center gap-3.5">
                   <div className="p-2.5 bg-slate-50 text-[#1a5695] rounded-xl">
                     <FileText size={18} />
                   </div>
+
                   <div>
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
                       Capacity
                     </p>
+
                     <p className="text-base font-black text-slate-800 tracking-tight">
                       {estimationResult.total_kw} KW
                     </p>
                   </div>
                 </div>
 
+                {/* Panels */}
                 <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex items-center gap-3.5">
                   <div className="p-2.5 bg-slate-50 text-[#1a5695] rounded-xl">
                     <Package size={18} />
                   </div>
+
                   <div>
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
                       Panels Needed
                     </p>
+
                     <p className="text-base font-black text-slate-800 tracking-tight">
                       {estimationResult.panel_qty} Units
                     </p>
                   </div>
                 </div>
 
+                {/* Rating */}
                 <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex items-center gap-3.5">
                   <div className="p-2.5 bg-slate-50 text-[#1a5695] rounded-xl">
                     <Layers size={18} />
                   </div>
+
                   <div>
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
                       Rating & Price
                     </p>
+
                     <p className="text-base font-black text-slate-800 tracking-tight">
                       {estimationResult.panel_wattage}W @ ₹
                       {estimationResult.panel_rate_per_watt}
@@ -537,14 +705,17 @@ const EstimationGenerator = () => {
                   </div>
                 </div>
 
+                {/* Grand Total */}
                 <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm flex items-center gap-3.5">
                   <div className="p-2.5 bg-green-50 text-green-600 rounded-xl">
                     <IndianRupee size={18} />
                   </div>
+
                   <div>
                     <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">
                       Grand Total
                     </p>
+
                     <p className="text-base font-black text-slate-800 tracking-tight">
                       ₹
                       {formatCurrency(
@@ -557,12 +728,13 @@ const EstimationGenerator = () => {
                 </div>
               </div>
 
-              {/* ACTION BAR FOR PDF DOWNLOAD */}
+              {/* Download */}
               <div className="flex justify-between items-center bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
                 <div>
                   <h3 className="text-sm font-black text-slate-800 uppercase tracking-tight">
                     A4 Estimate Template Ready
                   </h3>
+
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                     Download or print the exact formatted PDF document
                   </p>
@@ -572,327 +744,492 @@ const EstimationGenerator = () => {
                   onClick={handleDownloadPDF}
                   className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-700 transition-all shadow-md active:scale-95"
                 >
-                  <Download size={14} /> Download PDF
+                  <Download size={14} />
+                  Download PDF
                 </button>
               </div>
             </div>
           )}
 
-          {/* EXACT A4 PDF TEMPLATE CONTAINER (Renders in preview screen and directly triggers on Print/PDF download) */}
+          {/* =================================================
+              PDF TEMPLATE
+          ================================================= */}
+
           {estimationResult && (
-            <div className="flex justify-center my-6 print:m-0 print:p-0">
+            <div className="pdf-wrapper flex justify-center my-4 print:m-0 print:p-0">
               <div
                 id="printable-a4-template"
                 ref={printRef}
-                className="page-card w-[210mm] h-[297mm] mx-auto bg-white rounded-lg shadow-xl overflow-hidden border border-gray-300 flex flex-col justify-between box-border text-[#222222] text-[11px] leading-tight font-sans"
+                className="print-page w-[210mm] h-[297mm] mx-auto bg-white shadow-xl border border-gray-300 box-border text-[#222222] text-[8.5px] leading-[1.12] font-sans print:shadow-none print:border-0 print:m-0"
               >
-                {/* Top Content Area */}
-                <div className="flex-1 flex flex-col justify-between">
-                  {/* Compact Header */}
-                  <div className="bg-[#0c2340] text-white px-6 py-4 flex justify-between items-center">
-                    <div>
-                      <h1 className="text-xl font-bold tracking-wide uppercase">
-                        BHsquare Solar
-                      </h1>
-                      <p className="text-[10.5px] text-[#9db6d4] mt-0.5">
-                        Solar Energy Solutions
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-[#9db6d4] uppercase tracking-wider text-[9px] font-semibold">
-                        Estimate Date
+                <div className="pdf-page relative bg-white px-4 py-3">
+                  {/* HEADER */}
+                  <div className="border-b-4 border-amber-500 pb-2.5 mb-4">
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="min-w-0">
+                        <h1 className="text-[20px] font-extrabold text-slate-900 tracking-tight leading-tight">
+                          BHsquare Solar Installation And Services
+                        </h1>
+                        <p className="text-[8px] text-slate-700 font-semibold mt-0.5">
+                          Kharel, Gandevi, Navsari, Gujarat - 396430
+                        </p>
+                        <p className="text-[8px] text-slate-700 mt-0.5">
+                          Contact: Harsh Patel (+91 8733817262) &nbsp;|&nbsp;
+                          GSTIN:
+                          <span className="font-bold text-slate-900">
+                            {" "}
+                            24ABDFB4169R1ZZ
+                          </span>
+                        </p>
                       </div>
-                      <div className="font-bold text-sm text-white mt-0.5">
-                        {new Date().toLocaleDateString("en-GB")}
+
+                      <div className="text-right shrink-0">
+                        <span className="bg-amber-100 text-amber-900 text-[7px] font-extrabold px-2 py-1 rounded-full uppercase tracking-wider inline-block">
+                          Commercial Solar Estimate
+                        </span>
+                        <p className="text-[7px] text-slate-700 mt-0.5">
+                          Estimate Date:
+                          <span className="font-bold text-slate-900">
+                            {" "}
+                            {new Date().toLocaleDateString("en-GB")}
+                          </span>
+                        </p>
+                        <p className="text-[7px] text-slate-700">
+                          Validity:
+                          <span className="font-bold text-rose-700">
+                            {" "}
+                            15 Days From Date
+                          </span>
+                        </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
-                    {/* Company & Customer Info Grid */}
-                    <div className="grid grid-cols-2 gap-6 pb-3 border-b border-gray-200">
-                      <div>
-                        <h2 className="text-[10px] font-bold uppercase tracking-wider text-[#1d4e89] mb-1.5">
-                          Provider Details
+                  {/* PROJECT */}
+                  <div className="bg-gradient-to-r from-[#0f172a] via-[#1e3a8a] to-[#0369a1] text-white p-5 rounded-lg mb-4">
+                    <div className="flex justify-between items-center gap-3">
+                      <div className="min-w-0">
+                        <p className="text-[7px] text-amber-300 font-extrabold uppercase tracking-widest">
+                          Project Name & Capacity
+                        </p>
+                        <h2 className="text-[16px] font-extrabold mt-0.5 leading-tight">
+                          {estimationResult.total_kw} kWp On-Grid Commercial
+                          Solar Project
                         </h2>
-                        <p className="font-bold text-xs">
-                          BHsquare Solar Installation &amp; Services
-                        </p>
-                        <p className="text-[#666666] mt-1">
-                          Kharel, Gandevi, Navsari, Gujarat
-                        </p>
-                        <p className="text-[#666666] mt-0.5">
-                          Contact:{" "}
-                          <span className="font-medium text-[#222222]">
-                            8733817262
-                          </span>
-                        </p>
-                        <p className="text-[#666666] mt-0.5">
-                          GSTIN:{" "}
-                          <span className="font-medium text-[#222222]">
-                            24ABCDE1234F1ZH
-                          </span>
+                        <p className="text-blue-100 text-[8px] mt-0.5 font-medium">
+                          Turnkey EPC with ADANI{" "}
+                          {estimationResult.panel_wattage}W TOPCon / Bifacial
+                          modules & Polycab inverter
                         </p>
                       </div>
-                      <div>
-                        <h2 className="text-[10px] font-bold uppercase tracking-wider text-[#1d4e89] mb-1.5">
-                          Customer Details
-                        </h2>
-                        <p className="font-bold text-xs">
+
+                      <div className="bg-white/15 p-1.5 rounded-lg border border-white/30 text-right shrink-0">
+                        <p className="text-[6px] text-blue-100 uppercase font-bold">
+                          Prepared For Client
+                        </p>
+                        <p className="text-[16px] font-extrabold text-white">
                           {inputData.customer_name}
                         </p>
-                        <p className="text-[#666666] mt-1">
-                          {inputData.customer_address}
+                        <p className="text-[7px] text-amber-300 font-bold">
+                          DISCOM Net-Metering Connection
                         </p>
-                        <p className="text-[#666666] mt-0.5">
-                          Mobile:{" "}
-                          <span className="font-medium text-[#222222]">
-                            {inputData.customer_mobile}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* System Specifications Table */}
-                    <div>
-                      <h2 className="text-[10px] font-bold uppercase tracking-wider text-[#1d4e89] mb-1.5">
-                        System Specifications
-                      </h2>
-                      <table className="w-full text-left border-collapse border border-gray-200">
-                        <thead>
-                          <tr className="bg-gray-100 text-[#0c2340] uppercase text-[9px] tracking-wider">
-                            <th className="p-2 border border-gray-200">
-                              System Capacity
-                            </th>
-                            <th className="p-2 border border-gray-200">
-                              System Type
-                            </th>
-                            <th className="p-2 border border-gray-200">
-                              PV Modules
-                            </th>
-                            <th className="p-2 border border-gray-200">
-                              Inverter
-                            </th>
-                            <th className="p-2 border border-gray-200">
-                              Est. Monthly Gen.
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="text-[11px]">
-                            <td className="p-2 border border-gray-200 font-semibold">
-                              <span>{estimationResult.total_kw}</span> kW
-                            </td>
-                            <td className="p-2 border border-gray-200">
-                              On-Grid
-                            </td>
-                            <td className="p-2 border border-gray-200">
-                              <span>ADANI</span> (
-                              <span>{estimationResult.panel_wattage} W</span> ×{" "}
-                              <span>{estimationResult.panel_qty}</span> Nos)
-                            </td>
-                            <td className="p-2 border border-gray-200">
-                              <span>
-                                {Math.ceil(estimationResult.total_kw)} kW
-                              </span>{" "}
-                              - <span>Polycab</span>
-                            </td>
-                            <td className="p-2 border border-gray-200 font-semibold text-green-700">
-                              <span>
-                                {Math.round(estimationResult.total_kw * 120)}
-                              </span>{" "}
-                              kWh
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {/* Financial Breakdown Table */}
-                    <div>
-                      <h2 className="text-[10px] font-bold uppercase tracking-wider text-[#1d4e89] mb-1.5">
-                        Financial Overview
-                      </h2>
-                      <table className="w-full text-left border-collapse border border-gray-200">
-                        <thead>
-                          <tr className="bg-gray-100 text-[#0c2340] uppercase text-[9px] tracking-wider">
-                            <th className="p-2 border border-gray-200">
-                              Total System Cost
-                            </th>
-                            <th className="p-2 border border-gray-200">
-                              Discount
-                            </th>
-                            <th className="p-2 border border-gray-200">
-                              Payable Amount
-                            </th>
-                            <th className="p-2 border border-gray-200">
-                              Govt. Subsidy
-                            </th>
-                            <th className="p-2 border border-gray-200">
-                              Net Cost to Customer
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr className="text-[11px]">
-                            <td className="p-2 border border-gray-200 font-medium">
-                              ₹
-                              <span>
-                                {formatCurrency(
-                                  estimationResult.total_cost || 285000,
-                                )}
-                              </span>
-                            </td>
-                            <td className="p-2 border border-gray-200 text-red-600 font-medium">
-                              - ₹
-                              <span>
-                                {formatCurrency(
-                                  estimationResult.discount || 10000,
-                                )}
-                              </span>
-                            </td>
-                            <td className="p-2 border border-gray-200 font-semibold">
-                              ₹
-                              <span>
-                                {formatCurrency(
-                                  estimationResult.payable_amount || 275000,
-                                )}
-                              </span>
-                            </td>
-                            <td className="p-2 border border-gray-200 text-green-700 font-medium">
-                              ₹
-                              <span>
-                                {formatCurrency(
-                                  estimationResult.subsidy_amount || 78000,
-                                )}
-                              </span>
-                            </td>
-                            <td className="p-2 border border-gray-200 font-bold text-xs text-[#1d4e89]">
-                              ₹
-                              <span>
-                                {formatCurrency(
-                                  estimationResult.net_cost || 197000,
-                                )}
-                              </span>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {/* Terms & Warranties */}
-                    <div>
-                      <h2 className="text-[10px] font-bold uppercase tracking-wider text-[#1d4e89] mb-1.5">
-                        Terms &amp; Warranties
-                      </h2>
-                      <div className="grid grid-cols-2 gap-4 text-[10.5px]">
-                        <ul className="m-0 pl-4 list-disc space-y-1 text-[#666666]">
-                          <li>
-                            <span className="font-semibold text-[#222222]">
-                              30
-                            </span>{" "}
-                            yrs warranty on solar modules (<span>ADANI</span>).
-                          </li>
-                          <li>
-                            <span className="font-semibold text-[#222222]">
-                              8
-                            </span>{" "}
-                            yrs warranty on solar on-grid inverter.
-                          </li>
-                          <li>
-                            <span className="font-semibold text-[#222222]">
-                              5
-                            </span>{" "}
-                            yrs operational &amp; maintenance warranty.
-                          </li>
-                        </ul>
-
-                        <ul className="m-0 pl-4 list-disc space-y-1 text-[#666666]">
-                          <li>
-                            3 Ph / 6 kW Up DISCOM metering charges borne by
-                            customer.
-                          </li>
-                          <li>
-                            Product warranty subject to manufacturer T&amp;C.
-                          </li>
-                          <li>
-                            Physical damage is not covered under warranty.
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-
-                    {/* Payment Condition Callout */}
-                    <div className="bg-[#fff8e0] border-l-4 border-[#f5a623] rounded px-3.5 py-2 text-[11px]">
-                      <b className="inline-block text-[11px] text-[#1d4e89] mr-1">
-                        ચૂકવણીની શરત (Payment Condition):
-                      </b>
-                      કામ પૂર્ણ થાય ત્યાં સુધીમાં 80% પેમેન્ટ કરવાનું રહેશે.
-                      નહિતર મીટર ફાઇલ GEB માં મુકવામાં આવશે નહિ.
-                    </div>
-
-                    <div className="text-[11px] text-[#666666]">
-                      This estimate is valid for{" "}
-                      <b className="text-[#222222]">15 days</b>.
-                    </div>
-
-                    {/* Bank Details */}
-                    <div className="bg-gradient-to-r from-[#0c2340] to-[#1d4e89] text-white rounded-lg px-5 py-3 grid grid-cols-2 gap-4">
-                      <div>
-                        <div className="text-[8.5px] tracking-wider uppercase text-[#9db6d4]">
-                          Bank
-                        </div>
-                        <div className="text-xs font-bold leading-tight">
-                          Bank of Baroda, KHAREL Branch
-                        </div>
-
-                        <div className="text-[8.5px] tracking-wider uppercase text-[#9db6d4] mt-2">
-                          Account Name
-                        </div>
-                        <div className="text-xs font-bold leading-tight">
-                          BHSQUARE SOLAR INSTALLATION AND SERVICES
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="text-[8.5px] tracking-wider uppercase text-[#9db6d4]">
-                          Account Number
-                        </div>
-                        <div className="text-xs font-bold tracking-wider">
-                          3422 0200 0012 50
-                        </div>
-
-                        <div className="text-[8.5px] tracking-wider uppercase text-[#9db6d4] mt-2">
-                          IFSC
-                        </div>
-                        <div className="text-xs font-bold tracking-wider">
-                          BARBOKHAREL
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Signatures */}
-                    <div className="grid grid-cols-2 gap-12 pt-6 pb-2">
-                      <div className="border-t border-[#c7d2de] pt-1.5 text-center text-[10px] tracking-wider uppercase text-[#666666] font-bold">
-                        Customer Signature
-                      </div>
-                      <div className="border-t border-[#c7d2de] pt-1.5 text-center text-[10px] tracking-wider uppercase text-[#666666] font-bold">
-                        Authorized Signature
-                        <div className="mt-0.5 text-[10.5px] text-[#1d4e89] font-semibold normal-case tracking-normal">
-                          BHsquare Solar Installation &amp; Services
-                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Footer Banner */}
-                <div className="bg-[#0c2340] text-[#9db6d4] text-center text-[10px] py-2.5 px-3 border-t border-[#1d4e89]">
-                  <span>BHsquare Solar Installation &amp; Services</span>
-                  &nbsp;·&nbsp;
-                  <span>Kharel, Gandevi, Navsari</span>
-                  &nbsp;·&nbsp;
-                  <span>8733817262</span>
+                  {/* INVESTMENT SUMMARY */}
+                  <div className="mb-4 pdf-section">
+                    <h3 className="text-[8px] font-extrabold text-slate-600 uppercase tracking-wider mb-1">
+                      Project & Subsidy Investment Summary
+                    </h3>
+
+                    <div className="grid grid-cols-5 gap-1.5">
+                      <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-300">
+                        <p className="text-[7px] text-slate-600 font-semibold">
+                          System Capacity
+                        </p>
+                        <p className="text-[13px] font-extrabold text-slate-900 mt-0.5">
+                          {estimationResult.total_kw} kWp
+                        </p>
+                        <p className="text-[6.5px] text-slate-500">
+                          {estimationResult.panel_qty} × Adani{" "}
+                          {estimationResult.panel_wattage}W
+                        </p>
+                      </div>
+
+                      <div className="bg-slate-50 p-3.5 rounded-lg border border-slate-300">
+                        <p className="text-[7px] text-slate-600 font-semibold">
+                          Gross Project Cost
+                        </p>
+                        <p className="text-[16px] font-extrabold text-blue-900 mt-0.5">
+                          ₹
+                          {formatCurrency(
+                            estimationResult.total_cost || 285000,
+                          )}
+                        </p>
+                        <p className="text-[6.5px] text-slate-500">
+                          Incl. GST & Civil
+                        </p>
+                      </div>
+
+                      <div className="bg-rose-50 p-3.5 rounded-lg border border-rose-300">
+                        <p className="text-[7px] text-rose-800 font-bold uppercase">
+                          Special Discount
+                        </p>
+                        <p className="text-[16px] font-extrabold text-rose-700 mt-0.5">
+                          ₹{formatCurrency(estimationResult.discount || 10000)}
+                        </p>
+                        <p className="text-[6.5px] text-rose-600">
+                          Total Project Cost
+                        </p>
+                      </div>
+
+                      <div className="bg-amber-50 p-3.5 rounded-lg border border-amber-300">
+                        <p className="text-[7px] text-amber-900 font-bold uppercase">
+                          Govt Subsidy Benefit
+                        </p>
+                        <p className="text-[16px] font-extrabold text-amber-700 mt-0.5">
+                          ₹
+                          {formatCurrency(
+                            estimationResult.subsidy_amount || 78000,
+                          )}
+                        </p>
+                        <p className="text-[6.5px] text-amber-800">
+                          Estimated Benefit
+                        </p>
+                      </div>
+
+                      <div className="bg-emerald-50 p-3.5 rounded-lg border border-emerald-400">
+                        <p className="text-[7px] text-emerald-900 font-bold uppercase">
+                          Net Cost To Customer
+                        </p>
+                        <p className="text-[16px] font-extrabold text-emerald-800 mt-0.5">
+                          ₹{formatCurrency(estimationResult.net_cost || 197000)}
+                        </p>
+                        <p className="text-[6.5px] text-emerald-700">
+                          Effective Investment
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* PRICE + DOCUMENTS */}
+                  <div className="grid grid-cols-2 gap-4 pdf-section mb-6">
+                    <div>
+                      <p className="text-[14px] font-extrabold uppercase tracking-wider text-[#1d4e89] border-b-2 border-[#1d4e89] pb-0.5 mb-1">
+                        Price
+                      </p>
+
+                      <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 space-y-1">
+                        <div className="flex justify-between text-[12px] pb-1 border-b border-slate-200">
+                          <span>Total System Cost</span>
+                          <span className="font-extrabold">
+                            ₹
+                            {formatCurrency(
+                              estimationResult.total_cost || 285000,
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between text-[12px] pb-1 border-b border-slate-200">
+                          <span className="text-rose-700 font-bold">
+                            Special Discount
+                          </span>
+                          <span className="font-extrabold text-rose-700">
+                            - ₹
+                            {formatCurrency(estimationResult.discount || 10000)}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between py-1.5 px-2 bg-slate-900 text-white rounded-md">
+                          <span className="font-bold text-[12px]">
+                            Total Payable After Discount
+                          </span>
+                          <span className="font-extrabold text-[14px]">
+                            ₹
+                            {formatCurrency(
+                              estimationResult.payable_amount || 275000,
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between text-[12px] py-1 border-b border-slate-200">
+                          <span className="text-emerald-700 font-bold">
+                            Subsidy Get Back
+                          </span>
+                          <span className="font-extrabold text-emerald-700">
+                            - ₹
+                            {formatCurrency(
+                              estimationResult.subsidy_amount || 78000,
+                            )}
+                          </span>
+                        </div>
+
+                        <div className="flex justify-between text-[12px] py-1">
+                          <span className="font-extrabold">
+                            Total Cost After Subsidy
+                          </span>
+                          <span className="font-extrabold">
+                            ₹
+                            {formatCurrency(
+                              estimationResult.net_cost || 197000,
+                            )}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="text-[6.5px] text-slate-500 italic mt-1">
+                        Amount in Words: Rupees{" "}
+                        {formatCurrency(estimationResult.net_cost || 197000)}{" "}
+                        Only
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-[14px] font-extrabold uppercase tracking-wider text-[#1d4e89] border-b-2 border-[#1d4e89] pb-0.5 mb-3">
+                        Required Documents
+                      </p>
+
+                      <div className="border border-slate-300 rounded-lg overflow-hidden grid grid-cols-2">
+                        {[
+                          "Electricity Bill",
+                          "Bank Details",
+                          "Aadhar Card",
+                          "Property Tax Bill",
+                          "Pan Card",
+                        ].map((doc) => (
+                          <div
+                            key={doc}
+                            className="flex items-center gap-1.5 p-2 border-b border-slate-200"
+                          >
+                            <span className="w-3.5 h-3.5 rounded-full bg-blue-100 text-blue-700 text-[7px] font-bold flex items-center justify-center shrink-0">
+                              ✓
+                            </span>
+
+                            <span className="text-slate-800 font-bold text-[12px]">
+                              {doc}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <p className="text-[6.5px] text-slate-500 italic mt-1">
+                        * All taxes, freight, DISCOM connectivity fees and
+                        installation labour are included in the total system
+                        cost above.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* TECHNICAL */}
+                  <div className="mb-3.5 pdf-section mt-2">
+                    <p className="text-[12px] font-extrabold uppercase tracking-wider text-[#1d4e89] border-b-2 border-[#1d4e89] pb-0.5 mb-1">
+                      Technical System Configuration
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-x-5">
+                      {[
+                        [
+                          "Solar Panels:",
+                          `ADANI ${estimationResult.panel_wattage}W TOPCon / Bifacial (${estimationResult.panel_qty} Pcs)`,
+                        ],
+                        [
+                          "Daily Generation:",
+                          `~${Math.round(estimationResult.total_kw * 4)} Units / Day`,
+                        ],
+                        [
+                          "Solar Inverter:",
+                          `${Math.ceil(inputData.inverter_wattage)} kW - Polycab On-Grid`,
+                        ],
+                        [
+                          "Monthly Generation:",
+                          `~${Math.round(estimationResult.total_kw * 120)} Units / Month`,
+                        ],
+                        ["Structure Spec:", "Heavy HDGI (40×40, 40×60, 40×80)"],
+                        ["Avg DISCOM Tariff:", "₹8.00 / Unit"],
+                        [
+                          "Protection Systems:",
+                          "SOL Guard SOS + ACDB/DCDB + LA",
+                        ],
+                        ["Scope of Work:", "Turnkey EPC (Design to Net-Meter)"],
+                      ].map(([label, value]) => (
+                        <div
+                          key={label}
+                          className="flex justify-between py-2 border-b border-slate-100 gap-2"
+                        >
+                          <span className="text-slate-600 text-[14px]">
+                            {label}
+                          </span>
+
+                          <span
+                            className={`font-bold text-right text-[12px] ${
+                              label === "Scope of Work:"
+                                ? "text-emerald-700"
+                                : "text-slate-900"
+                            }`}
+                          >
+                            {value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* BANK + PAYMENT */}
+                  <div className="grid grid-cols-2 gap-4 pdf-section mb-6 mt-8">
+                    <div className="bg-slate-50 p-2 rounded-lg border border-slate-200 text-[14px]">
+                      <p className="font-extrabold text-blue-900 mb-1">
+                        Official Bank Account Details
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-x-3 text-[10px]">
+                        <div className="py-1 border-b border-slate-200">
+                          <span className="text-slate-600">Account Name:</span>
+                          <span className="font-bold text-slate-900 block leading-tight">
+                            BHSQUARE SOLAR INSTALLATION AND SERVICES
+                          </span>
+                        </div>
+
+                        <div className="py-1 border-b border-slate-200">
+                          <span className="text-slate-600">
+                            Account Number:
+                          </span>
+                          <span className="font-bold text-slate-900 block tracking-wider">
+                            3422 0200 0012 50
+                          </span>
+                        </div>
+
+                        <div className="py-1">
+                          <span className="text-slate-600">Bank & Branch:</span>
+                          <span className="font-bold text-slate-900 block">
+                            Bank of Baroda, Kharel
+                          </span>
+                        </div>
+
+                        <div className="py-1">
+                          <span className="text-slate-600">IFSC Code:</span>
+                          <span className="font-bold text-emerald-800 block tracking-widest">
+                            BARB0KHAREL
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-amber-50 p-2.5 rounded-lg border border-amber-300 text-[12px]">
+                      <p className="font-extrabold text-amber-900 mb-1">
+                        Payment & Execution Notes
+                      </p>
+
+                      <p className="font-bold text-rose-800 bg-rose-100 p-1 rounded border border-rose-200 leading-relaxed mb-1 text-[11px]">
+                        • કામ પૂર્ણ થાય ત્યાં સુધીમાં 80% પેમેન્ટ કરવાનું રહેશે.
+                        નહિતર મીટર ફાઈલ GEB / DISCOM માં મુકવામાં આવશે નહિ.
+                      </p>
+
+                      <div className=" text-[11px]">
+                        <p className="font-medium text-slate-700 leading-relaxed">
+                          • આ ESTIMATE બનાવ્યા તારીખથી 15 દિવસ સુધી જ માન્ય
+                          ગણાશે.
+                        </p>
+
+                        <p className="font-medium text-slate-700 leading-relaxed">
+                          • Mandatory GEB/DGVCL agreement on ₹300 E-Stamp paper.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* WARNINGS + TERMS & CONDITIONS */}
+                  <div className="grid grid-cols-2 gap-4 pdf-section mb-2 mt-5">
+                    <div className="bg-rose-50 border border-rose-200 rounded-lg p-2.5">
+                      <p className="text-[14px] font-extrabold uppercase tracking-wider text-rose-800 border-b border-rose-300 pb-0.5 mb-1">
+                        Important Warnings
+                      </p>
+
+                      <ul className=" text-[9px] text-rose-900 font-medium">
+                        <li>
+                          • Meter / DISCOM charges, where applicable, are borne
+                          by the customer.
+                        </li>
+                        <li>
+                          • Physical or environmental damage is excluded from
+                          warranty scope.
+                        </li>
+                        <li>
+                          • Final generation depends on weather, site conditions
+                          and system availability.
+                        </li>
+                        <li>
+                          • Subsidy is subject to applicable government / DISCOM
+                          approval and eligibility.
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="border border-slate-200 rounded-lg p-2.5">
+                      <p className="text-[14px] font-extrabold uppercase tracking-wider text-[#1d4e89] border-b-2 border-[#1d4e89] pb-0.5 mb-1">
+                        Terms & Conditions
+                      </p>
+
+                      <ul className=" text-[9px] text-slate-700 font-medium">
+                        <li>
+                          • 30 Years linear performance warranty on solar
+                          panels.
+                        </li>
+                        <li>• 8 Years warranty on solar on-grid inverter.</li>
+                        <li>• 5 Years comprehensive system O&M warranty.</li>
+                        <li>
+                          • Three-Phase / 6 kW+ DISCOM meter charges borne by
+                          customer.
+                        </li>
+                        <li>
+                          • Standard manufacturer terms apply to component
+                          warranties.
+                        </li>
+                        <li>
+                          • Warranty excludes physical or environmental damage.
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* SIGNATURES */}
+                  <div className="pt-2 mt-6 border-t-2 border-slate-200 pdf-section">
+                    <div className="grid grid-cols-3 gap-4 items-end">
+                      <div className="text-[9px] text-slate-600">
+                        <p className="font-extrabold text-[10px] text-slate-800">
+                          Sales Contact
+                        </p>
+                        <p className="font-bold text-slate-900">Harsh Patel</p>
+                        <p className="font-semibold text-blue-800">
+                          +91 8733817262
+                        </p>
+                        <p>BHsquare Solar, Navsari</p>
+                      </div>
+
+                      <div className="border-t border-slate-400 pt-1 text-center">
+                        <p className="font-bold text-[12px] text-slate-800">
+                          {inputData.customer_name}
+                        </p>
+                        <p className="text-[6.5px] text-slate-500 mt-2">
+                          (Client Signature & Stamp)
+                        </p>
+                      </div>
+
+                      <div className="border-t border-amber-500 pt-1 text-center">
+                        <p className="font-bold text-[12px] text-slate-800">
+                          BHsquare Solar
+                        </p>
+                        <p className="text-[6.5px] text-slate-500 mt-2">
+                          (Authorized Signatory & Stamp)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pdf-footer text-center text-[6.5px] mt-3 text-slate-400 border-t border-slate-100">
+                    BHsquare Solar Installation And Services &nbsp;•&nbsp; Page
+                    1 of 1 &nbsp;•&nbsp; Proposal for {inputData.customer_name}
+                  </div>
                 </div>
               </div>
             </div>

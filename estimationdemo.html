@@ -1,371 +1,689 @@
 <!doctype html>
-<html lang="en">
+<html lang="gu">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Solar Estimate Template</title>
+    <title>
+      Solar Power Proposal - 58.43 kWp | Mango Villa | BHsquare Solar
+    </title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              navy1: "#0c2340",
-              navy2: "#1d4e89",
-              gold: "#f5a623",
-              ink: "#222222",
-              muted: "#666666",
-            },
-          },
-        },
-      };
-    </script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f8fafc;
+        color: #0f172a;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* Strict Page Sizing Rules */
       @page {
         size: A4 portrait;
         margin: 0;
       }
+
+      /* Screen preview */
+      @media screen {
+        #word-content {
+          box-shadow:
+            0 10px 25px -5px rgba(0, 0, 0, 0.08),
+            0 8px 10px -6px rgba(0, 0, 0, 0.03);
+        }
+
+        .pdf-page {
+          min-height: 297mm;
+        }
+      }
+
+      /* Browser Ctrl+P / Save as PDF */
       @media print {
+        @page {
+          size: A4 portrait;
+          margin: 0;
+        }
+
         html,
         body {
-          width: 210mm;
-          height: 297mm;
-          background: #ffffff !important;
+          width: 210mm !important;
+          min-width: 210mm !important;
           margin: 0 !important;
           padding: 0 !important;
-          overflow: hidden;
+          background: #fff !important;
         }
-        .page-card {
-          width: 210mm !important;
-          height: 297mm !important;
-          max-width: 100% !important;
-          border: none !important;
-          border-radius: 0 !important;
-          box-shadow: none !important;
-          margin: 0 !important;
-        }
-        * {
+
+        body {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
         }
+
+        #word-content {
+          width: 210mm !important;
+          max-width: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: 0 !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+          overflow: visible !important;
+        }
+
+        .pdf-page {
+          width: 100% !important;
+          height: auto !important;
+          min-height: 0 !important;
+          max-height: none !important;
+          margin: 0 !important;
+          padding: 12mm !important;
+          box-sizing: border-box !important;
+          page-break-after: auto !important;
+          break-after: auto !important;
+          page-break-inside: auto !important;
+          break-inside: auto !important;
+          overflow: visible !important;
+          position: relative !important;
+        }
+
+        .pdf-page + .pdf-page {
+          margin-top: 0 !important;
+          padding-top: 12mm !important;
+          border-top: 0 !important;
+        }
+
+        /* Keep important sections together during printing. */
+        .gradient-header,
+        .section-heading,
+        .grid,
+        .bg-slate-50 {
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
       }
-      /* Fallback force color printing in browser preview */
-      * {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
+
+      /* Requested page composition:
+           Page 1 = Header + Investment + Price + Required Documents
+           Page 2 = Technical + Bank + Payment + Terms + Signatures */
+      .pdf-page:first-child {
+        break-after: page !important;
+        page-break-after: always !important;
+      }
+
+      .pdf-page:nth-child(2) {
+        break-before: page !important;
+        page-break-before: always !important;
+      }
+
+      .pdf-page + .pdf-page {
+        margin-top: 0 !important;
+      }
+
+      .gradient-header {
+        background: linear-gradient(
+          135deg,
+          #0f172a 0%,
+          #1e3a8a 50%,
+          #0369a1 100%
+        );
+      }
+      .section-heading {
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #1e3a8a;
+        border-bottom: 2px solid #1e3a8a;
+        padding-bottom: 4px;
+        margin-bottom: 12px;
+      }
+
+      /* =========================================================
+         A4 PRINT LAYOUT — MATCH DESKTOP COMPOSITION
+         ========================================================= */
+      @media print {
+        /* Keep the five investment cards on ONE horizontal row. */
+        .print-five-cards {
+          display: grid !important;
+          grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+          gap: 3mm !important;
+          width: 100% !important;
+        }
+
+        .print-five-cards > div {
+          min-width: 0 !important;
+          width: auto !important;
+          padding: 3mm !important;
+        }
+
+        .print-five-cards p {
+          overflow-wrap: break-word !important;
+          word-break: normal !important;
+        }
+
+        /* Price + Documents stay side-by-side. */
+        .print-two-columns {
+          display: grid !important;
+          grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          gap: 4mm !important;
+          width: 100% !important;
+        }
+
+        /* Technical configuration also stays two columns. */
+        .print-two-columns > div {
+          min-width: 0 !important;
+        }
+
+        /* Prevent flex/grid children from forcing horizontal overflow. */
+        .pdf-page,
+        .pdf-page * {
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+        }
+
+        .pdf-page .flex {
+          min-width: 0 !important;
+        }
+
+        /* Preserve the compact look of the reference layout. */
+        .pdf-page {
+          padding: 12mm !important;
+        }
+
+        .section-heading {
+          font-size: 10px !important;
+          margin-bottom: 7px !important;
+          padding-bottom: 3px !important;
+        }
       }
     </style>
   </head>
-  <body
-    class="bg-gray-200 py-6 font-sans text-ink text-[11px] leading-tight flex justify-center items-center min-h-screen"
-  >
-    <!-- Exact A4 Container (210mm x 297mm) -->
+  <body class="p-0 sm:p-6">
     <div
-      class="page-card w-[210mm] h-[297mm] mx-auto bg-white rounded-lg shadow-xl overflow-hidden border border-gray-300 flex flex-col justify-between box-border"
+      id="word-content"
+      class="max-w-4xl mx-auto bg-white rounded-2xl overflow-hidden border border-slate-200"
     >
-      <!-- Top Content Area -->
-      <div class="flex-1 flex flex-col justify-between">
-        <!-- Compact Header -->
-        <div
-          class="bg-navy1 text-white px-6 py-4 flex justify-between items-center"
-        >
-          <div>
-            <h1
-              class="text-xl font-bold tracking-wide uppercase"
-              id="pv-companyName"
-            >
-              BHsquare Solar
-            </h1>
-            <p class="text-[10.5px] text-[#9db6d4] mt-0.5" id="pv-companyTag">
-              Solar Energy Solutions
-            </p>
-          </div>
-          <div class="text-right">
+      <!-- PAGE 1: HEADER, INVESTMENT & PRICING SUMMARY -->
+      <div class="pdf-page bg-white flex flex-col justify-between p-6 sm:p-8">
+        <div>
+          <!-- Company Header -->
+          <div class="border-b-4 border-amber-500 pb-5 mb-5 bg-white">
             <div
-              class="text-[#9db6d4] uppercase tracking-wider text-[9px] font-semibold"
+              class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
             >
-              Estimate Date
+              <div>
+                <h1
+                  class="text-2xl sm:text-[26px] font-extrabold text-slate-900 tracking-tight leading-tight"
+                >
+                  BHsquare Solar Installation And Services
+                </h1>
+                <p class="text-xs text-slate-700 font-semibold mt-1">
+                  Kharel, Gandevi, Navsari, Gujarat - 396430
+                </p>
+                <p class="text-xs text-slate-700 mt-0.5">
+                  Contact: Harsh Patel (+91 8733817262) &nbsp;|&nbsp; GSTIN:
+                  <span class="font-bold text-slate-900">24ABDFB4169R1ZZ</span>
+                </p>
+              </div>
+              <div
+                class="text-left sm:text-right border-l-2 sm:border-l-0 sm:border-r-2 border-amber-400 pl-3 sm:pl-0 sm:pr-4 py-1"
+              >
+                <span
+                  class="bg-amber-100 text-amber-900 text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider inline-block mb-1"
+                >
+                  Solar Project Estimate
+                </span>
+                <p class="text-xs text-slate-700">
+                  Estimate Date:
+                  <span class="font-bold text-slate-900">August 2026</span>
+                </p>
+                <p class="text-xs text-slate-700">
+                  Validity:
+                  <span class="font-bold text-rose-700">15 Days From Date</span>
+                </p>
+              </div>
             </div>
-            <div class="font-bold text-sm text-white mt-0.5" id="pv-estDate">
-              25/08/2026
+          </div>
+
+          <!-- Project Banner -->
+          <div class="gradient-header text-white p-5 rounded-xl mb-6 shadow-sm">
+            <div
+              class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3"
+            >
+              <div>
+                <p
+                  class="text-xs text-amber-300 font-extrabold uppercase tracking-widest"
+                >
+                  Project Capacity & Scope
+                </p>
+                <h2
+                  class="text-xl sm:text-2xl font-extrabold mt-1 leading-tight"
+                >
+                  58.43 kWp On-Grid Solar Power System
+                </h2>
+                <p class="text-blue-100 text-xs sm:text-sm mt-1 font-medium">
+                  Turnkey installation with Adani 615W Mono TOPCon / Bifacial
+                  modules & Polycab inverter
+                </p>
+              </div>
+              <div
+                class="bg-white/15 backdrop-blur-md p-3 rounded-xl border border-white/30 text-left sm:text-right w-full sm:w-auto shrink-0"
+              >
+                <p class="text-xs text-blue-100 uppercase font-bold">
+                  Prepared For:
+                </p>
+                <p class="text-lg font-extrabold text-white">Mango Villa</p>
+                <p class="text-xs text-amber-300 font-bold">
+                  DISCOM Net-Metering Connection
+                </p>
+              </div>
             </div>
+          </div>
+
+          <!-- Investment Summary Metric Cards -->
+          <div class="mb-6">
+            <h3
+              class="text-xs font-extrabold text-slate-600 uppercase tracking-wider mb-3"
+            >
+              Investment Breakdown Overview
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-3 print-five-cards">
+              <div class="bg-slate-50 p-3 rounded-xl border border-slate-300">
+                <p class="text-[11px] text-slate-600 font-semibold">
+                  System Capacity
+                </p>
+                <p class="text-lg font-extrabold text-slate-900 mt-1">
+                  58.43 kWp
+                </p>
+                <p class="text-[10px] text-slate-500 mt-1">95 × Adani 615W</p>
+              </div>
+              <div class="bg-slate-50 p-3 rounded-xl border border-slate-300">
+                <p class="text-[11px] text-slate-600 font-semibold">
+                  Gross Project Cost
+                </p>
+                <p class="text-lg font-extrabold text-blue-900 mt-1">
+                  ₹30,68,812
+                </p>
+                <p class="text-[10px] text-slate-500 mt-1">
+                  Inclusive of GST & Civil
+                </p>
+              </div>
+              <div class="bg-rose-50/70 p-3 rounded-xl border border-rose-300">
+                <p class="text-[11px] text-rose-800 font-bold uppercase">
+                  Special Discount
+                </p>
+                <p class="text-lg font-extrabold text-rose-700 mt-1">₹10,000</p>
+                <p class="text-[10px] text-rose-600 font-semibold mt-1">
+                  Instant Deduction
+                </p>
+              </div>
+              <div
+                class="bg-amber-50/70 p-3 rounded-xl border border-amber-300"
+              >
+                <p class="text-[11px] text-amber-900 font-bold uppercase">
+                  Govt Subsidy
+                </p>
+                <p class="text-lg font-extrabold text-amber-700 mt-1">
+                  ₹10,51,650
+                </p>
+                <p class="text-[10px] text-amber-800 font-semibold mt-1">
+                  @ ₹18,000 / kW
+                </p>
+              </div>
+              <div
+                class="bg-emerald-50/70 p-3 rounded-xl border border-emerald-400"
+              >
+                <p class="text-[11px] text-emerald-900 font-bold uppercase">
+                  Net Cost
+                </p>
+                <p class="text-lg font-extrabold text-emerald-800 mt-1">
+                  ₹20,07,162
+                </p>
+                <p class="text-[10px] text-emerald-700 font-semibold mt-1">
+                  Effective Investment
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Price Calculation Table -->
+          <div class="mb-6">
+            <p class="section-heading">Financial Summary & Payment Payable</p>
+            <div
+              class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2"
+            >
+              <div
+                class="flex justify-between items-center text-xs pb-2 border-b border-slate-200"
+              >
+                <span class="text-slate-700 font-medium"
+                  >Total System Cost (Gross)</span
+                >
+                <span class="font-extrabold text-slate-900 text-sm"
+                  >₹30,68,812</span
+                >
+              </div>
+              <div
+                class="flex justify-between items-center text-xs pb-2 border-b border-slate-200"
+              >
+                <span class="text-rose-700 font-bold"
+                  >Special Discount Applied</span
+                >
+                <span class="font-extrabold text-rose-700 text-sm"
+                  >- ₹10,000</span
+                >
+              </div>
+              <div
+                class="flex justify-between items-center py-2.5 px-3 bg-slate-900 text-white rounded-lg"
+              >
+                <span class="font-bold text-xs"
+                  >Total Payable Amount (Before Subsidy Claim)</span
+                >
+                <span class="font-extrabold text-base">₹30,58,812</span>
+              </div>
+              <div
+                class="flex justify-between items-center text-xs py-1.5 border-b border-slate-200"
+              >
+                <span class="text-emerald-700 font-bold"
+                  >Estimated Government Subsidy Refund</span
+                >
+                <span class="font-extrabold text-emerald-700 text-sm"
+                  >- ₹10,51,650</span
+                >
+              </div>
+              <div class="flex justify-between items-center text-xs py-1.5">
+                <span class="text-slate-900 font-extrabold"
+                  >Net Effective Cost to Customer</span
+                >
+                <span class="font-extrabold text-slate-900 text-sm"
+                  >₹20,07,162</span
+                >
+              </div>
+            </div>
+            <p class="text-[11px] text-slate-500 italic mt-2">
+              <strong>Amount in Words:</strong> Rupees Twenty Lakh Seven
+              Thousand One Hundred Sixty Two Only
+            </p>
           </div>
         </div>
 
-        <div class="p-6 space-y-4 flex-1 flex flex-col justify-between">
-          <!-- Company & Customer Info Grid -->
-          <div class="grid grid-cols-2 gap-6 pb-3 border-b border-gray-200">
-            <div>
-              <h2
-                class="text-[10px] font-bold uppercase tracking-wider text-navy2 mb-1.5"
-              >
-                Provider Details
-              </h2>
-              <p class="font-bold text-xs" id="pv-companyName2">
-                BHsquare Solar Installation &amp; Services
-              </p>
-              <p class="text-muted mt-1" id="pv-companyAddr">
-                Kharel, Gandevi, Navsari, Gujarat
-              </p>
-              <p class="text-muted mt-0.5">
-                Contact:
-                <span id="pv-contact" class="font-medium text-ink"
-                  >8733817262</span
-                >
-              </p>
-              <p class="text-muted mt-0.5">
-                GSTIN:
-                <span id="pv-gstin" class="font-medium text-ink"
-                  >24ABCDE1234F1ZH</span
-                >
-              </p>
-            </div>
-            <div>
-              <h2
-                class="text-[10px] font-bold uppercase tracking-wider text-navy2 mb-1.5"
-              >
-                Customer Details
-              </h2>
-              <p class="font-bold text-xs" id="pv-custName">Valued Customer</p>
-              <p class="text-muted mt-1" id="pv-custAddr">
-                Site Address Details, Navsari
-              </p>
-              <p class="text-muted mt-0.5">
-                Mobile:
-                <span id="pv-custMobile" class="font-medium text-ink"
-                  >+91 9876543210</span
-                >
-              </p>
-            </div>
-          </div>
-
-          <!-- System Specifications Table -->
-          <div>
-            <h2
-              class="text-[10px] font-bold uppercase tracking-wider text-navy2 mb-1.5"
-            >
-              System Specifications
-            </h2>
-            <table
-              class="w-full text-left border-collapse border border-gray-200"
-            >
-              <thead>
-                <tr
-                  class="bg-gray-100 text-navy1 uppercase text-[9px] tracking-wider"
-                >
-                  <th class="p-2 border border-gray-200">System Capacity</th>
-                  <th class="p-2 border border-gray-200">System Type</th>
-                  <th class="p-2 border border-gray-200">PV Modules</th>
-                  <th class="p-2 border border-gray-200">Inverter</th>
-                  <th class="p-2 border border-gray-200">Est. Monthly Gen.</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="text-[11px]">
-                  <td class="p-2 border border-gray-200 font-semibold">
-                    <span id="pv-capacity">5.535</span> kW
-                  </td>
-                  <td class="p-2 border border-gray-200" id="pv-systemType2">
-                    On-Grid
-                  </td>
-                  <td class="p-2 border border-gray-200">
-                    <span id="pv-panelBrand2">ADANI</span> (<span
-                      id="pv-panelWatt"
-                      >615 W</span
-                    >
-                    × <span id="pv-panelCount">9</span> Nos)
-                  </td>
-                  <td class="p-2 border border-gray-200">
-                    <span id="pv-inverterCap">5 kW</span> -
-                    <span id="pv-inverterBrand2">Polycab</span>
-                  </td>
-                  <td
-                    class="p-2 border border-gray-200 font-semibold text-green-700"
-                  >
-                    <span id="pv-genUnits">650</span> kWh
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Financial Breakdown Table -->
-          <div>
-            <h2
-              class="text-[10px] font-bold uppercase tracking-wider text-navy2 mb-1.5"
-            >
-              Financial Overview
-            </h2>
-            <table
-              class="w-full text-left border-collapse border border-gray-200"
-            >
-              <thead>
-                <tr
-                  class="bg-gray-100 text-navy1 uppercase text-[9px] tracking-wider"
-                >
-                  <th class="p-2 border border-gray-200">Total System Cost</th>
-                  <th class="p-2 border border-gray-200">Discount</th>
-                  <th class="p-2 border border-gray-200">Payable Amount</th>
-                  <th class="p-2 border border-gray-200">Govt. Subsidy</th>
-                  <th class="p-2 border border-gray-200">
-                    Net Cost to Customer
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr class="text-[11px]">
-                  <td class="p-2 border border-gray-200 font-medium">
-                    ₹<span id="pv-totalCost">2,85,000</span>
-                  </td>
-                  <td
-                    class="p-2 border border-gray-200 text-red-600 font-medium"
-                  >
-                    - ₹<span id="pv-discount">10,000</span>
-                  </td>
-                  <td class="p-2 border border-gray-200 font-semibold">
-                    ₹<span id="pv-payable">2,75,000</span>
-                  </td>
-                  <td
-                    class="p-2 border border-gray-200 text-green-700 font-medium"
-                  >
-                    ₹<span id="pv-subsidy">78,000</span>
-                  </td>
-                  <td
-                    class="p-2 border border-gray-200 font-bold text-xs text-navy2"
-                  >
-                    ₹<span id="pv-net">1,97,000</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- Terms, Warranties & Conditions Grid -->
-          <div>
-            <h2
-              class="text-[10px] font-bold uppercase tracking-wider text-navy2 mb-1.5"
-            >
-              Terms &amp; Warranties
-            </h2>
-            <div class="grid grid-cols-2 gap-4 text-[10.5px]">
-              <ul class="m-0 pl-4 list-disc space-y-1 text-muted">
-                <li>
-                  <span id="pv-wPanel" class="font-semibold text-ink">30</span>
-                  yrs warranty on solar modules (<span id="pv-panelBrand3"
-                    >ADANI</span
-                  >).
-                </li>
-                <li>
-                  <span id="pv-wInverter2" class="font-semibold text-ink"
-                    >8</span
-                  >
-                  yrs warranty on solar on-grid inverter.
-                </li>
-                <li>
-                  <span id="pv-wOM2" class="font-semibold text-ink">5</span> yrs
-                  operational &amp; maintenance warranty.
-                </li>
-              </ul>
-
-              <ul class="m-0 pl-4 list-disc space-y-1 text-muted">
-                <li>
-                  3 Ph / 6 kW Up DISCOM metering charges borne by customer.
-                </li>
-                <li>Product warranty subject to manufacturer T&amp;C.</li>
-                <li>Physical damage is not covered under warranty.</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- Payment Condition Callout -->
-          <div
-            class="bg-[#fff8e0] border-l-4 border-gold rounded px-3.5 py-2 text-[11px]"
-          >
-            <b class="inline-block text-[11px] text-navy2 mr-1"
-              >ચૂકવણીની શરત (Payment Condition):</b
-            >
-            કામ પૂર્ણ થાય ત્યાં સુધીમાં 80% પેમેન્ટ કરવાનું રહેશે. નહિતર મીટર
-            ફાઇલ GEB માં મુકવામાં આવશે નહિ.
-          </div>
-
-          <div class="text-[11px] text-muted">
-            This estimate is valid for <b class="text-ink">15 days</b>.
-          </div>
-
-          <!-- Compact Bank Details Section -->
-          <div
-            class="bg-[linear-gradient(115deg,#0c2340,#1d4e89)] text-white rounded-lg px-5 py-3 grid grid-cols-2 gap-4"
-          >
-            <div>
-              <div class="text-[8.5px] tracking-wider uppercase text-[#9db6d4]">
-                Bank
-              </div>
-              <div class="text-xs font-bold leading-tight" id="pv-bankName">
-                Bank of Baroda, KHAREL Branch
-              </div>
-
-              <div
-                class="text-[8.5px] tracking-wider uppercase text-[#9db6d4] mt-2"
-              >
-                Account Name
-              </div>
-              <div class="text-xs font-bold leading-tight" id="pv-bankAccName">
-                BHSQUARE SOLAR INSTALLATION AND SERVICES
-              </div>
-            </div>
-
-            <div>
-              <div class="text-[8.5px] tracking-wider uppercase text-[#9db6d4]">
-                Account Number
-              </div>
-              <div class="text-xs font-bold tracking-wider" id="pv-bankAcc">
-                3422 0200 0012 50
-              </div>
-
-              <div
-                class="text-[8.5px] tracking-wider uppercase text-[#9db6d4] mt-2"
-              >
-                IFSC
-              </div>
-              <div class="text-xs font-bold tracking-wider" id="pv-bankIfsc">
-                BARBOKHAREL
-              </div>
-            </div>
-          </div>
-
-          <!-- Signatures Grid -->
-          <div class="grid grid-cols-2 gap-12 pt-6 pb-2">
+        <!-- Required Documents on Page 1 -->
+        <div class="mb-6">
+          <p class="section-heading">Required Documents Checklist</p>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div
-              class="border-t border-[#c7d2de] pt-1.5 text-center text-[10px] tracking-wider uppercase text-muted font-bold"
+              class="flex items-center gap-2.5 p-3 rounded-lg border border-slate-200 bg-slate-50"
             >
-              Customer Signature
+              <span
+                class="w-5 h-5 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0"
+                >✓</span
+              >
+              <span class="text-slate-800 font-bold text-xs"
+                >Electricity Bill</span
+              >
             </div>
             <div
-              class="border-t border-[#c7d2de] pt-1.5 text-center text-[10px] tracking-wider uppercase text-muted font-bold"
+              class="flex items-center gap-2.5 p-3 rounded-lg border border-slate-200 bg-slate-50"
             >
-              Authorized Signature
-              <div
-                class="mt-0.5 text-[10.5px] text-navy2 font-semibold normal-case tracking-normal"
-                id="pv-companyName3"
+              <span
+                class="w-5 h-5 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0"
+                >✓</span
               >
-                BHsquare Solar Installation &amp; Services
-              </div>
+              <span class="text-slate-800 font-bold text-xs">Bank Details</span>
+            </div>
+            <div
+              class="flex items-center gap-2.5 p-3 rounded-lg border border-slate-200 bg-slate-50"
+            >
+              <span
+                class="w-5 h-5 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0"
+                >✓</span
+              >
+              <span class="text-slate-800 font-bold text-xs">Aadhar Card</span>
+            </div>
+            <div
+              class="flex items-center gap-2.5 p-3 rounded-lg border border-slate-200 bg-slate-50"
+            >
+              <span
+                class="w-5 h-5 rounded-full bg-emerald-600 text-white text-xs font-bold flex items-center justify-center shrink-0"
+                >✓</span
+              >
+              <span class="text-slate-800 font-bold text-xs"
+                >Property Tax Bill</span
+              >
             </div>
           </div>
+          <p class="text-[11px] text-slate-500 italic mt-2">
+            * Note: All statutory taxes, freight, DISCOM connectivity charges,
+            and installation labor are included in the price estimate.
+          </p>
+        </div>
+
+        <!-- Footer Page 1 -->
+        <div
+          class="text-center text-[10px] text-slate-400 pt-3 border-t border-slate-100"
+        >
+          BHsquare Solar Installation And Services &nbsp;•&nbsp; Page 1 of 2
+          &nbsp;•&nbsp; Proposal for Mango Villa
         </div>
       </div>
 
-      <!-- Footer Banner pinned to exact A4 bottom boundary -->
-      <div
-        class="bg-navy1 text-[#9db6d4] text-center text-[10px] py-2.5 px-3 border-t border-navy2"
-      >
-        <span id="pv-companyName4"
-          >BHsquare Solar Installation &amp; Services</span
+      <!-- PAGE 2: DOCUMENTS, TECHNICAL CONFIG, TERMS & SIGNATURES -->
+      <div class="pdf-page bg-white flex flex-col justify-between p-6 sm:p-8">
+        <div>
+          <!-- Technical Configuration Block -->
+          <div class="mb-6 bg-white border border-slate-200 rounded-xl p-4">
+            <p class="section-heading">Technical System Configuration</p>
+            <div
+              class="grid md:grid-cols-2 gap-x-8 gap-y-1.5 text-xs print-two-columns"
+            >
+              <div
+                class="flex justify-between py-1.5 border-b border-slate-100 gap-2"
+              >
+                <span class="text-slate-600">Solar Panels:</span>
+                <span class="font-bold text-slate-900 text-right"
+                  >Adani 615W TOPCon / Bifacial (95 Pcs)</span
+                >
+              </div>
+              <div
+                class="flex justify-between py-1.5 border-b border-slate-100 gap-2"
+              >
+                <span class="text-slate-600">Daily Generation (Est.):</span>
+                <span class="font-bold text-slate-900">~233 Units / Day</span>
+              </div>
+              <div
+                class="flex justify-between py-1.5 border-b border-slate-100 gap-2"
+              >
+                <span class="text-slate-600">Solar Inverter:</span>
+                <span class="font-bold text-slate-900 text-right"
+                  >Polycab 75 kW Heavy-Duty On-Grid</span
+                >
+              </div>
+              <div
+                class="flex justify-between py-1.5 border-b border-slate-100 gap-2"
+              >
+                <span class="text-slate-600">Monthly Generation (Est.):</span>
+                <span class="font-bold text-slate-900"
+                  >~7,100 Units / Month</span
+                >
+              </div>
+              <div
+                class="flex justify-between py-1.5 border-b border-slate-100 gap-2"
+              >
+                <span class="text-slate-600">Structure Spec:</span>
+                <span class="font-bold text-slate-900 text-right"
+                  >Heavy HDGI (40×40, 40×60, 40×80)</span
+                >
+              </div>
+              <div
+                class="flex justify-between py-1.5 border-b border-slate-100 gap-2"
+              >
+                <span class="text-slate-600">Avg DISCOM Tariff:</span>
+                <span class="font-bold text-slate-900">₹8.00 / Unit</span>
+              </div>
+              <div
+                class="flex justify-between py-1.5 border-b border-slate-100 gap-2"
+              >
+                <span class="text-slate-600">Protection Systems:</span>
+                <span class="font-bold text-slate-900 text-right"
+                  >SOL Guard SOS + ACDB/DCDB + LA</span
+                >
+              </div>
+              <div
+                class="flex justify-between py-1.5 border-b border-slate-100 gap-2"
+              >
+                <span class="text-slate-600">Scope of Work:</span>
+                <span class="font-extrabold text-emerald-700"
+                  >Turnkey EPC (Design to Net-Meter)</span
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Official Bank Details & Payment Schedule -->
+          <div class="grid md:grid-cols-2 gap-4 mb-6 print-two-columns">
+            <div
+              class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 text-xs"
+            >
+              <p class="font-extrabold text-blue-900 mb-2">
+                Official Bank Account Details
+              </p>
+              <div class="space-y-1">
+                <div
+                  class="flex justify-between py-1 border-b border-slate-200"
+                >
+                  <span class="text-slate-600">Account Name:</span>
+                  <span class="font-bold text-slate-900 text-right"
+                    >BHSQUARE SOLAR INSTALLATION</span
+                  >
+                </div>
+                <div
+                  class="flex justify-between py-1 border-b border-slate-200"
+                >
+                  <span class="text-slate-600">Account Number:</span>
+                  <span class="font-bold text-slate-900 tracking-wider"
+                    >34220200001250</span
+                  >
+                </div>
+                <div
+                  class="flex justify-between py-1 border-b border-slate-200"
+                >
+                  <span class="text-slate-600">Bank & Branch:</span>
+                  <span class="font-bold text-slate-900"
+                    >Bank of Baroda, Kharel</span
+                  >
+                </div>
+                <div class="flex justify-between py-1">
+                  <span class="text-slate-600">IFSC Code:</span>
+                  <span class="font-bold text-emerald-800 tracking-widest"
+                    >BARB0KHAREL</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="bg-amber-50/60 p-3.5 rounded-xl border border-amber-300 text-xs space-y-1.5"
+            >
+              <p class="font-extrabold text-amber-900">
+                Payment & Execution Notes
+              </p>
+              <p
+                class="font-bold text-rose-800 bg-rose-100/80 p-2 rounded border border-rose-200 text-[11px] leading-snug"
+              >
+                • કામ પૂર્ણ થાય ત્યાં સુધીમાં 80% પેમેન્ટ કરવાનું રહેશે. નહિતર
+                મીટર ફાઈલ GEB / DISCOM માં મુકાશે નહિ.
+              </p>
+              <p class="text-[11px] font-medium text-slate-700">
+                • આ ESTIMATE બનાવ્યા તારીખથી 15 દિવસ સુધી જ માન્ય ગણાશે.
+              </p>
+              <p class="text-[11px] font-medium text-slate-700">
+                • Mandatory GEB/DGVCL agreement on ₹300 E-Stamp paper.
+              </p>
+            </div>
+          </div>
+
+          <!-- Terms and Conditions -->
+          <div class="mb-6">
+            <p class="section-heading">Terms & Conditions</p>
+            <ul
+              class="grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-[11px] text-slate-700 font-medium"
+            >
+              <li class="flex items-start gap-1.5">
+                <span class="text-blue-900 font-bold">•</span>
+                <span
+                  >30 Years linear performance warranty on solar panels.</span
+                >
+              </li>
+              <li class="flex items-start gap-1.5 text-rose-700 font-bold">
+                <span>•</span>
+                <span
+                  >Three-Phase / 6 kW+ DISCOM meter charges borne by
+                  customer.</span
+                >
+              </li>
+              <li class="flex items-start gap-1.5">
+                <span class="text-blue-900 font-bold">•</span>
+                <span>8 Years warranty on solar on-grid inverter.</span>
+              </li>
+              <li class="flex items-start gap-1.5">
+                <span class="text-blue-900 font-bold">•</span>
+                <span>5 Years comprehensive system O&M warranty.</span>
+              </li>
+              <li class="flex items-start gap-1.5">
+                <span class="text-blue-900 font-bold">•</span>
+                <span
+                  >Standard manufacturer terms apply to component
+                  warranties.</span
+                >
+              </li>
+              <li class="flex items-start gap-1.5">
+                <span class="text-blue-900 font-bold">•</span>
+                <span
+                  >Physical or environmental damage excluded from warranty
+                  scope.</span
+                >
+              </li>
+            </ul>
+          </div>
+
+          <!-- Single Row Signatures & Contacts -->
+          <div class="pt-4 border-t-2 border-slate-200">
+            <div class="grid grid-cols-3 gap-4 items-end">
+              <!-- Column 1: Contact Details -->
+              <div class="text-[10px] text-slate-600 space-y-0.5">
+                <p class="font-extrabold text-xs text-slate-800">
+                  Sales Contact
+                </p>
+                <p class="font-bold text-slate-900">Harsh Patel</p>
+                <p class="font-semibold text-blue-800">+91 8733817262</p>
+                <p>BHsquare Solar, Navsari</p>
+              </div>
+
+              <!-- Column 2: Client Stamp -->
+              <div class="border-t border-slate-400 pt-2 text-center">
+                <p class="font-bold text-xs text-slate-800">Mango Villa</p>
+                <p class="text-[9.5px] text-slate-500 mt-6">
+                  (Client Signature & Stamp)
+                </p>
+              </div>
+
+              <!-- Column 3: Company Stamp -->
+              <div class="border-t border-amber-500 pt-2 text-center">
+                <p class="font-bold text-xs text-slate-800">BHsquare Solar</p>
+                <p class="text-[9.5px] text-slate-500 mt-6">
+                  (Authorized Signatory & Stamp)
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Page 2 -->
+        <div
+          class="text-center text-[10px] text-slate-400 pt-3 border-t border-slate-100"
         >
-        &nbsp;·&nbsp;
-        <span id="pv-companyAddr2">Kharel, Gandevi, Navsari</span>
-        &nbsp;·&nbsp;
-        <span id="pv-contactPhone2">8733817262</span>
+          BHsquare Solar Installation And Services &nbsp;•&nbsp; Page 2 of 2
+          &nbsp;•&nbsp; Proposal for Mango Villa
+        </div>
       </div>
     </div>
   </body>
