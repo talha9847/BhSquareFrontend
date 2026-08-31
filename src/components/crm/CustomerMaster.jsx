@@ -18,6 +18,7 @@ import {
   IndianRupee,
   Edit3,
   X,
+  ArrowUpWideNarrow,
 } from "lucide-react";
 
 import axios from "axios";
@@ -25,7 +26,9 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 
 // --- SHARED UI COMPONENTS ---
-
+let docId = 0;
+let customerName = 0;
+let contactNumber = "";
 const ModuleCard = ({
   title,
   icon,
@@ -69,7 +72,7 @@ const DataField = ({ label, value, isFull = false }) => (
 const NameChangeModule = ({ customerId }) => {
   const [nameChangeDocs, setNameChangeDocs] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchNameChange = async () => {
       setLoading(true);
@@ -98,46 +101,86 @@ const NameChangeModule = ({ customerId }) => {
       icon={<User size={18} />}
       accentColor="text-rose-600"
     >
-      <div className="space-y-4">
+      <div className="space-y-5">
+        {/* Action Button */}
+        <div className="flex justify-end">
+          <button
+            onClick={() => {
+              navigate("/namechange", {
+                state: {
+                  customerId,
+                  customerName,
+                  contactNumber,
+                },
+              });
+            }}
+            className="group inline-flex items-center gap-2 rounded-xl border border-rose-100 bg-rose-50 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-rose-600 transition-all duration-200 hover:bg-rose-600 hover:text-white hover:shadow-lg hover:shadow-rose-100 active:scale-95"
+          >
+            <span>Go to Name Change</span>
+            <ArrowUpWideNarrow
+              size={15}
+              className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+            />
+          </button>
+        </div>
+
+        {/* Documents */}
         {loading ? (
-          <div className="animate-pulse space-y-3">
-            <div className="h-16 bg-slate-50 rounded-3xl" />
-            <div className="h-16 bg-slate-50 rounded-3xl" />
+          <div className="space-y-3">
+            <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
+            <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
+          </div>
+        ) : nameChangeDocs.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-6 py-10 text-center">
+            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm">
+              <FileText size={20} className="text-slate-300" />
+            </div>
+            <p className="text-xs font-black uppercase tracking-wider text-slate-500">
+              No documents available
+            </p>
+            <p className="mt-1 text-[10px] font-medium text-slate-400">
+              Name change documents will appear here.
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-3">
             {nameChangeDocs.map((doc) => (
               <a
                 key={doc.id}
                 href={doc.document_url}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center justify-between p-5 rounded-[32px] bg-slate-50 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-all group"
+                className="group flex items-center justify-between rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-rose-100 hover:bg-rose-50/40 hover:shadow-md"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                    <FileText
-                      size={20}
-                      className="text-slate-400 group-hover:text-rose-600"
-                    />
+                {/* Left */}
+                <div className="flex min-w-0 items-center gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-500 transition-all duration-200 group-hover:bg-rose-100 group-hover:scale-105">
+                    <FileText size={19} />
                   </div>
-                  <div>
-                    <p className="text-[10px] font-black text-slate-800 uppercase tracking-widest">
+
+                  <div className="min-w-0">
+                    <p className="truncate text-[11px] font-black uppercase tracking-wider text-slate-800">
                       {doc.document_name}
                     </p>
-                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-[0.15em] mt-1">
-                      Identity Verification Doc
-                    </p>
+
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <span className="h-1 w-1 rounded-full bg-rose-400" />
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+                        Identity Verification
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="opacity-0 group-hover:opacity-100 text-[9px] font-black text-rose-600 uppercase tracking-widest transition-opacity">
-                    View Document
+
+                {/* Right */}
+                <div className="ml-4 flex shrink-0 items-center gap-2">
+                  <span className="hidden text-[9px] font-black uppercase tracking-widest text-rose-600 transition-all duration-200 sm:block sm:opacity-0 sm:translate-x-1 sm:group-hover:translate-x-0 sm:group-hover:opacity-100">
+                    View
                   </span>
-                  <Eye
-                    size={18}
-                    className="text-slate-300 group-hover:text-rose-600"
-                  />
+
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-50 text-slate-400 transition-all duration-200 group-hover:bg-white group-hover:text-rose-600 group-hover:shadow-sm">
+                    <Eye size={17} />
+                  </div>
                 </div>
               </a>
             ))}
@@ -227,7 +270,7 @@ const LoanModule = ({ customerId }) => {
 
 const TechnicalModule = ({ customerId }) => {
   const [tech, setTech] = useState(null);
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchTech = async () => {
       try {
@@ -235,7 +278,10 @@ const TechnicalModule = ({ customerId }) => {
           `/api/docs/fetchCustomerDocuments/${customerId}`,
           { withCredentials: true },
         );
-        if (res.status === 200) setTech(res.data.data);
+        if (res.status === 200) {
+          setTech(res.data.data);
+          docId = res.data.data.document_id;
+        }
       } catch (err) {}
     };
     if (customerId) fetchTech();
@@ -250,37 +296,64 @@ const TechnicalModule = ({ customerId }) => {
         icon={<Settings size={18} />}
         accentColor="text-emerald-600"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
-          <DataField label="Consumer Number" value={tech.consumer_number} />
-          <DataField label="Sub-Division" value={tech.sub_division} />
-          <DataField label="GPS Coordinates" value={tech.geo_coordinate} />
+        <div className="space-y-5">
+          {/* Navigate Button */}
+          <div className="flex justify-end">
+            <button
+              onClick={() => {
+                navigate("/documentcollection", {
+                  state: {
+                    customerId,
+                  },
+                });
+              }}
+              className="group inline-flex items-center gap-2 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-2.5 text-[10px] font-black uppercase tracking-widest text-emerald-600 transition-all duration-200 hover:bg-emerald-600 hover:text-white hover:shadow-lg hover:shadow-emerald-100 active:scale-95"
+            >
+              <span>Go to Technical Registry</span>
+              <ArrowUpWideNarrow
+                size={15}
+                className="transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+              />
+            </button>
+          </div>
+
+          {/* Technical Data */}
+          <div className="grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2">
+            <DataField label="Consumer Number" value={tech.consumer_number} />
+            <DataField label="Sub-Division" value={tech.sub_division} />
+            <DataField label="GPS Coordinates" value={tech.geo_coordinate} />
+          </div>
         </div>
       </ModuleCard>
 
       {tech.files?.length > 0 && (
-        <div className="bg-white rounded-[40px] p-10 border border-slate-200 shadow-sm">
-          <h3 className="text-[11px] font-black text-amber-600 uppercase tracking-[0.2em] flex items-center gap-3 mb-10">
-            <FileText size={18} /> Master Vault
+        <div className="rounded-[40px] border border-slate-200 bg-white p-10 shadow-sm">
+          <h3 className="mb-10 flex items-center gap-3 text-[11px] font-black uppercase tracking-[0.2em] text-amber-600">
+            <FileText size={18} />
+            Master Vault
           </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+
+          <div className="grid grid-cols-2 gap-6 md:grid-cols-3">
             {tech.files.map((file) => (
               <a
                 key={file.id}
                 href={file.file_url}
                 target="_blank"
                 rel="noreferrer"
-                className="group relative flex flex-col p-6 rounded-[32px] bg-slate-50 border-2 border-transparent hover:border-[#1a5695] hover:bg-white transition-all shadow-sm"
+                className="group relative flex flex-col rounded-[32px] border-2 border-transparent bg-slate-50 p-6 shadow-sm transition-all hover:border-[#1a5695] hover:bg-white"
               >
-                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm transition-transform group-hover:scale-110">
                   <FileText
                     className="text-slate-400 group-hover:text-[#1a5695]"
                     size={24}
                   />
                 </div>
-                <span className="text-[10px] font-black text-slate-800 uppercase tracking-tight truncate mb-1">
+
+                <span className="mb-1 truncate text-[10px] font-black uppercase tracking-tight text-slate-800">
                   {file.file_name}
                 </span>
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+
+                <div className="absolute right-4 top-4 opacity-0 transition-opacity group-hover:opacity-100">
                   <Eye size={16} className="text-[#1a5695]" />
                 </div>
               </a>
@@ -833,12 +906,12 @@ const EditCustomerModal = ({ lead, onClose, onUpdated }) => {
     customer_name: lead?.customer_name || "",
     contact_number: lead?.contact_number || "",
     installation_type: lead?.installation_type || "",
-    source: lead?.source || "",
-    panel_wattage: lead?.panel_wattage || "",
-    number_of_panels: lead?.number_of_panels || "",
-    number_of_inverters: lead?.number_of_inverters || "",
+    source_id: lead?.source_id || 0,
+    // panel_wattage: lead?.panel_wattage || "",
+    // number_of_panels: lead?.number_of_panels || "",
+    // number_of_inverters: lead?.number_of_inverters || "",
     total_capacity: lead?.total_capacity || "",
-    inverter_capacity: lead?.inverter_capacity || "",
+    // inverter_capacity: lead?.inverter_capacity || "",
     address: lead?.address || "",
   });
   const getSources = async () => {
@@ -876,11 +949,11 @@ const EditCustomerModal = ({ lead, onClose, onUpdated }) => {
 
     setSaving(true);
     setError("");
-
+    if (docId == 0) return;
     try {
       const res = await axios.put(
-        `/api/leads/updateLead/${lead.id}`,
-        formData,
+        `/api/leads/updateCustomerBio/${lead.id}`,
+        { ...formData, registration_id: docId },
         {
           withCredentials: true,
         },
@@ -889,6 +962,7 @@ const EditCustomerModal = ({ lead, onClose, onUpdated }) => {
       if (res.status === 200) {
         onUpdated(res.data?.data || formData);
         onClose();
+        location.reload();
       }
     } catch (err) {
       console.error("Failed to update customer:", err);
@@ -1023,7 +1097,7 @@ const EditCustomerModal = ({ lead, onClose, onUpdated }) => {
               </select>
             </div>
 
-            <div>
+            {/* <div>
               <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
                 Panel Wattage
               </label>
@@ -1035,8 +1109,8 @@ const EditCustomerModal = ({ lead, onClose, onUpdated }) => {
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold"
               />
-            </div>
-
+            </div> */}
+            {/* 
             <div>
               <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
                 Number of Panels
@@ -1049,9 +1123,9 @@ const EditCustomerModal = ({ lead, onClose, onUpdated }) => {
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold"
               />
-            </div>
+            </div> */}
 
-            <div>
+            {/* <div>
               <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
                 Number of Inverters
               </label>
@@ -1063,7 +1137,7 @@ const EditCustomerModal = ({ lead, onClose, onUpdated }) => {
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold"
               />
-            </div>
+            </div> */}
 
             {/* <div>
               <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
@@ -1079,7 +1153,7 @@ const EditCustomerModal = ({ lead, onClose, onUpdated }) => {
               />
             </div> */}
 
-            <div>
+            {/* <div>
               <label className="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
                 Inverter Capacity
               </label>
@@ -1091,7 +1165,7 @@ const EditCustomerModal = ({ lead, onClose, onUpdated }) => {
                 onChange={handleChange}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:border-[#1a5695] focus:ring-2 focus:ring-blue-100 outline-none text-sm font-semibold"
               />
-            </div>
+            </div> */}
 
             {/* ADDRESS */}
             <div className="md:col-span-2">
@@ -1182,6 +1256,8 @@ const CustomerMaster = () => {
           }),
         ]);
         setLead(lRes.data?.data);
+        customerName = lRes.data?.data.customer_name;
+        contactNumber = lRes.data?.data.contact_number;
         setStages(sRes.data?.data || []);
       } catch (err) {
       } finally {
