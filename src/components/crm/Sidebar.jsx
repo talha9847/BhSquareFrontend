@@ -21,6 +21,7 @@ import {
   FileCheck,
   Bolt,
   Database,
+  BanknoteIcon,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -78,6 +79,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       type: "Project Lifecycle",
       path: "registration",
       activePaths: ["/registration", ""],
+    },
+    {
+      name: "Loan",
+      icon: <BanknoteIcon size={18} />,
+      type: "Project Lifecycle",
+      path: "loan",
+      activePaths: ["/loan", ""],
     },
     {
       name: "Kit Ready",

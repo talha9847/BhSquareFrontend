@@ -168,6 +168,8 @@ const Registration = () => {
         application_number: customer.registration?.application_number,
         agreement_date: customer.registration?.agreement_date,
         inverter_qty: customer.registration?.inverter_qty,
+        panel_brand_id: customer.registration?.panel_brand_id,
+        inverter_brand_id: customer.registration?.inverter_brand_id,
         panel_qty: panelCount,
         // panel_serials: initialSerials,
         inverter_capacity: (customer.lead.inverter_capacity / 1).toFixed(2),
@@ -257,12 +259,13 @@ const Registration = () => {
         {
           registrationId: rId,
           customerId: cId,
+          loanRequired,
         },
         { withCredentials: true },
       );
 
       if (res.status == 200) {
-        navigate("/kitready");
+        navigate("/loan");
       }
     } catch (error) {}
   };
@@ -1042,26 +1045,81 @@ const Registration = () => {
       {/* FINALIZE CONFIRMATION MODAL */}
       {isFinalizeModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm text-syne">
-          <div className="flex flex-col gap-3 pt-4">
-            <button
-              onClick={() => {
-                completeRegistration();
-              }}
-              type="button"
-              className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:bg-blue-800 transition-all flex items-center justify-center gap-2"
-            >
-              {load ? "Confirming...." : "Confirm & Mark as Done"}
-            </button>
+          <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="px-6 pt-6 pb-4">
+              <h3 className="text-lg font-black text-slate-800">
+                Finalize Registration
+              </h3>
+              <p className="mt-1 text-xs font-medium text-slate-400">
+                Please confirm the loan requirement before completing
+                registration.
+              </p>
+            </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                setIsFinalizeModalOpen(false);
-              }}
-              className="w-full py-4 bg-white text-slate-400 border border-slate-100 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all"
-            >
-              Cancel
-            </button>
+            {/* Loan Required Toggle */}
+            <div className="px-6 py-5 bg-slate-50 border-y border-slate-100">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-widest text-slate-700">
+                    Loan Required?
+                  </p>
+                  <p className="mt-1 text-[10px] font-medium text-slate-400">
+                    Select whether the customer requires a loan.
+                  </p>
+                </div>
+
+                <div className="flex items-center p-1 bg-white border border-slate-200 rounded-xl shadow-sm">
+                  <button
+                    type="button"
+                    onClick={() => setLoanRequired(true)}
+                    className={`px-5 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
+                      loanRequired === true
+                        ? "bg-[#1a5695] text-white shadow-md"
+                        : "text-slate-400 hover:text-slate-600"
+                    }`}
+                  >
+                    Yes
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setLoanRequired(false)}
+                    className={`px-5 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider transition-all ${
+                      loanRequired === false
+                        ? "bg-slate-700 text-white shadow-md"
+                        : "text-slate-400 hover:text-slate-600"
+                    }`}
+                  >
+                    No
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-3 p-6">
+              <button
+                onClick={() => {
+                  completeRegistration();
+                  // console.log(loanRequired);
+                }}
+                type="button"
+                className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:bg-blue-800 transition-all flex items-center justify-center gap-2"
+              >
+                {load ? "Confirming...." : "Confirm & Mark as Done"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsFinalizeModalOpen(false);
+                }}
+                className="w-full py-4 bg-white text-slate-400 border border-slate-100 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-slate-50 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

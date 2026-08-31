@@ -77,6 +77,7 @@ import SuperCommission from "./components/Supervisor/SuperCommission";
 import FCustomerMaster from "./components/Fabricator/FCustomerMaster";
 import EstimationManager from "./components/crm/EstimationManager";
 import EstimationGenerator from "./components/crm/EstimationGenerator";
+import LoanPage from "./components/crm/LoanPage";
 // import Test from "./components/crm/Test";
 function App() {
   const [count, setCount] = useState(0);
@@ -274,6 +275,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Dispatch />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/loan"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <LoanPage />
               </ProtectedRoute>
             }
           />

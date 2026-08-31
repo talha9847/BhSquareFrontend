@@ -661,71 +661,32 @@ const KitReady = () => {
                                 )}
 
                                 {/* ✏️ EDIT */}
-                                {!c.loan_status ||
-                                c.loan_status === "pending" ? (
-                                  <button
-                                    onClick={() => {
-                                      setSelectedCustomer(c);
-                                      setIsModalOpen(true);
-                                    }}
-                                    className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-white hover:shadow-md rounded-xl transition-all border border-slate-100"
-                                  >
-                                    <Edit3 size={16} />
-                                  </button>
-                                ) : c.loan_status === "required" ? (
-                                  /* 💰 GO FOR LOAN → NAVIGATE ONLY */
-                                  <button
-                                    onClick={() => {
-                                      navigate("/loanstep", {
-                                        state: {
-                                          customerId: c.customer.id,
-                                          leadId: c.customer.lead?.id,
-                                        },
-                                      });
-                                    }}
-                                    className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
-                                  >
-                                    {naviLoad ? (
-                                      <>Going.....</>
-                                    ) : (
-                                      <>
-                                        <Banknote size={14} /> Go For Loan
-                                      </>
-                                    )}
-                                    <ChevronRight
-                                      size={14}
-                                      className="group-hover/btn:translate-x-1 transition-transform"
-                                    />
-                                  </button>
-                                ) : c.file_gen === "done" ? (
-                                  /* 📦 GO FOR KIT → ONLY insertKit */
-                                  <button
-                                    onClick={() => {
-                                      insertKit(
-                                        c.customer.id,
-                                        c.loan_status,
-                                        c.customer.lead?.id,
-                                        c,
-                                      );
-                                    }}
-                                    className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
-                                  >
-                                    {naviLoad ? (
-                                      <>Going.....</>
-                                    ) : (
-                                      <>
-                                        <Package size={14} /> Go For Kit
-                                      </>
-                                    )}
-                                    <ChevronRight
-                                      size={14}
-                                      className="group-hover/btn:translate-x-1 transition-transform"
-                                    />
-                                  </button>
-                                ) : null}
+                                <button
+                                  onClick={() => {
+                                    insertKit(
+                                      c.customer.id,
+                                      c.loan_status,
+                                      c.customer.lead?.id,
+                                      c,
+                                    );
+                                  }}
+                                  className="group/btn flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-[#1a5695] hover:text-white transition-all border border-slate-200 shadow-sm"
+                                >
+                                  {naviLoad ? (
+                                    <>Going.....</>
+                                  ) : (
+                                    <>
+                                      <Package size={14} /> Go For Kit
+                                    </>
+                                  )}
+                                  <ChevronRight
+                                    size={14}
+                                    className="group-hover/btn:translate-x-1 transition-transform"
+                                  />
+                                </button>
 
                                 {/* 👀 SEE LOAN */}
-                                {c.loan_status === "completed" && (
+                                {/* {c.loan_status === "completed" && (
                                   <button
                                     onClick={() => {
                                       navigate("/loanstep", {
@@ -739,7 +700,7 @@ const KitReady = () => {
                                   >
                                     See Loan
                                   </button>
-                                )}
+                                )} */}
 
                                 <button
                                   onClick={() => handleDelay(c.id, "delay")}
