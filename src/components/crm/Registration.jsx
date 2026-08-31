@@ -22,6 +22,7 @@ import {
   CreditCard,
   Check,
   Banknote,
+  ChevronDown,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -844,6 +845,76 @@ const Registration = () => {
                       {...register("total_capacity")}
                       readOnly
                       className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl font-bold text-slate-400 text-sm cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Panel Brand
+                  </label>
+
+                  <div className="relative">
+                    <Zap
+                      size={16}
+                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                    />
+
+                    <select
+                      {...register("panel_brand_id", { required: true })}
+                      className={`w-full appearance-none rounded-2xl border bg-slate-50 py-4 pl-11 pr-10 text-sm font-bold text-slate-700 outline-none transition-all ${
+                        errors.panel_brand_id
+                          ? "border-red-200 bg-red-50/30"
+                          : "border-slate-100 focus:border-emerald-200 focus:bg-white focus:ring-4 focus:ring-emerald-50"
+                      }`}
+                      defaultValue=""
+                    >
+                      <option value="">-- Select Panel Brand --</option>
+
+                      {brands.map((brand) => (
+                        <option key={brand.id} value={brand.id}>
+                          {brand.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* Dropdown Arrow */}
+                    <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-300">
+                      <ChevronDown size={16} />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="ml-1 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Inverter Brand
+                  </label>
+
+                  <div className="relative">
+                    <Zap
+                      size={16}
+                      className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"
+                    />
+
+                    <select
+                      {...register("inverter_brand_id", { required: true })}
+                      className={`w-full appearance-none rounded-2xl border bg-slate-50 py-4 pl-11 pr-10 text-sm font-bold text-slate-700 outline-none transition-all ${
+                        errors.inverter_brand_id
+                          ? "border-red-200 bg-red-50/30"
+                          : "border-slate-100 focus:border-emerald-200 focus:bg-white focus:ring-4 focus:ring-emerald-50"
+                      }`}
+                      defaultValue=""
+                    >
+                      <option value="">-- Select Inverter Brand --</option>
+
+                      {brands.map((brand) => (
+                        <option key={brand.id} value={brand.id}>
+                          {brand.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <ChevronDown
+                      size={16}
+                      className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"
                     />
                   </div>
                 </div>
