@@ -461,6 +461,7 @@ const PrepareKit = () => {
                               onRemove={handleRemoveProduct}
                               onEdit={openEditModal}
                               status={kitStatus}
+                              fetchMainData={fetchMainData}
                             />
                           ))}
                         </tbody>
@@ -646,7 +647,7 @@ const PrepareKit = () => {
               >
                 {confirmLoad ? (
                   <>
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />{" "}
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
                     Dispatching...
                   </>
                 ) : (
@@ -660,7 +661,6 @@ const PrepareKit = () => {
     </div>
   );
 };
-
 const KitRowDesktop = ({
   item,
   updateQty,
@@ -670,106 +670,224 @@ const KitRowDesktop = ({
   onEdit,
   status,
   handleManualQty,
-}) => (
-  <tr
-    className={`group transition-all duration-300 ${item.verified ? "bg-emerald-50/20" : "hover:bg-slate-50/50"}`}
-  >
-    <td className="px-8 py-6">
-      <div className="flex flex-col">
-        <p className="font-black text-sm text-slate-800 uppercase italic mb-1">
-          {item.name}
-        </p>
-        <span className="text-[9px] font-black bg-slate-800 text-white px-2 py-0.5 rounded w-fit uppercase">
-          {item.brand}
-        </span>
-      </div>
-    </td>
-    <td className="px-8 py-6 text-center">
-      <span
-        className={`text-xs font-black ${item.verified ? "text-emerald-600" : "text-slate-300"}`}
-      >
-        {item.stock}
-      </span>
-    </td>
-    <td className="px-8 py-6 text-center">
-      <div
-        className={`inline-flex items-center bg-white border rounded-xl p-1 shadow-sm transition-opacity ${
-          item.verified ? "opacity-30 grayscale pointer-events-none" : ""
-        }`}
-      >
-        {/* Minus Button */}
-        <button
-          disabled={item.verified}
-          onClick={() => updateQty(item.id, -1, item.is_extra)}
-          className="w-8 h-8 font-bold hover:text-[#1a5695]"
-        >
-          -
-        </button>
+  fetchMainData,
+}) => {
+  const handlePartialDispatch = async () => {
+    const qty = Number(item.qty) || 0;
+    const partialDispatchedQty = Number(item.partialDispatchedQty) || 0;
 
-        {/* Manual Input */}
-        <input
-          type="number"
-          min="0"
-          value={item.qty || 0}
-          disabled={item.verified}
-          onChange={(e) =>
-            handleManualQty(item.id, e.target.value, item.stock, item.is_extra)
+    // 1. Item verification validation
+    if (!item.verified) {
+      Swal.fire({
+        title: "Item Not Verified",
+        text: "Please verify the item before partial dispatch.",
+        icon: "warning",
+        confirmButtonColor: "#1a5695",
+      });
+      return;
+    }
+
+    // 2. Pick quantity validation
+    if (qty <= 0) {
+      Swal.fire({
+        title: "Invalid Quantity",
+        text: "Pick quantity must be greater than 0.",
+        icon: "warning",
+        confirmButtonColor: "#1a5695",
+      });
+      return;
+    }
+
+    // 3. Calculate remaining quantity
+    const remainingQty = qty - partialDispatchedQty;
+
+    // 4. Already fully dispatched
+    if (remainingQty <= 0) {
+      Swal.fire({
+        title: "Already Fully Dispatched",
+        text: `Pick quantity (${qty}) is already fully dispatched (${partialDispatchedQty}).`,
+        icon: "info",
+        confirmButtonColor: "#1a5695",
+      });
+      return;
+    }
+
+    // 5. Ask user for partial dispatch quantity
+    Swal.fire({
+      title: "Partial Dispatch",
+      text: `Remaining quantity: ${remainingQty}`,
+      input: "number",
+      inputLabel: "Enter quantity to partial dispatch",
+      inputPlaceholder: "Enter quantity",
+      inputAttributes: {
+        min: 1,
+        max: remainingQty,
+        step: 1,
+      },
+      showCancelButton: true,
+      confirmButtonColor: "#1a5695",
+      cancelButtonColor: "#ef4444",
+      confirmButtonText: "Yes, Partial Dispatch",
+      cancelButtonText: "Cancel",
+
+      preConfirm: (value) => {
+        const dispatchQty = Number(value);
+
+        // Input validation
+        if (!value || !Number.isInteger(dispatchQty) || dispatchQty <= 0) {
+          Swal.showValidationMessage(
+            "Please enter a valid quantity greater than 0.",
+          );
+          return false;
+        }
+
+        // Cannot dispatch more than remaining
+        if (dispatchQty > remainingQty) {
+          Swal.showValidationMessage(
+            `You can dispatch maximum ${remainingQty} quantity.`,
+          );
+          return false;
+        }
+
+        return dispatchQty;
+      },
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const dispatchQty = result.value;
+        try {
+          const res = await axios.post(
+            "/api/kitready/partialDispatch",
+            { kitItemId: item.id, dispatchQty: dispatchQty },
+            { withCredentials: true },
+          );
+          if (res.status === 200) {
+            Swal.fire({
+              title: "Partial Dispatched",
+              text: `${dispatchQty} quantity dispatched successfully.`,
+              icon: "success",
+              confirmButtonColor: "#1a5695",
+            });
+            await fetchMainData();
           }
-          onWheel={(e) => e.target.blur()}
-          className="w-12 text-center text-sm font-black outline-none"
-        />
+        } catch (error) {
+          console.error("Partial dispatch error:", error);
+          Swal.fire({
+            title: "Partial Dispatch Failed",
+            text:
+              error.response?.data?.message ||
+              "Something went wrong while partial dispatching.",
+            icon: "error",
+            confirmButtonColor: "#ef4444",
+          });
+        }
+      }
+    });
+  };
 
-        {/* Plus Button */}
-        <button
-          disabled={item.verified}
-          onClick={() => updateQty(item.id, 1, item.is_extra)}
-          className="w-8 h-8 font-bold hover:text-[#1a5695]"
+  return (
+    <tr
+      className={`group transition-all duration-300 ${item.verified ? "bg-emerald-50/20" : "hover:bg-slate-50/50"}`}
+    >
+      <td className="px-8 py-6">
+        <div className="flex flex-col">
+          <p className="font-black text-sm text-slate-800 uppercase italic mb-1">
+            {item.name}
+          </p>
+          <span className="text-[9px] font-black bg-slate-800 text-white px-2 py-0.5 rounded w-fit uppercase">
+            {item.brand}
+          </span>
+        </div>
+      </td>
+      <td className="px-8 py-6 text-center">
+        <span
+          className={`text-xs font-black ${item.verified ? "text-emerald-600" : "text-slate-300"}`}
         >
-          +
-        </button>
-      </div>
-    </td>
-    <td className="px-8 py-6 text-right">
-      <div className="flex items-center justify-end gap-2">
-        {/* If item isn't verified, show delete icon */}
-        {!item.verified && (
-          <button
-            onClick={() => onRemove(item)}
-            className="w-10 h-10 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center"
-          >
-            <Trash2 size={18} />
-          </button>
-        )}
-
-        {/* If item IS verified, show the Edit/Pen icon to modify quantity */}
-        {item.verified && !status && (
-          <button
-            onClick={() => onEdit(item)}
-            className="w-10 h-10 rounded-xl border border-slate-200 text-slate-400 hover:border-amber-400 hover:text-amber-600 hover:bg-amber-50 transition-all flex items-center justify-center bg-white"
-          >
-            <PenTool size={16} />
-          </button>
-        )}
-
-        {/* Action / Verify Button */}
-        <button
-          disabled={item.verified || isVerifying || status}
-          onClick={() => toggleVerify(item.id, item.is_extra, item)}
-          className={`w-10 h-10 rounded-xl border-2 inline-flex items-center justify-center transition-all ${
-            item.verified
-              ? "bg-emerald-500 border-emerald-500 text-white shadow-lg"
-              : "bg-white border-slate-100 text-slate-200 hover:border-[#1a5695] hover:text-[#1a5695]"
-          }`}
+          {item.stock}
+        </span>
+      </td>
+      <td className="px-8 py-6 text-center">
+        <div
+          className={`inline-flex items-center bg-white border rounded-xl p-1 shadow-sm transition-opacity ${item.verified ? "opacity-30 grayscale pointer-events-none" : ""}`}
         >
-          {isVerifying ? (
-            <Loader2 size={18} className="animate-spin" />
-          ) : (
-            <CheckCircle2 size={20} />
+          <button
+            disabled={item.verified}
+            onClick={() => updateQty(item.id, -1, item.is_extra)}
+            className="w-8 h-8 font-bold hover:text-[#1a5695]"
+          >
+            -
+          </button>
+          <input
+            type="number"
+            min="0"
+            value={item.qty || 0}
+            disabled={item.verified}
+            onChange={(e) =>
+              handleManualQty(
+                item.id,
+                e.target.value,
+                item.stock,
+                item.is_extra,
+              )
+            }
+            onWheel={(e) => e.target.blur()}
+            className="w-12 text-center text-sm font-black outline-none"
+          />
+          <button
+            disabled={item.verified}
+            onClick={() => updateQty(item.id, 1, item.is_extra)}
+            className="w-8 h-8 font-bold hover:text-[#1a5695]"
+          >
+            +
+          </button>
+        </div>
+      </td>
+      <td className="px-8 py-6 text-center">
+        <div className="flex items-center justify-center gap-2">
+          <span className="min-w-10 px-3 py-2 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 font-black text-xs">
+            {item.partialDispatchedQty || 0}
+          </span>
+          <button
+            disabled={status}
+            onClick={handlePartialDispatch}
+            className="px-3 py-2 rounded-xl bg-amber-500 text-white font-black text-[9px] uppercase tracking-wider hover:bg-amber-600 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Partial Dispatch
+          </button>
+        </div>
+      </td>
+      <td className="px-8 py-6 text-right">
+        <div className="flex items-center justify-end gap-2">
+          {!item.verified && (
+            <button
+              onClick={() => onRemove(item)}
+              className="w-10 h-10 rounded-xl text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all flex items-center justify-center"
+            >
+              <Trash2 size={18} />
+            </button>
           )}
-        </button>
-      </div>
-    </td>
-  </tr>
-);
+          {item.verified && !status && (
+            <button
+              onClick={() => onEdit(item)}
+              className="w-10 h-10 rounded-xl border border-slate-200 text-slate-400 hover:border-amber-400 hover:text-amber-600 hover:bg-amber-50 transition-all flex items-center justify-center bg-white"
+            >
+              <PenTool size={16} />
+            </button>
+          )}
+          <button
+            disabled={item.verified || isVerifying || status}
+            onClick={() => toggleVerify(item.id, item.is_extra, item)}
+            className={`w-10 h-10 rounded-xl border-2 inline-flex items-center justify-center transition-all ${item.verified ? "bg-emerald-500 border-emerald-500 text-white shadow-lg" : "bg-white border-slate-100 text-slate-200 hover:border-[#1a5695] hover:text-[#1a5695]"}`}
+          >
+            {isVerifying ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : (
+              <CheckCircle2 size={20} />
+            )}
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+};
 
 export default PrepareKit;
