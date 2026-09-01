@@ -46,10 +46,90 @@ const FinalizeWiring = () => {
   const [updatingSerialId, setUpdatingSerialId] = useState(null);
 
   const isEverythingUploaded = () => {
-    if (initialLoading || otherDocs.length === 0) return false;
-    return otherDocs.every(
-      (doc) => doc.existingLink && doc.existingLink !== "",
+    if (initialLoading || otherDocs.length === 0) {
+      return false;
+    }
+
+    // Normalize document names
+    const normalizeName = (name = "") =>
+      name.trim().toLowerCase().replace(/[_-]+/g, " ");
+
+    const docs = otherDocs.map((doc) => ({
+      ...doc,
+      normalizedName: normalizeName(doc.docName),
+      uploaded: Boolean(doc.existingLink),
+    }));
+
+    // --------------------------------------------------
+    // 1. Combined Photo
+    // --------------------------------------------------
+    // Combined Photo is OPTIONAL.
+    // If it is uploaded, individual panel photos are NOT required.
+    const combinedPhoto = docs.find(
+      (doc) => doc.normalizedName === "combined photo",
     );
+
+    const isCombinedPhotoUploaded = Boolean(combinedPhoto?.uploaded);
+
+    // --------------------------------------------------
+    // 2. Individual Panel Photos
+    // --------------------------------------------------
+    const panelDocs = docs.filter((doc) =>
+      /^panel\s+\d+$/.test(doc.normalizedName),
+    );
+
+    const areAllPanelsUploaded =
+      panelDocs.length > 0 && panelDocs.every((doc) => doc.uploaded);
+
+    // Either:
+    // A) Combined Photo is uploaded
+    // OR
+    // B) Every individual Panel photo is uploaded
+    const panelsValid = isCombinedPhotoUploaded || areAllPanelsUploaded;
+
+    // --------------------------------------------------
+    // 3. Inverter Photos
+    // --------------------------------------------------
+    // Inverter photos are ALWAYS compulsory.
+    const inverterDocs = docs.filter((doc) =>
+      /^inverter\s+\d+$/.test(doc.normalizedName),
+    );
+
+    const areAllInvertersUploaded =
+      inverterDocs.length > 0 && inverterDocs.every((doc) => doc.uploaded);
+
+    // --------------------------------------------------
+    // 4. Mandatory Documents
+    // --------------------------------------------------
+    // These 3 are ALWAYS compulsory.
+    const wiringFile = docs.find((doc) => doc.normalizedName === "wiring file");
+
+    const geoTag = docs.find((doc) => doc.normalizedName === "geo tag");
+
+    const sitePhoto = docs.find((doc) => doc.normalizedName === "site photo");
+
+    const mandatoryDocsValid =
+      Boolean(wiringFile?.uploaded) &&
+      Boolean(geoTag?.uploaded) &&
+      Boolean(sitePhoto?.uploaded);
+
+    // --------------------------------------------------
+    // 5. Final Validation
+    // --------------------------------------------------
+    const canMoveToNextStage =
+      panelsValid && areAllInvertersUploaded && mandatoryDocsValid;
+
+    console.log("Document Validation:", {
+      combinedPhoto: isCombinedPhotoUploaded,
+      allPanels: areAllPanelsUploaded,
+      allInverters: areAllInvertersUploaded,
+      wiringFile: Boolean(wiringFile?.uploaded),
+      geoTag: Boolean(geoTag?.uploaded),
+      sitePhoto: Boolean(sitePhoto?.uploaded),
+      canMoveToNextStage,
+    });
+
+    return canMoveToNextStage;
   };
 
   const fetchData = async () => {
