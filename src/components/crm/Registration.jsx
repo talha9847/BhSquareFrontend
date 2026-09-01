@@ -259,6 +259,7 @@ const Registration = () => {
         {
           registrationId: rId,
           customerId: cId,
+          leadId: lId,
           loanRequired,
         },
         { withCredentials: true },

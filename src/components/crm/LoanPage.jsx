@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Search, MapPin, Banknote, Loader2, Package } from "lucide-react";
+import {
+  Search,
+  MapPin,
+  Banknote,
+  Loader2,
+  Package,
+  CheckCircle,
+} from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
@@ -210,24 +217,28 @@ const LoanPage = () => {
 
                             {/* CUSTOMER ID */}
                             <td className="px-6 py-4 text-right">
-                              <span className="text-[10px] font-black text-slate-400 uppercase">
-                                <button
-                                  onClick={() => {
-                                    console.log(lead);
-                                    navigate("/loanstep", {
-                                      state: {
-                                        customerId: customer?.id,
-                                        leadId: customer?.lead?.id,
-                                      },
-                                    });
-                                  }}
-                                  className="p-3"
-                                >
-                                  {item.loan_status == "pending"
-                                    ? "Apply For Loan"
-                                    : "See Loan"}
-                                </button>
-                              </span>
+                              {" "}
+                              <button
+                                onClick={() => {
+                                  navigate("/loanstep", {
+                                    state: {
+                                      customerId: customer?.id,
+                                      leadId: customer?.lead?.id,
+                                    },
+                                  });
+                                }}
+                                className={`group inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all border shadow-sm ${item.loan_status === "pending" ? "bg-[#1a5695] text-white border-[#1a5695] hover:bg-[#15467a] hover:shadow-md" : "bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-500 hover:text-white"}`}
+                              >
+                                {item.loan_status === "pending" ? (
+                                  <>
+                                    <Banknote size={14} /> Apply For Loan
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle size={14} /> See Loan
+                                  </>
+                                )}
+                              </button>
                             </td>
                           </tr>
                         );
