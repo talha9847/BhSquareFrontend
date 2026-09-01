@@ -168,6 +168,45 @@ const UpdateWiringLog = () => {
     }
   };
 
+  const handleDeleteWire = async (log) => {
+    Swal.fire({
+      title: "Delete Issued Wire?",
+      text: `This will delete ${log.qty}m of ${log.brand_name} ${log.wire_type} and restore it to inventory.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#1a5695",
+      cancelButtonColor: "#cbd5e1",
+      confirmButtonText: "Yes, Delete",
+      showLoaderOnConfirm: true,
+
+      preConfirm: async () => {
+        try {
+          const response = await axios.delete(`/api/wiring/deleteWiringItem`, {
+            data: {
+              wiring_item_id: Number(log.id),
+              wiring_id: Number(log.wiring_id),
+              wire_inventory_id: Number(log.wire_inventory_id),
+            },
+            withCredentials: true,
+          });
+
+          return response.data;
+        } catch (error) {
+          Swal.showValidationMessage(
+            `Delete failed: ${error.response?.data?.message || "Server Error"}`,
+          );
+        }
+      },
+
+      allowOutsideClick: () => !Swal.isLoading(),
+    }).then((result) => {
+      if (result.isConfirmed) {
+        toast.success("Wire deleted and inventory restored");
+        fetchData();
+      }
+    });
+  };
+
   const handleDeleteUnused = async (unusedId, customer_id, inventory_id) => {
     Swal.fire({
       title: "Remove Logged Return?",
@@ -461,10 +500,20 @@ const UpdateWiringLog = () => {
                               {log.qty}m Issued
                             </td>
                             <td className="p-4 text-right">
-                              <Check
-                                size={14}
-                                className="ml-auto text-emerald-500"
-                              />
+                              <div className="flex items-center justify-end gap-2">
+                                <Check size={14} className="text-emerald-500" />
+                                {isEditable && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteWire(log)}
+                                    disabled={actionLoading}
+                                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                                    title="Delete issued wire"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))}
