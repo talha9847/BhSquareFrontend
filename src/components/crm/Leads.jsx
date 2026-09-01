@@ -49,7 +49,7 @@ const Leads = () => {
     lead: null,
   });
   const [convertPendingLoader, setConvertPendingLoader] = useState(false);
-
+  const [showTodaysVisits, setShowTodaysVisits] = useState(false);
   // Disposition State
   const [dispositionModal, setDispositionModal] = useState({
     open: false,
@@ -540,37 +540,58 @@ const Leads = () => {
   const filteredLeads = leads.filter((lead) => {
     const matchesTab = lead.status === activeTab;
 
-    // 1. Get month and year from created_at
+    // --------------------------------
+    // Today's Visit Filter
+    // --------------------------------
+    const today = new Date();
+
+    const todayDate = today.toLocaleDateString("en-CA", {
+      timeZone: "Asia/Kolkata",
+    });
+
+    const visitDate = lead.site_visit_date
+      ? new Date(lead.site_visit_date).toLocaleDateString("en-CA", {
+          timeZone: "Asia/Kolkata",
+        })
+      : null;
+
+    const matchesTodaysVisit = !showTodaysVisits || visitDate === todayDate;
+
+    // --------------------------------
+    // Search
+    // --------------------------------
     const dateObj = new Date(lead.created_at);
+
     const monthName = dateObj
-      .toLocaleString("en-IN", { month: "long" })
+      .toLocaleString("en-IN", {
+        month: "long",
+      })
       .toLowerCase();
+
     const year = dateObj.getFullYear().toString();
 
-    // 2. Create a combined string for searching (e.g., "april 2026")
     const combinedDate = `${monthName} ${year}`;
 
     const query = searchQuery.toLowerCase().trim();
 
     const matchesSearch = (() => {
-      const query = searchQuery.toLowerCase().trim();
       if (!query) return true;
 
-      // Basic fields check
       const basicFields =
-        lead.customer_name.toLowerCase().includes(query) ||
-        lead.contact_number.includes(query) ||
-        lead.panel_wattage.includes(query) ||
-        (lead.total_capacity / 1000).toFixed(2).includes(query) ||
+        lead.customer_name?.toLowerCase().includes(query) ||
+        lead.contact_number?.includes(query) ||
+        String(lead.panel_wattage || "").includes(query) ||
+        ((lead.total_capacity || 0) / 1000).toFixed(2).includes(query) ||
         sourceMap[lead.source_id]?.toLowerCase().includes(query);
+
       if (basicFields) return true;
 
-      // Multi-word date check (Handles "April 2026" or "2026 April")
       const searchWords = query.split(" ");
+
       return searchWords.every((word) => combinedDate.includes(word));
     })();
 
-    return matchesTab && matchesSearch;
+    return matchesTab && matchesTodaysVisit && matchesSearch;
   });
 
   return (
@@ -623,7 +644,6 @@ const Leads = () => {
               </button>
             </div>
           </div>
-
           {/* TABS SYSTEM */}
           <div className="flex gap-2 mb-6 bg-slate-200/50 p-1.5 rounded-[22px] w-fit">
             {[
@@ -647,7 +667,6 @@ const Leads = () => {
               </button>
             ))}
           </div>
-
           {/* Search Bar */}
           <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
             <div className="flex-1 relative">
@@ -655,6 +674,7 @@ const Leads = () => {
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                 size={18}
               />
+
               <input
                 type="text"
                 placeholder={`Search ${activeTab} leads...`}
@@ -663,6 +683,20 @@ const Leads = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+
+            {/* Today's Visits Button */}
+            <button
+              onClick={() => setShowTodaysVisits((prev) => !prev)}
+              className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+                showTodaysVisits
+                  ? "bg-[#1a5695] text-white shadow-lg shadow-blue-900/20"
+                  : "bg-blue-50 text-[#1a5695] border border-blue-100 hover:bg-blue-100"
+              }`}
+            >
+              <Calendar size={16} />
+
+              {showTodaysVisits ? "All Visits" : "Today's Visits"}
+            </button>
           </div>
 
           <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
