@@ -17,6 +17,10 @@ import { useNavigate } from "react-router-dom";
 
 const EstimationGenerator = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [inverterRate, setInverterRate] = useState(0);
+  const [profitPerKw, setProfitPerKw] = useState(0);
+  const [discountPerKw, setDiscountPerKw] = useState(0);
+
   const navigate = useNavigate();
   const printRef = useRef(null);
 
@@ -32,6 +36,9 @@ const EstimationGenerator = () => {
     customer_name: "Valued Customer",
     customer_address: "Site Address Details, Navsari",
     customer_mobile: "+91 9876543210",
+    panel_brand: "Adani",
+    inverter_brand: "Adani",
+    customer_type: "Residential",
   });
 
   // =========================================================
@@ -53,6 +60,8 @@ const EstimationGenerator = () => {
       [name]:
         name.includes("name") ||
         name.includes("address") ||
+        name.includes("panel_brand") ||
+        name.includes("inverter_brand") ||
         name.includes("mobile")
           ? value
           : value === ""
@@ -77,58 +86,13 @@ const EstimationGenerator = () => {
 
       if (response.data?.success) {
         setEstimationResult(response.data.data);
+        let res = response.data.data;
+        console.log(res);
       }
     } catch (error) {
       console.error("API Error, using current calculation baseline:", error);
 
       // Fallback calculation
-      const totalKw = (
-        (inputData.panel_qty * inputData.panel_wattage) /
-        1000
-      ).toFixed(3);
-
-      const totalCost =
-        inputData.panel_qty *
-        inputData.panel_wattage *
-        inputData.panel_rate_per_watt;
-
-      const discount = 10000;
-      const payable = totalCost - discount;
-      const subsidy = 78000;
-      const netCost = payable - subsidy;
-
-      setEstimationResult({
-        total_kw: totalKw,
-        panel_qty: inputData.panel_qty,
-        panel_wattage: inputData.panel_wattage,
-        panel_rate_per_watt: inputData.panel_rate_per_watt,
-        total_cost: totalCost,
-        discount,
-        payable_amount: payable,
-        subsidy_amount: subsidy,
-        net_cost: netCost,
-        subtotal: payable,
-        total_gst: payable * 0.12,
-        grand_total: payable * 1.12,
-
-        items: [
-          {
-            id: 1,
-            name: `Solar PV Modules ${inputData.panel_wattage}W`,
-            type: "Solar Modules",
-            qty: inputData.panel_qty,
-            price: inputData.panel_rate_per_watt * inputData.panel_wattage,
-            gst: 12,
-            gst_amount:
-              inputData.panel_rate_per_watt * inputData.panel_wattage * 0.12,
-            total:
-              inputData.panel_rate_per_watt *
-              inputData.panel_wattage *
-              1.12 *
-              inputData.panel_qty,
-          },
-        ],
-      });
     } finally {
       setLoading(false);
     }
@@ -325,133 +289,293 @@ const EstimationGenerator = () => {
             </div>
 
             <form onSubmit={handleGenerateEstimation} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {/* Customer Name */}
-                <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
-                    Customer Name
-                  </label>
+              {/* =====================================================
+      CUSTOMER DETAILS
+  ===================================================== */}
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-widest text-[#1a5695] mb-3">
+                  Customer Details
+                </h3>
 
-                  <input
-                    type="text"
-                    name="customer_name"
-                    required
-                    value={inputData.customer_name}
-                    onChange={handleInputChange}
-                    className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-800 focus:border-slate-400 transition-all"
-                    placeholder="Name..."
-                  />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {/* Customer Name */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Customer Name
+                    </label>
+                    <input
+                      type="text"
+                      name="customer_name"
+                      required
+                      value={inputData.customer_name}
+                      onChange={handleInputChange}
+                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                      placeholder="Name..."
+                    />
+                  </div>
 
-                {/* Customer Address */}
-                <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
-                    Customer Address
-                  </label>
+                  {/* Customer Address */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Customer Address
+                    </label>
+                    <input
+                      type="text"
+                      name="customer_address"
+                      required
+                      value={inputData.customer_address}
+                      onChange={handleInputChange}
+                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                      placeholder="Address..."
+                    />
+                  </div>
 
-                  <input
-                    type="text"
-                    name="customer_address"
-                    required
-                    value={inputData.customer_address}
-                    onChange={handleInputChange}
-                    className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-800 focus:border-slate-400 transition-all"
-                    placeholder="Address..."
-                  />
-                </div>
-
-                {/* Customer Mobile */}
-                <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
-                    Customer Mobile
-                  </label>
-
-                  <input
-                    type="text"
-                    name="customer_mobile"
-                    required
-                    value={inputData.customer_mobile}
-                    onChange={handleInputChange}
-                    className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-800 focus:border-slate-400 transition-all"
-                    placeholder="Mobile..."
-                  />
-                </div>
-
-                {/* Panel Quantity */}
-                <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
-                    Panel Quantity
-                  </label>
-
-                  <input
-                    type="number"
-                    name="panel_qty"
-                    min="1"
-                    required
-                    value={inputData.panel_qty}
-                    onChange={handleInputChange}
-                    className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-800 uppercase focus:border-slate-400 transition-all"
-                    placeholder="QTY..."
-                  />
-                </div>
-
-                {/* Panel Wattage */}
-                <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
-                    Panel Wattage (Wp)
-                  </label>
-
-                  <input
-                    type="number"
-                    name="panel_wattage"
-                    min="1"
-                    required
-                    value={inputData.panel_wattage}
-                    onChange={handleInputChange}
-                    className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-800 uppercase focus:border-slate-400 transition-all"
-                    placeholder="WATTAGE..."
-                  />
-                </div>
-
-                {/* Inverter Wattage */}
-                <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
-                    Inverter Wattage (kW)
-                  </label>
-
-                  <input
-                    type="number"
-                    name="inverter_wattage"
-                    min="1"
-                    step="0.01"
-                    required
-                    value={inputData.inverter_wattage}
-                    onChange={handleInputChange}
-                    className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-800 uppercase focus:border-slate-400 transition-all"
-                    placeholder="WATTAGE..."
-                  />
-                </div>
-
-                {/* Rate */}
-                <div>
-                  <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
-                    Rate Per Watt (₹)
-                  </label>
-
-                  <input
-                    type="number"
-                    name="panel_rate_per_watt"
-                    step="0.01"
-                    min="0"
-                    required
-                    value={inputData.panel_rate_per_watt}
-                    onChange={handleInputChange}
-                    className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-800 uppercase focus:border-slate-400 transition-all"
-                    placeholder="RATE..."
-                  />
+                  {/* Customer Mobile */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Customer Mobile
+                    </label>
+                    <input
+                      type="text"
+                      name="customer_mobile"
+                      required
+                      value={inputData.customer_mobile}
+                      onChange={handleInputChange}
+                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                      placeholder="Mobile..."
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Customer Type
+                    </label>
+                    <select
+                      name="customer_type"
+                      required
+                      value={inputData.customer_type}
+                      onChange={handleInputChange}
+                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm text-slate-800"
+                    >
+                      <option value="Residential">Residential</option>
+                      <option value="Commercial">Commercial</option>
+                      <option value="Industrial">Industrial</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
+              {/* =====================================================
+      PANEL DETAILS
+  ===================================================== */}
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-widest text-[#1a5695] mb-3">
+                  Panel Details
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                  {/* Panel Brand */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Panel Brand
+                    </label>
+                    <input
+                      type="text"
+                      name="panel_brand"
+                      required
+                      value={inputData.panel_brand}
+                      onChange={handleInputChange}
+                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm uppercase"
+                      placeholder="ADANI..."
+                    />
+                  </div>
+
+                  {/* Panel Quantity */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Panel Quantity
+                    </label>
+                    <input
+                      type="number"
+                      name="panel_qty"
+                      min="1"
+                      required
+                      value={inputData.panel_qty}
+                      onChange={handleInputChange}
+                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                      placeholder="QTY..."
+                    />
+                  </div>
+
+                  {/* Panel Wattage */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Panel Wattage (Wp)
+                    </label>
+                    <input
+                      type="number"
+                      name="panel_wattage"
+                      min="1"
+                      required
+                      value={inputData.panel_wattage}
+                      onChange={handleInputChange}
+                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                      placeholder="WATTAGE..."
+                    />
+                  </div>
+
+                  {/* Rate Per Watt */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Rate Per Watt (₹)
+                    </label>
+                    <input
+                      type="number"
+                      name="panel_rate_per_watt"
+                      step="0.01"
+                      min="0"
+                      required
+                      value={inputData.panel_rate_per_watt}
+                      onChange={handleInputChange}
+                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                      placeholder="RATE..."
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* =====================================================
+      INVERTER DETAILS
+  ===================================================== */}
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-widest text-[#1a5695] mb-3">
+                  Inverter Details
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {/* Inverter Brand */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Inverter Brand
+                    </label>
+                    <input
+                      type="text"
+                      name="inverter_brand"
+                      required
+                      value={inputData.inverter_brand}
+                      onChange={handleInputChange}
+                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm uppercase"
+                      placeholder="ADANI..."
+                    />
+                  </div>
+
+                  {/* Inverter Wattage */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Inverter Wattage (kW)
+                    </label>
+                    <input
+                      type="number"
+                      name="inverter_wattage"
+                      min="1"
+                      step="0.01"
+                      required
+                      value={inputData.inverter_wattage}
+                      onChange={handleInputChange}
+                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                      placeholder="WATTAGE..."
+                    />
+                  </div>
+
+                  {/* Inverter Rate */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Inverter Rate (₹)
+                    </label>
+                    <input
+                      type="number"
+                      name="inverter_rate"
+                      step="0.01"
+                      min="0"
+                      readOnly
+                      value={inverterRate}
+                      className="w-full mt-1.5 p-3.5 bg-slate-100 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* =====================================================
+      OTHER / PRICING DETAILS
+  ===================================================== */}
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-widest text-[#1a5695] mb-3">
+                  Pricing Details
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                  {/* Profit Per KW */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Profit Per kW (₹)
+                    </label>
+                    <input
+                      type="number"
+                      name="profit_per_kw"
+                      step="0.01"
+                      min="0"
+                      value={profitPerKw}
+                      onChange={(e) => {
+                        setProfitPerKw(e.target.value);
+                      }}
+                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                      placeholder="PROFIT..."
+                    />
+                  </div>
+
+                  {/* Discount Per KW */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Discount Per kW (₹)
+                    </label>
+                    <input
+                      type="number"
+                      name="discount_per_kw"
+                      step="0.01"
+                      min="0"
+                      value={discountPerKw}
+                      onChange={(e) => {
+                        setDiscountPerKw(e.target.value);
+                      }}
+                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                      placeholder="DISCOUNT..."
+                    />
+                  </div>
+
+                  {/* Total Cost */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Total Costing (₹)
+                    </label>
+                    <input
+                      type="number"
+                      name="total_cost"
+                      step="0.01"
+                      min="0"
+                      readOnly
+                      value={
+                        estimationResult?.grand_total +
+                        inputData.panel_qty * profitPerKw -
+                        inputData.panel_qty * discountPerKw
+                      }
+                      className="w-full mt-1.5 p-3.5 bg-slate-100 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* =====================================================
+      SUBMIT BUTTON
+  ===================================================== */}
               <div className="flex justify-end pt-1">
                 <button
                   type="submit"
@@ -473,7 +597,6 @@ const EstimationGenerator = () => {
             {/* =================================================
                 ITEMIZED TABLE
             ================================================= */}
-
             <div className="overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-slate-50/50 border-b border-slate-200">
@@ -620,9 +743,9 @@ const EstimationGenerator = () => {
                     <td className="px-6 py-4">
                       ₹
                       {formatCurrency(
-                        estimationResult?.subtotal ||
-                          estimationResult?.payable_amount ||
-                          0,
+                        estimationResult?.subtotal +
+                          inputData.panel_qty * profitPerKw -
+                          inputData.panel_qty * discountPerKw,
                       )}
                     </td>
 
@@ -635,9 +758,9 @@ const EstimationGenerator = () => {
                     <td className="px-6 py-4 text-emerald-700 text-sm">
                       ₹
                       {formatCurrency(
-                        estimationResult?.grand_total ||
-                          estimationResult?.payable_amount ||
-                          0,
+                        estimationResult?.grand_total +
+                          inputData.panel_qty * profitPerKw -
+                          inputData.panel_qty * discountPerKw,
                       )}
                     </td>
                   </tr>
@@ -719,9 +842,9 @@ const EstimationGenerator = () => {
                     <p className="text-base font-black text-slate-800 tracking-tight">
                       ₹
                       {formatCurrency(
-                        estimationResult.grand_total ||
-                          estimationResult.payable_amount ||
-                          0,
+                        estimationResult.grand_total +
+                          inputData.panel_qty * profitPerKw -
+                          inputData.panel_qty * discountPerKw,
                       )}
                     </p>
                   </div>
@@ -777,7 +900,6 @@ const EstimationGenerator = () => {
                           Contact: Harsh Patel (+91 8733817262) &nbsp;|&nbsp;
                           GSTIN:
                           <span className="font-bold text-slate-900">
-                            {" "}
                             24ABDFB4169R1ZZ
                           </span>
                         </p>
@@ -785,19 +907,17 @@ const EstimationGenerator = () => {
 
                       <div className="text-right shrink-0">
                         <span className="bg-amber-100 text-amber-900 text-[7px] font-extrabold px-2 py-1 rounded-full uppercase tracking-wider inline-block">
-                          Commercial Solar Estimate
+                          {inputData.customer_type + " "} Solar Estimate
                         </span>
                         <p className="text-[7px] text-slate-700 mt-0.5">
                           Estimate Date:
                           <span className="font-bold text-slate-900">
-                            {" "}
                             {new Date().toLocaleDateString("en-GB")}
                           </span>
                         </p>
                         <p className="text-[7px] text-slate-700">
                           Validity:
                           <span className="font-bold text-rose-700">
-                            {" "}
                             15 Days From Date
                           </span>
                         </p>
@@ -813,13 +933,17 @@ const EstimationGenerator = () => {
                           Project Name & Capacity
                         </p>
                         <h2 className="text-[16px] font-extrabold mt-0.5 leading-tight">
-                          {estimationResult.total_kw} kWp On-Grid Commercial
+                          {estimationResult.total_kw} kWp On-Grid{" "}
+                          {inputData.customer_type + " "}
                           Solar Project
                         </h2>
                         <p className="text-blue-100 text-[8px] mt-0.5 font-medium">
-                          Turnkey EPC with ADANI{" "}
+                          Turnkey EPC with
+                          {inputData.panel_brand.toUpperCase() + " "}
                           {estimationResult.panel_wattage}W TOPCon / Bifacial
-                          modules & Polycab inverter
+                          modules &
+                          {" " + inputData.inverter_brand.toUpperCase() + " "}
+                          inverter
                         </p>
                       </div>
 
@@ -852,7 +976,7 @@ const EstimationGenerator = () => {
                           {estimationResult.total_kw} kWp
                         </p>
                         <p className="text-[6.5px] text-slate-500">
-                          {estimationResult.panel_qty} × Adani{" "}
+                          {estimationResult.panel_qty} × Adani
                           {estimationResult.panel_wattage}W
                         </p>
                       </div>
@@ -864,7 +988,9 @@ const EstimationGenerator = () => {
                         <p className="text-[16px] font-extrabold text-blue-900 mt-0.5">
                           ₹
                           {formatCurrency(
-                            estimationResult.total_cost || 285000,
+                            estimationResult?.grand_total +
+                              inputData.panel_qty * profitPerKw -
+                              inputData.panel_qty * discountPerKw,
                           )}
                         </p>
                         <p className="text-[6.5px] text-slate-500">
@@ -877,7 +1003,7 @@ const EstimationGenerator = () => {
                           Special Discount
                         </p>
                         <p className="text-[16px] font-extrabold text-rose-700 mt-0.5">
-                          ₹{formatCurrency(estimationResult.discount || 10000)}
+                          ₹{formatCurrency(estimationResult.discount)}
                         </p>
                         <p className="text-[6.5px] text-rose-600">
                           Total Project Cost
@@ -904,7 +1030,14 @@ const EstimationGenerator = () => {
                           Net Cost To Customer
                         </p>
                         <p className="text-[16px] font-extrabold text-emerald-800 mt-0.5">
-                          ₹{formatCurrency(estimationResult.net_cost || 197000)}
+                          ₹
+                          {formatCurrency(
+                            estimationResult.grand_total +
+                              inputData.panel_qty *
+                                (profitPerKw - discountPerKw) -
+                              estimationResult.discount -
+                              estimationResult.subsidy_amount,
+                          )}
                         </p>
                         <p className="text-[6.5px] text-emerald-700">
                           Effective Investment
@@ -926,7 +1059,9 @@ const EstimationGenerator = () => {
                           <span className="font-extrabold">
                             ₹
                             {formatCurrency(
-                              estimationResult.total_cost || 285000,
+                              estimationResult.grand_total +
+                                inputData.panel_qty *
+                                  (profitPerKw - discountPerKw),
                             )}
                           </span>
                         </div>
@@ -948,7 +1083,10 @@ const EstimationGenerator = () => {
                           <span className="font-extrabold text-[14px]">
                             ₹
                             {formatCurrency(
-                              estimationResult.payable_amount || 275000,
+                              estimationResult.grand_total +
+                                inputData.panel_qty *
+                                  (profitPerKw - discountPerKw) -
+                                estimationResult.discount,
                             )}
                           </span>
                         </div>
@@ -958,10 +1096,7 @@ const EstimationGenerator = () => {
                             Subsidy Get Back
                           </span>
                           <span className="font-extrabold text-emerald-700">
-                            - ₹
-                            {formatCurrency(
-                              estimationResult.subsidy_amount || 78000,
-                            )}
+                            - ₹{formatCurrency(estimationResult.subsidy_amount)}
                           </span>
                         </div>
 
@@ -972,16 +1107,19 @@ const EstimationGenerator = () => {
                           <span className="font-extrabold">
                             ₹
                             {formatCurrency(
-                              estimationResult.net_cost || 197000,
+                              estimationResult.grand_total +
+                                inputData.panel_qty *
+                                  (profitPerKw - discountPerKw) -
+                                estimationResult.discount -
+                                estimationResult.subsidy_amount,
                             )}
                           </span>
                         </div>
                       </div>
 
                       <p className="text-[6.5px] text-slate-500 italic mt-1">
-                        Amount in Words: Rupees{" "}
-                        {formatCurrency(estimationResult.net_cost || 197000)}{" "}
-                        Only
+                        Amount in Words: Rupees
+                        {formatCurrency(estimationResult.net_cost)} Only
                       </p>
                     </div>
 
@@ -1031,7 +1169,7 @@ const EstimationGenerator = () => {
                       {[
                         [
                           "Solar Panels:",
-                          `ADANI ${estimationResult.panel_wattage}W TOPCon / Bifacial (${estimationResult.panel_qty} Pcs)`,
+                          `${inputData.panel_brand.toUpperCase()} ${estimationResult.panel_wattage}W TOPCon / Bifacial (${estimationResult.panel_qty} Pcs)`,
                         ],
                         [
                           "Daily Generation:",
@@ -1039,7 +1177,7 @@ const EstimationGenerator = () => {
                         ],
                         [
                           "Solar Inverter:",
-                          `${Math.ceil(inputData.inverter_wattage)} kW - Polycab On-Grid`,
+                          `${Math.ceil(inputData.inverter_wattage)} kW - ${inputData.inverter_brand.toUpperCase()} On-Grid`,
                         ],
                         [
                           "Monthly Generation:",
