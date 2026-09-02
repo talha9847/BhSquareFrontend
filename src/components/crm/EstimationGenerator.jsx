@@ -989,8 +989,9 @@ const EstimationGenerator = () => {
                           ₹
                           {formatCurrency(
                             estimationResult?.grand_total +
-                              inputData.panel_qty * profitPerKw -
-                              inputData.panel_qty * discountPerKw,
+                              ((inputData.panel_qty * inputData.panel_wattage) /
+                                1000) *
+                                profitPerKw,
                           )}
                         </p>
                         <p className="text-[6.5px] text-slate-500">
@@ -1003,7 +1004,12 @@ const EstimationGenerator = () => {
                           Special Discount
                         </p>
                         <p className="text-[16px] font-extrabold text-rose-700 mt-0.5">
-                          ₹{formatCurrency(estimationResult.discount)}
+                          ₹
+                          {formatCurrency(
+                            ((inputData.panel_qty * inputData.panel_wattage) /
+                              1000) *
+                              discountPerKw,
+                          )}
                         </p>
                         <p className="text-[6.5px] text-rose-600">
                           Total Project Cost
@@ -1072,7 +1078,11 @@ const EstimationGenerator = () => {
                           </span>
                           <span className="font-extrabold text-rose-700">
                             - ₹
-                            {formatCurrency(estimationResult.discount || 10000)}
+                            {formatCurrency(
+                              ((inputData.panel_qty * inputData.panel_wattage) /
+                                1000) *
+                                discountPerKw,
+                            )}
                           </span>
                         </div>
 
