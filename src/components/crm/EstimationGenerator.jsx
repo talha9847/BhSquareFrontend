@@ -741,12 +741,7 @@ const EstimationGenerator = () => {
                     </td>
 
                     <td className="px-6 py-4">
-                      ₹
-                      {formatCurrency(
-                        estimationResult?.subtotal +
-                          inputData.panel_qty * profitPerKw -
-                          inputData.panel_qty * discountPerKw,
-                      )}
+                      ₹{formatCurrency(estimationResult?.subtotal)}
                     </td>
 
                     <td className="px-6 py-4 text-center">-</td>
@@ -756,12 +751,7 @@ const EstimationGenerator = () => {
                     </td>
 
                     <td className="px-6 py-4 text-emerald-700 text-sm">
-                      ₹
-                      {formatCurrency(
-                        estimationResult?.grand_total +
-                          inputData.panel_qty * profitPerKw -
-                          inputData.panel_qty * discountPerKw,
-                      )}
+                      ₹{formatCurrency(estimationResult?.grand_total)}
                     </td>
                   </tr>
                 </tfoot>
@@ -840,12 +830,7 @@ const EstimationGenerator = () => {
                     </p>
 
                     <p className="text-base font-black text-slate-800 tracking-tight">
-                      ₹
-                      {formatCurrency(
-                        estimationResult.grand_total +
-                          inputData.panel_qty * profitPerKw -
-                          inputData.panel_qty * discountPerKw,
-                      )}
+                      ₹{formatCurrency(estimationResult.grand_total)}
                     </p>
                   </div>
                 </div>
@@ -1039,9 +1024,12 @@ const EstimationGenerator = () => {
                           ₹
                           {formatCurrency(
                             estimationResult.grand_total +
-                              inputData.panel_qty *
-                                (profitPerKw - discountPerKw) -
-                              estimationResult.discount -
+                              ((inputData.panel_qty * inputData.panel_wattage) /
+                                1000) *
+                                profitPerKw -
+                              ((inputData.panel_qty * inputData.panel_wattage) /
+                                1000) *
+                                discountPerKw -
                               estimationResult.subsidy_amount,
                           )}
                         </p>
@@ -1066,8 +1054,10 @@ const EstimationGenerator = () => {
                             ₹
                             {formatCurrency(
                               estimationResult.grand_total +
-                                inputData.panel_qty *
-                                  (profitPerKw - discountPerKw),
+                                ((inputData.panel_qty *
+                                  inputData.panel_wattage) /
+                                  1000) *
+                                  profitPerKw,
                             )}
                           </span>
                         </div>
@@ -1093,10 +1083,11 @@ const EstimationGenerator = () => {
                           <span className="font-extrabold text-[14px]">
                             ₹
                             {formatCurrency(
-                              estimationResult.grand_total +
-                                inputData.panel_qty *
-                                  (profitPerKw - discountPerKw) -
-                                estimationResult.discount,
+                              estimationResult.grand_total -
+                                ((inputData.panel_qty *
+                                  inputData.panel_wattage) /
+                                  1000) *
+                                  discountPerKw,
                             )}
                           </span>
                         </div>
@@ -1117,10 +1108,11 @@ const EstimationGenerator = () => {
                           <span className="font-extrabold">
                             ₹
                             {formatCurrency(
-                              estimationResult.grand_total +
-                                inputData.panel_qty *
-                                  (profitPerKw - discountPerKw) -
-                                estimationResult.discount -
+                              estimationResult.grand_total -
+                                ((inputData.panel_qty *
+                                  inputData.panel_wattage) /
+                                  1000) *
+                                  discountPerKw -
                                 estimationResult.subsidy_amount,
                             )}
                           </span>
