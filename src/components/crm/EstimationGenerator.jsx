@@ -579,9 +579,9 @@ const EstimationGenerator = () => {
                       className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
                       placeholder="DISCOUNT..."
                     />
-                    {formatCurrency(profitPerKw)} *{" "}
+                    {formatCurrency(discountPerKw)} *{" "}
                     {(inputData.panel_qty * inputData.panel_wattage) / 1000} ={" "}
-                    {(profitPerKw *
+                    {(discountPerKw *
                       inputData.panel_qty *
                       inputData.panel_wattage) /
                       1000}{" "}
@@ -1322,8 +1322,9 @@ const EstimationGenerator = () => {
                                   inputData.panel_wattage) /
                                   1000) *
                                   dealerCost +
-                                inputData.panel_qty *
-                                  inputData.panel_wattage/1000 *
+                                ((inputData.panel_qty *
+                                  inputData.panel_wattage) /
+                                  1000) *
                                   profitPerKw -
                                 ((inputData.panel_qty *
                                   inputData.panel_wattage) /
