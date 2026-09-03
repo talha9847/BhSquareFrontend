@@ -410,7 +410,7 @@ const EstimationGenerator = () => {
                       Panel Quantity
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       name="panel_qty"
                       min="1"
                       required
@@ -427,7 +427,7 @@ const EstimationGenerator = () => {
                       Panel Wattage (Wp)
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       name="panel_wattage"
                       min="1"
                       required
@@ -444,7 +444,7 @@ const EstimationGenerator = () => {
                       Rate Per Watt (₹)
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       name="panel_rate_per_watt"
                       step="0.01"
                       min="0"
@@ -489,7 +489,7 @@ const EstimationGenerator = () => {
                       Inverter Wattage (kW)
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       name="inverter_wattage"
                       min="1"
                       step="0.01"
@@ -507,7 +507,7 @@ const EstimationGenerator = () => {
                       Inverter Rate (₹)
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       name="inverter_rate"
                       step="0.01"
                       min="0"
@@ -534,7 +534,7 @@ const EstimationGenerator = () => {
                       Profit Per kW (₹)
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       name="profit_per_kw"
                       step="0.01"
                       min="0"
@@ -553,7 +553,7 @@ const EstimationGenerator = () => {
                       Discount Per kW (₹)
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       name="discount_per_kw"
                       step="0.01"
                       min="0"
@@ -572,7 +572,7 @@ const EstimationGenerator = () => {
                       Total Costing (₹)
                     </label>
                     <input
-                      type="number"
+                      type="text"
                       name="total_cost"
                       step="0.01"
                       min="0"
