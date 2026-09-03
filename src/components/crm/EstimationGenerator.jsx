@@ -14,13 +14,14 @@ import {
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 import { useNavigate } from "react-router-dom";
-import { form } from "framer-motion/m";
+import { form, input } from "framer-motion/m";
 
 const EstimationGenerator = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [inverterRate, setInverterRate] = useState(0);
   const [profitPerKw, setProfitPerKw] = useState(0);
   const [discountPerKw, setDiscountPerKw] = useState(0);
+  const [dealerCost, setDealerCost] = useState(0);
 
   const navigate = useNavigate();
   const printRef = useRef(null);
@@ -40,6 +41,7 @@ const EstimationGenerator = () => {
     panel_brand: "Adani",
     inverter_brand: "Adani",
     customer_type: "Residential",
+    dealer_cost: 1000,
   });
 
   // =========================================================
@@ -552,7 +554,12 @@ const EstimationGenerator = () => {
                       className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
                       placeholder="PROFIT..."
                     />
-                    {formatCurrency(profitPerKw)}
+                    {formatCurrency(profitPerKw)} *{" "}
+                    {(inputData.panel_qty * inputData.panel_wattage) / 1000} ={" "}
+                    {(profitPerKw *
+                      inputData.panel_qty *
+                      inputData.panel_wattage) /
+                      1000}{" "}
                   </div>
 
                   {/* Discount Per KW */}
@@ -572,7 +579,12 @@ const EstimationGenerator = () => {
                       className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
                       placeholder="DISCOUNT..."
                     />
-                    {formatCurrency(discountPerKw)}
+                    {formatCurrency(profitPerKw)} *{" "}
+                    {(inputData.panel_qty * inputData.panel_wattage) / 1000} ={" "}
+                    {(profitPerKw *
+                      inputData.panel_qty *
+                      inputData.panel_wattage) /
+                      1000}{" "}
                   </div>
 
                   {/* Total Cost */}
@@ -588,8 +600,16 @@ const EstimationGenerator = () => {
                       readOnly
                       value={formatCurrency(
                         estimationResult?.grand_total +
-                          inputData.panel_qty * profitPerKw -
-                          inputData.panel_qty * discountPerKw,
+                          ((inputData.panel_qty * inputData.panel_wattage) /
+                            1000) *
+                            profitPerKw -
+                          ((inputData.panel_qty * inputData.panel_wattage) /
+                            1000) *
+                            discountPerKw +
+                          (dealerCost *
+                            inputData.panel_qty *
+                            inputData.panel_wattage) /
+                            1000,
                       )}
                       className="w-full mt-1.5 p-3.5 bg-slate-100 border border-slate-200 rounded-xl outline-none font-bold text-sm"
                     />
@@ -600,17 +620,23 @@ const EstimationGenerator = () => {
                     </label>
                     <input
                       type="text"
-                      name="total_cost"
+                      name="dealer_cost"
                       step="0.01"
                       min="0"
-                      
-                      value={formatCurrency(
-                        estimationResult?.grand_total +
-                          inputData.panel_qty * profitPerKw -
-                          inputData.panel_qty * discountPerKw,
-                      )}
+                      value={dealerCost}
+                      onChange={(e) => {
+                        setDealerCost(e.target.value);
+                      }}
                       className="w-full mt-1.5 p-3.5 bg-slate-100 border border-slate-200 rounded-xl outline-none font-bold text-sm"
                     />
+                    {formatCurrency(dealerCost)} *{" "}
+                    {(inputData.panel_qty * inputData.panel_wattage) / 1000} ={" "}
+                    {formatCurrency(
+                      (dealerCost *
+                        inputData.panel_qty *
+                        inputData.panel_wattage) /
+                        1000,
+                    )}
                   </div>
                 </div>
               </div>
@@ -896,7 +922,14 @@ const EstimationGenerator = () => {
 
                     <div className="text-right">
                       <p className="text-2xl font-black">
-                        ₹{formatCurrency(estimationResult.grand_total)}
+                        ₹
+                        {formatCurrency(
+                          estimationResult.grand_total +
+                            (dealerCost *
+                              inputData.panel_qty *
+                              inputData.panel_wattage) /
+                              1000,
+                        )}
                       </p>
 
                       <p className="text-[9px] font-bold text-blue-200 uppercase tracking-widest">
@@ -980,7 +1013,14 @@ const EstimationGenerator = () => {
                     </p>
 
                     <p className="text-base font-black text-slate-800 tracking-tight">
-                      ₹{formatCurrency(estimationResult.grand_total)}
+                      ₹
+                      {formatCurrency(
+                        estimationResult.grand_total +
+                          (dealerCost *
+                            inputData.panel_qty *
+                            inputData.panel_wattage) /
+                            1000,
+                      )}
                     </p>
                   </div>
                 </div>
@@ -1126,7 +1166,11 @@ const EstimationGenerator = () => {
                             estimationResult?.grand_total +
                               ((inputData.panel_qty * inputData.panel_wattage) /
                                 1000) *
-                                profitPerKw,
+                                profitPerKw +
+                              (dealerCost *
+                                inputData.panel_qty *
+                                inputData.panel_wattage) /
+                                1000,
                           )}
                         </p>
                         <p className="text-[6.5px] text-slate-500">
@@ -1176,6 +1220,9 @@ const EstimationGenerator = () => {
                             estimationResult.grand_total +
                               ((inputData.panel_qty * inputData.panel_wattage) /
                                 1000) *
+                                dealerCost +
+                              ((inputData.panel_qty * inputData.panel_wattage) /
+                                1000) *
                                 profitPerKw -
                               ((inputData.panel_qty * inputData.panel_wattage) /
                                 1000) *
@@ -1207,7 +1254,11 @@ const EstimationGenerator = () => {
                                 ((inputData.panel_qty *
                                   inputData.panel_wattage) /
                                   1000) *
-                                  profitPerKw,
+                                  profitPerKw +
+                                (dealerCost *
+                                  inputData.panel_qty *
+                                  inputData.panel_wattage) /
+                                  1000,
                             )}
                           </span>
                         </div>
@@ -1233,7 +1284,11 @@ const EstimationGenerator = () => {
                           <span className="font-extrabold text-[14px]">
                             ₹
                             {formatCurrency(
-                              estimationResult.grand_total -
+                              estimationResult.grand_total +
+                                ((inputData.panel_qty *
+                                  inputData.panel_wattage) /
+                                  1000) *
+                                  dealerCost -
                                 ((inputData.panel_qty *
                                   inputData.panel_wattage) /
                                   1000) *
@@ -1262,7 +1317,14 @@ const EstimationGenerator = () => {
                           <span className="font-extrabold">
                             ₹
                             {formatCurrency(
-                              estimationResult.grand_total -
+                              estimationResult.grand_total +
+                                ((inputData.panel_qty *
+                                  inputData.panel_wattage) /
+                                  1000) *
+                                  dealerCost +
+                                inputData.panel_qty *
+                                  inputData.panel_wattage/1000 *
+                                  profitPerKw -
                                 ((inputData.panel_qty *
                                   inputData.panel_wattage) /
                                   1000) *
