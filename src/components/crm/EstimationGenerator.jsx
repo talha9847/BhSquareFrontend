@@ -128,7 +128,7 @@ const EstimationGenerator = () => {
 
   const handleDownloadPDF = () => {
     if (!printRef.current) return;
-
+    document.title = `${inputData.customer_name} ${inputData.panel_brand} ${(inputData.panel_qty * inputData.panel_wattage) / 1000} KW`;
     document.body.classList.add("printing");
 
     const handleAfterPrint = () => {
