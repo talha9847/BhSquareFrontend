@@ -250,6 +250,7 @@ const RegistrationsManager = () => {
                     </div>
 
                     <h3 className="text-2xl font-black text-slate-800 uppercase mb-2 line-clamp-1 group-hover:text-[#1a5695] transition-colors">
+                      {String(item.cs_no ?? "").slice(0, 3)}{" "}
                       {item.customer_name}
                     </h3>
 
