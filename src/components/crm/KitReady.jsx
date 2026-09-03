@@ -530,7 +530,10 @@ const KitReady = () => {
                             <div className="flex items-center gap-3">
                               {/* Avatar */}
                               <div className="w-10 h-10 bg-blue-50 text-[#1a5695] rounded-2xl flex items-center justify-center font-black border border-blue-100 uppercase">
-                                {c.customer.lead.customer_name.charAt(0)}
+                                {c.customer.registration.file_generation?.cs_no?.slice(
+                                  0,
+                                  3,
+                                )}
                               </div>
 
                               <div>
