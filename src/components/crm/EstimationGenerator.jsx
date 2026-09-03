@@ -108,6 +108,20 @@ const EstimationGenerator = () => {
       maximumFractionDigits: 0,
     }).format(val || 0);
 
+  const groupItemsByCategory = (items = []) => {
+    return items.reduce((groups, item) => {
+      const category = item.type || "OTHER";
+
+      if (!groups[category]) {
+        groups[category] = [];
+      }
+
+      groups[category].push(item);
+
+      return groups;
+    }, {});
+  };
+
   // =========================================================
   // PRINT / PDF
   // =========================================================
@@ -598,166 +612,274 @@ const EstimationGenerator = () => {
             {/* =================================================
                 ITEMIZED TABLE
             ================================================= */}
-            <div className="overflow-x-auto bg-white rounded-xl border border-slate-200 shadow-sm">
-              <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-50/50 border-b border-slate-200">
-                  <tr>
-                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-16 text-center">
-                      No.
-                    </th>
+            {/* =================================================
+    ITEMIZED TABLE - GROUPED BY CATEGORY
+================================================= */}
 
-                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase min-w-[200px]">
-                      Product
-                    </th>
+            {estimationResult?.items?.length > 0 && (
+              <div className="mt-6 space-y-5">
+                {Object.entries(
+                  groupItemsByCategory(estimationResult.items),
+                ).map(([category, items]) => {
+                  const categorySubtotal = items.reduce((sum, item) => {
+                    const qty = Number(item.qty) || 1;
+                    const price = Number(item.price) || 0;
 
-                    {estimationResult?.items?.some(
-                      (item) =>
-                        item.type === "PANEL" ||
-                        item.type === "INVERTER" ||
-                        item.type === "Solar Modules",
-                    ) ? (
-                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-32">
-                        Wattage
-                      </th>
-                    ) : null}
+                    return sum + qty * price;
+                  }, 0);
 
-                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-24 text-center">
-                      Qty
-                    </th>
-
-                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-32">
-                      Unit Price
-                    </th>
-
-                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-32">
-                      Subtotal
-                    </th>
-
-                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-20 text-center">
-                      Tax %
-                    </th>
-
-                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-32">
-                      Tax Amt
-                    </th>
-
-                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase w-32">
-                      Total
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
-                  {estimationResult?.items?.map((item, index) => {
-                    const qty = item.qty || 1;
-                    const price = item.price || 0;
+                  const categoryGST = items.reduce((sum, item) => {
+                    const qty = Number(item.qty) || 1;
+                    const price = Number(item.price) || 0;
 
                     const subtotal = qty * price;
-
-                    const taxRate = item.gst || 12;
-
-                    const taxAmt =
-                      item.gst_amount || (subtotal * taxRate) / 100;
-
-                    const itemTotal = item.total || subtotal + taxAmt;
-
-                    const showWattage = estimationResult.items.some(
-                      (i) =>
-                        i.type === "PANEL" ||
-                        i.type === "INVERTER" ||
-                        i.type === "Solar Modules",
-                    );
+                    const gstRate = Number(item.gst) || 12;
 
                     return (
-                      <tr
-                        key={item.id || index}
-                        className="hover:bg-slate-50/80 transition-colors"
-                      >
-                        <td className="px-6 py-4 text-center font-bold text-slate-400">
-                          {index + 1}
-                        </td>
-
-                        <td className="px-6 py-4 font-bold text-slate-800">
-                          {item.name}
-
-                          {item.type && (
-                            <span className="block text-[10px] text-slate-400 font-semibold tracking-wide">
-                              Category: {item.type}
-                            </span>
-                          )}
-                        </td>
-
-                        {showWattage ? (
-                          <td className="px-6 py-4 text-slate-600">
-                            {item.type === "PANEL" ||
-                            item.type === "INVERTER" ||
-                            item.type === "Solar Modules"
-                              ? `${estimationResult.panel_wattage || 615} W`
-                              : "-"}
-                          </td>
-                        ) : null}
-
-                        <td className="px-6 py-4 text-center font-black text-slate-800">
-                          {qty}
-                        </td>
-
-                        <td className="px-6 py-4">₹{formatCurrency(price)}</td>
-
-                        <td className="px-6 py-4 text-slate-800">
-                          ₹{formatCurrency(subtotal)}
-                        </td>
-
-                        <td className="px-6 py-4 text-center font-bold text-slate-500">
-                          {taxRate}%
-                        </td>
-
-                        <td className="px-6 py-4 text-slate-600">
-                          ₹{formatCurrency(taxAmt)}
-                        </td>
-
-                        <td className="px-6 py-4 font-black text-slate-900">
-                          ₹{formatCurrency(itemTotal)}
-                        </td>
-                      </tr>
+                      sum +
+                      (Number(item.gst_amount) || (subtotal * gstRate) / 100)
                     );
-                  })}
-                </tbody>
+                  }, 0);
 
-                <tfoot className="bg-slate-50/80 font-black text-xs text-slate-800 border-t border-slate-200">
-                  <tr>
-                    <td
-                      colSpan={
-                        estimationResult?.items?.some(
-                          (i) =>
-                            i.type === "PANEL" ||
-                            i.type === "INVERTER" ||
-                            i.type === "Solar Modules",
-                        )
-                          ? 5
-                          : 4
-                      }
-                      className="px-6 py-4 text-right uppercase tracking-wider text-slate-400"
+                  const categoryTotal = categorySubtotal + categoryGST;
+
+                  return (
+                    <div
+                      key={category}
+                      className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden"
                     >
-                      Grand Totals:
-                    </td>
+                      {/* CATEGORY HEADER */}
+                      <div className="flex items-center justify-between px-5 py-4 bg-slate-50 border-b border-slate-200">
+                        <div>
+                          <h3 className="text-sm font-black text-[#1a5695] uppercase tracking-wider">
+                            {category.replaceAll("_", " ")}
+                          </h3>
 
-                    <td className="px-6 py-4">
-                      ₹{formatCurrency(estimationResult?.subtotal)}
-                    </td>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                            {items.length} Item
+                            {items.length !== 1 ? "s" : ""}
+                          </p>
+                        </div>
 
-                    <td className="px-6 py-4 text-center">-</td>
+                        <div className="text-right">
+                          <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                            Category Total
+                          </p>
 
-                    <td className="px-6 py-4 text-slate-600">
-                      ₹{formatCurrency(estimationResult?.total_gst || 0)}
-                    </td>
+                          <p className="text-sm font-black text-emerald-700">
+                            ₹{formatCurrency(categoryTotal)}
+                          </p>
+                        </div>
+                      </div>
 
-                    <td className="px-6 py-4 text-emerald-700 text-sm">
-                      ₹{formatCurrency(estimationResult?.grand_total)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
+                      {/* CATEGORY TABLE */}
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                          <thead className="bg-white border-b border-slate-200">
+                            <tr>
+                              <th className="px-5 py-3 text-[9px] font-black text-slate-400 uppercase w-14 text-center">
+                                No.
+                              </th>
+
+                              <th className="px-5 py-3 text-[9px] font-black text-slate-400 uppercase">
+                                Product
+                              </th>
+
+                              {items.some(
+                                (item) =>
+                                  item.type === "PANEL" ||
+                                  item.type === "INVERTER" ||
+                                  item.type === "Solar Modules",
+                              ) && (
+                                <th className="px-5 py-3 text-[9px] font-black text-slate-400 uppercase">
+                                  Wattage
+                                </th>
+                              )}
+
+                              <th className="px-5 py-3 text-[9px] font-black text-slate-400 uppercase text-center">
+                                Qty
+                              </th>
+
+                              <th className="px-5 py-3 text-[9px] font-black text-slate-400 uppercase">
+                                Unit Price
+                              </th>
+
+                              <th className="px-5 py-3 text-[9px] font-black text-slate-400 uppercase">
+                                Subtotal
+                              </th>
+
+                              <th className="px-5 py-3 text-[9px] font-black text-slate-400 uppercase text-center">
+                                GST %
+                              </th>
+
+                              <th className="px-5 py-3 text-[9px] font-black text-slate-400 uppercase">
+                                GST Amount
+                              </th>
+
+                              <th className="px-5 py-3 text-[9px] font-black text-slate-400 uppercase">
+                                Total
+                              </th>
+                            </tr>
+                          </thead>
+
+                          <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
+                            {items.map((item, index) => {
+                              const qty = Number(item.qty) || 1;
+                              const price = Number(item.price) || 0;
+
+                              const subtotal = qty * price;
+
+                              const taxRate = Number(item.gst) || 12;
+
+                              const taxAmt =
+                                Number(item.gst_amount) ||
+                                (subtotal * taxRate) / 100;
+
+                              const itemTotal =
+                                Number(item.total) || subtotal + taxAmt;
+
+                              const showWattage =
+                                item.type === "PANEL" ||
+                                item.type === "INVERTER" ||
+                                item.type === "Solar Modules";
+
+                              return (
+                                <tr
+                                  key={item.id || `${category}-${index}`}
+                                  className="hover:bg-slate-50 transition-colors"
+                                >
+                                  {/* NO */}
+                                  <td className="px-5 py-3 text-center font-bold text-slate-400">
+                                    {index + 1}
+                                  </td>
+
+                                  {/* PRODUCT */}
+                                  <td className="px-5 py-3">
+                                    <p className="font-bold text-slate-800">
+                                      {item.name}
+                                    </p>
+
+                                    {item.description && (
+                                      <p className="text-[9px] text-slate-400 mt-0.5">
+                                        {item.description}
+                                      </p>
+                                    )}
+                                  </td>
+
+                                  {/* WATTAGE */}
+                                  {items.some(
+                                    (i) =>
+                                      i.type === "PANEL" ||
+                                      i.type === "INVERTER" ||
+                                      i.type === "Solar Modules",
+                                  ) && (
+                                    <td className="px-5 py-3 text-slate-600">
+                                      {showWattage
+                                        ? item.type === "PANEL" ||
+                                          item.type === "Solar Modules"
+                                          ? `${estimationResult.panel_wattage} W`
+                                          : `${inputData.inverter_wattage} kW`
+                                        : "-"}
+                                    </td>
+                                  )}
+
+                                  {/* QTY */}
+                                  <td className="px-5 py-3 text-center font-black text-slate-800">
+                                    {qty}
+                                  </td>
+
+                                  {/* UNIT PRICE */}
+                                  <td className="px-5 py-3">
+                                    ₹{formatCurrency(price)}
+                                  </td>
+
+                                  {/* SUBTOTAL */}
+                                  <td className="px-5 py-3 font-bold text-slate-800">
+                                    ₹{formatCurrency(subtotal)}
+                                  </td>
+
+                                  {/* GST */}
+                                  <td className="px-5 py-3 text-center font-bold text-slate-500">
+                                    {taxRate}%
+                                  </td>
+
+                                  {/* GST AMOUNT */}
+                                  <td className="px-5 py-3 text-slate-600">
+                                    ₹{formatCurrency(taxAmt)}
+                                  </td>
+
+                                  {/* TOTAL */}
+                                  <td className="px-5 py-3 font-black text-slate-900">
+                                    ₹{formatCurrency(itemTotal)}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+
+                          {/* CATEGORY TOTAL */}
+                          <tfoot className="bg-slate-50 border-t border-slate-200">
+                            <tr>
+                              <td
+                                colSpan={
+                                  items.some(
+                                    (i) =>
+                                      i.type === "PANEL" ||
+                                      i.type === "INVERTER" ||
+                                      i.type === "Solar Modules",
+                                  )
+                                    ? 6
+                                    : 5
+                                }
+                                className="px-5 py-3 text-right text-[10px] font-black uppercase text-slate-400"
+                              >
+                                Category Total
+                              </td>
+
+                              <td className="px-5 py-3 font-black">
+                                ₹{formatCurrency(categoryGST)}
+                              </td>
+
+                              <td className="px-5 py-3 font-black text-emerald-700">
+                                ₹{formatCurrency(categoryTotal)}
+                              </td>
+                            </tr>
+                          </tfoot>
+                        </table>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* =================================================
+        GRAND TOTAL
+    ================================================= */}
+
+                <div className="bg-[#1a5695] text-white rounded-xl p-5 shadow-md">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-blue-200">
+                        Complete Estimation
+                      </p>
+
+                      <h3 className="text-lg font-black uppercase">
+                        Grand Total
+                      </h3>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-2xl font-black">
+                        ₹{formatCurrency(estimationResult.grand_total)}
+                      </p>
+
+                      <p className="text-[9px] font-bold text-blue-200 uppercase tracking-widest">
+                        Including GST
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* =================================================
