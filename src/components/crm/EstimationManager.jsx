@@ -9,11 +9,13 @@ import {
   Layers,
   IndianRupee,
   Zap,
+  Trash2,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const EstimationManager = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -43,6 +45,51 @@ const EstimationManager = () => {
     price: "",
     gst: "",
   });
+  const handleDeleteClick = async (item) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: `Do you want to delete "${item.name}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Yes, Delete",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      console.log("Estimation ID:", item.id);
+
+      try {
+        const res = await axios.delete(
+          `/api/estimation/deleteEstimation/${item.id}`,
+          {
+            withCredentials: true,
+          },
+        );
+
+        if (res.data?.success) {
+          await Swal.fire({
+            title: "Deleted!",
+            text: "Estimation deleted successfully.",
+            icon: "success",
+            confirmButtonColor: "#1a5695",
+          });
+
+          getEstimations();
+        }
+      } catch (error) {
+        console.error("Delete error:", error);
+
+        Swal.fire({
+          title: "Error!",
+          text: error.response?.data?.message || "Failed to delete estimation.",
+          icon: "error",
+          confirmButtonColor: "#dc2626",
+        });
+      }
+    }
+  };
 
   const getEstimations = async () => {
     setTableLoading(true);
@@ -459,12 +506,25 @@ const EstimationManager = () => {
                                   )}
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                  <button
-                                    onClick={() => handleEditClick(item)}
-                                    className="p-2 text-slate-400 hover:text-[#1a5695] border border-slate-100 rounded-xl"
-                                  >
-                                    <Edit3 size={14} />
-                                  </button>
+                                  <div className="flex items-center justify-end gap-2">
+                                    {/* Edit */}
+                                    <button
+                                      onClick={() => handleEditClick(item)}
+                                      className="p-2 text-slate-400 hover:text-[#1a5695] border border-slate-100 hover:border-[#1a5695] rounded-xl transition-all"
+                                      title="Edit Estimation"
+                                    >
+                                      <Edit3 size={14} />
+                                    </button>
+
+                                    {/* Delete */}
+                                    <button
+                                      onClick={() => handleDeleteClick(item)}
+                                      className="p-2 text-slate-400 hover:text-red-600 border border-slate-100 hover:border-red-200 hover:bg-red-50 rounded-xl transition-all"
+                                      title="Delete Estimation"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
                                 </td>
                               </tr>
                             );

@@ -1139,7 +1139,7 @@ const Leads = () => {
                     </span>
                     <input
                       {...register("panel_wattage")}
-                      type="number"
+                      type="text"
                       value={plateWattage}
                       min={200}
                       onChange={(e) => setPlateWattage(e.target.value)}
@@ -1152,7 +1152,7 @@ const Leads = () => {
                     </span>
                     <input
                       {...register("number_of_panels")}
-                      type="number"
+                      type="text"
                       value={quantity}
                       min={1}
                       onChange={(e) => setQuantity(e.target.value)}
@@ -1183,7 +1183,7 @@ const Leads = () => {
                     </span>
                     <input
                       {...register("inverter_kw")}
-                      type="number"
+                      type="text"
                       value={invereterKWattage}
                       min={0}
                       step="0.01" // 👈 allows floating values like 1.5, 2.75
@@ -1197,7 +1197,7 @@ const Leads = () => {
                     </span>
                     <input
                       {...register("number_of_inverters")}
-                      type="number"
+                      type="text"
                       value={qty}
                       min={0}
                       onChange={(e) => setQty(e.target.value)}
