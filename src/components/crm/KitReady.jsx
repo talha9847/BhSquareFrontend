@@ -629,7 +629,8 @@ const KitReady = () => {
                           {c.status == "pending" && (
                             <td className="px-6 py-4 text-right">
                               <div className="flex justify-end gap-2">
-                                {c.file_gen === "pending" && (
+                                {(c.file_gen === "pending" ||
+                                  c.file_gen == "partial") && (
                                   <button
                                     onClick={() => {
                                       let customerId = c.customer.id;
