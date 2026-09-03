@@ -62,6 +62,7 @@ const EstimationGenerator = () => {
         name.includes("address") ||
         name.includes("panel_brand") ||
         name.includes("inverter_brand") ||
+        name.includes("customer_type") ||
         name.includes("mobile")
           ? value
           : value === ""
