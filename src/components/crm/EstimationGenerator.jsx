@@ -633,7 +633,7 @@ const EstimationGenerator = () => {
                     const price = Number(item.price) || 0;
 
                     const subtotal = qty * price;
-                    const gstRate = Number(item.gst) || 12;
+                    const gstRate = Number(item.gst) || 0;
 
                     return (
                       sum +
@@ -729,7 +729,7 @@ const EstimationGenerator = () => {
 
                               const subtotal = qty * price;
 
-                              const taxRate = Number(item.gst) || 12;
+                              const taxRate = Number(item.gst) || 0;
 
                               const taxAmt =
                                 Number(item.gst_amount) ||
