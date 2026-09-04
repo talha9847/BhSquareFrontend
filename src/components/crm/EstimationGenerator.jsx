@@ -31,17 +31,17 @@ const EstimationGenerator = () => {
   // =========================================================
 
   const [inputData, setInputData] = useState({
-    panel_qty: 9,
-    panel_wattage: 615,
-    panel_rate_per_watt: 25,
-    inverter_wattage: 3.6,
-    customer_name: "Talha",
-    customer_address: "zankharda",
-    customer_mobile: "+91 98329823",
-    panel_brand: "Adani",
-    inverter_brand: "Adani",
+    panel_qty: 0,
+    panel_wattage: 0,
+    panel_rate_per_watt: 0,
+    inverter_wattage: 0,
+    customer_name: "",
+    customer_address: "",
+    customer_mobile: "+91 ",
+    panel_brand: "",
+    inverter_brand: "",
     customer_type: "Residential",
-    dealer_cost: 1000,
+    dealer_cost: 0,
   });
 
   // =========================================================
