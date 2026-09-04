@@ -669,7 +669,10 @@ const EstimationGenerator = () => {
                             dealerCost +
                           ((inputData.panel_qty * inputData.panel_wattage) /
                             1000) *
-                            profitPerKw,
+                            profitPerKw -
+                          ((inputData.panel_qty * inputData.panel_wattage) /
+                            1000) *
+                            discountPerKw,
                       )}
                       className="w-full mt-1.5 p-3.5 bg-slate-100 border border-slate-200 rounded-xl outline-none font-bold text-sm"
                     />
