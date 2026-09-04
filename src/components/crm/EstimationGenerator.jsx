@@ -453,7 +453,7 @@ const EstimationGenerator = () => {
                       Rate Per Watt (₹)
                     </label>
                     <input
-                      type="text"
+                      type="number"
                       name="panel_rate_per_watt"
                       step="0.01"
                       min="0"
