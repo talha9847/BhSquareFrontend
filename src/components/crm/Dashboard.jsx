@@ -710,7 +710,7 @@ const Dashboard = () => {
                     ${hasLoad ? "bg-slate-900 text-white group-hover:scale-110" : "bg-slate-200 text-slate-500"}
                   `}
                             >
-                              {String(idx + 1).padStart(2, "0")}
+                              {stage.pending_count}
                             </div>
                             <div>
                               <h3 className="font-bold text-slate-800 group-hover:text-[#1a5695] transition-colors line-clamp-1">
@@ -723,12 +723,12 @@ const Dashboard = () => {
                           </div>
                           {hasLoad && (
                             <div className="flex flex-col items-end">
-                              <span className="text-lg font-black text-slate-900">
-                                {stage.pending_count}
-                              </span>
-                              <span className="text-[9px] font-black text-slate-400 uppercase">
+                              {/* <span className="text-lg font-black text-slate-900">
+                                {String(idx + 1).padStart(2, "0")}
+                              </span> */}
+                              {/* <span className="text-[9px] font-black text-slate-400 uppercase">
                                 Files
-                              </span>
+                              </span> */}
                             </div>
                           )}
                         </div>
