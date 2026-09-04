@@ -137,11 +137,19 @@ const EstimationGenerator = () => {
 
   const handleDownloadPDF = () => {
     if (!printRef.current) return;
-    document.title = `${inputData.customer_name} ${inputData.panel_brand} ${(inputData.panel_qty * inputData.panel_wattage) / 1000} KW`;
+
+    const previousTitle = document.title;
+
+    const capacity =
+      (Number(inputData.panel_qty) * Number(inputData.panel_wattage)) / 1000;
+
+    document.title = `${inputData.customer_name} ${inputData.panel_brand} ${capacity} KW`;
+
     document.body.classList.add("printing");
 
     const handleAfterPrint = () => {
       document.body.classList.remove("printing");
+      document.title = previousTitle;
       window.removeEventListener("afterprint", handleAfterPrint);
     };
 
