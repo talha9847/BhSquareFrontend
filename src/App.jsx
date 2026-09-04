@@ -78,6 +78,8 @@ import FCustomerMaster from "./components/Fabricator/FCustomerMaster";
 import EstimationManager from "./components/crm/EstimationManager";
 import EstimationGenerator from "./components/crm/EstimationGenerator";
 import LoanPage from "./components/crm/LoanPage";
+import AgencyManager from "./components/crm/AgencyManager";
+import AgencyInventoryManager from "./components/crm/AgencyInventoryManager";
 // import Test from "./components/crm/Test";
 function App() {
   const [count, setCount] = useState(0);
@@ -251,6 +253,22 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <BrandManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agency"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AgencyManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/agencymanager"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AgencyInventoryManager />
               </ProtectedRoute>
             }
           />

@@ -22,6 +22,7 @@ import {
   Bolt,
   Database,
   BanknoteIcon,
+  Package2Icon,
 } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -210,6 +211,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       type: "System",
       path: "users",
       activePaths: ["/users"],
+    },
+    {
+      name: "Agency",
+      icon: <Package2Icon size={18} />,
+      type: "System",
+      path: "agencymanager",
+      activePaths: ["/agencymanager"],
     },
   ];
 
