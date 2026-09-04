@@ -299,7 +299,7 @@ const AgencyInventoryManager = () => {
               }}
               className="flex items-center gap-2 px-6 py-3 bg-slate-800 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-lg active:scale-95"
             >
-              <Eye size={16} />
+              <Eye size={16} /> View Agency
             </button>
             <button
               onClick={openCreateModal}
