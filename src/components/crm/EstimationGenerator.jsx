@@ -586,34 +586,6 @@ const EstimationGenerator = () => {
                       inputData.panel_wattage) /
                       1000}{" "}
                   </div>
-
-                  {/* Total Cost */}
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
-                      Total Costing (₹)
-                    </label>
-                    <input
-                      type="text"
-                      name="total_cost"
-                      step="0.01"
-                      min="0"
-                      readOnly
-                      value={formatCurrency(
-                        estimationResult?.grand_total +
-                          ((inputData.panel_qty * inputData.panel_wattage) /
-                            1000) *
-                            profitPerKw -
-                          ((inputData.panel_qty * inputData.panel_wattage) /
-                            1000) *
-                            discountPerKw +
-                          (dealerCost *
-                            inputData.panel_qty *
-                            inputData.panel_wattage) /
-                            1000,
-                      )}
-                      className="w-full mt-1.5 p-3.5 bg-slate-100 border border-slate-200 rounded-xl outline-none font-bold text-sm"
-                    />
-                  </div>
                   <div>
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
                       Dealer Cost (₹)
@@ -637,6 +609,70 @@ const EstimationGenerator = () => {
                         inputData.panel_wattage) /
                         1000,
                     )}
+                  </div>
+                  {/* Total Cost */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Only Material Costing (₹)
+                    </label>
+                    <input
+                      type="text"
+                      name=""
+                      step="0.01"
+                      min="0"
+                      readOnly
+                      value={formatCurrency(
+                        estimationResult?.grand_total +
+                          (dealerCost *
+                            inputData.panel_qty *
+                            inputData.panel_wattage) /
+                            1000,
+                      )}
+                      className="w-full mt-1.5 p-3.5 bg-slate-100 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Total Profit After Discount (₹)
+                    </label>
+                    <input
+                      type="text"
+                      name=""
+                      step="0.01"
+                      min="0"
+                      readOnly
+                      value={formatCurrency(
+                        ((inputData.panel_qty * inputData.panel_wattage) /
+                          1000) *
+                          profitPerKw -
+                          ((inputData.panel_qty * inputData.panel_wattage) /
+                            1000) *
+                            discountPerKw,
+                      )}
+                      className="w-full mt-1.5 p-3.5 bg-slate-100 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Final Rate (₹)
+                    </label>
+                    <input
+                      type="text"
+                      name=""
+                      step="0.01"
+                      min="0"
+                      readOnly
+                      value={formatCurrency(
+                        estimationResult?.grand_total +
+                          ((inputData.panel_qty * inputData.panel_wattage) /
+                            1000) *
+                            dealerCost +
+                          ((inputData.panel_qty * inputData.panel_wattage) /
+                            1000) *
+                            profitPerKw,
+                      )}
+                      className="w-full mt-1.5 p-3.5 bg-slate-100 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                    />
                   </div>
                 </div>
               </div>
