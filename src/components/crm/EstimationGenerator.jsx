@@ -1432,7 +1432,7 @@ const EstimationGenerator = () => {
                         ],
                         [
                           "Solar Inverter:",
-                          `${Math.ceil(inputData.inverter_wattage)} kW - ${inputData.inverter_brand.toUpperCase()} On-Grid`,
+                          `${inputData.inverter_wattage} kW - ${inputData.inverter_brand.toUpperCase()} On-Grid`,
                         ],
                         [
                           "Monthly Generation:",
@@ -1440,10 +1440,7 @@ const EstimationGenerator = () => {
                         ],
                         ["Structure Spec:", "Heavy HDGI (40×60)"],
                         ["Avg DISCOM Tariff:", "₹8.00 / Unit"],
-                        [
-                          "Protection Systems:",
-                          "ACDB/DCDB + LA",
-                        ],
+                        ["Protection Systems:", "ACDB/DCDB + LA"],
                         ["Scope of Work:", "Turnkey EPC (Design to Net-Meter)"],
                       ].map(([label, value]) => (
                         <div
