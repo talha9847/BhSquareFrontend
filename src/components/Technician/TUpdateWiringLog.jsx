@@ -1,15 +1,18 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import {
+  Save,
   ArrowLeft,
   Zap,
+  User,
   Loader2,
   PackageOpen,
   Check,
-  CheckCircle2,
-  Trash2,
-  Box,
+  AlertCircle,
   ArrowRight,
+  CheckCircle2,
+  Box,
+  Trash2,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import Navbar from "../crm/Navbar";
@@ -23,6 +26,7 @@ const TUpdateWiringLog = () => {
   const location = useLocation();
   const wiringId = location.state?.wiring_id;
   const customerId = location.state?.customer_id;
+  const apiUrl = import.meta.env.VITE_API_URL;
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -31,11 +35,6 @@ const TUpdateWiringLog = () => {
 
   // Data States
   const [inventory, setInventory] = useState([]);
-  const [kitItems, setKitItems] = useState([]);
-  const [localLog, setLocalLog] = useState([]); // Issued Wires
-  const [unusedLogs, setUnusedLogs] = useState([]); // Database Returns
-
-  // Form States
   const [wireSelection, setWireSelection] = useState({
     inventory_id: "",
     length: "",
@@ -45,10 +44,12 @@ const TUpdateWiringLog = () => {
     qty: "",
   });
   const [done, setDone] = useState("");
+  const [localLog, setLocalLog] = useState([]);
+  const [unusedLogs, setUnusedLogs] = useState([]);
+  const [kitItems, setKitItems] = useState([]);
 
+  // Logic Check
   const isEditable = done === "pending";
-
-  // --- API CALLS ---
 
   const fetchData = useCallback(async () => {
     if (!wiringId) return;
@@ -85,37 +86,34 @@ const TUpdateWiringLog = () => {
   }, [wiringId, customerId]);
 
   useEffect(() => {
-    if (!customerId || !wiringId) return navigate("/technician/wiring");
+    if (!customerId || !wiringId) return navigate("/wiring");
     fetchData();
   }, [fetchData, navigate, customerId, wiringId]);
-
-  // --- LOGIC HELPERS ---
 
   const selectedWire = inventory.find(
     (i) => i.id === Number(wireSelection.inventory_id),
   );
   const isWireOverLimit =
     selectedWire && Number(wireSelection.length) > selectedWire.stock;
-
   const selectedKitItem = kitItems.find(
     (i) => i.id === Number(unusedSelection.kit_item_id),
   );
   const isUnusedOverLimit =
     selectedKitItem && Number(unusedSelection.qty) > selectedKitItem.qty;
-
-  // --- ACTIONS ---
+  const isOverLimit =
+    selectedWire && Number(wireSelection.length) > selectedWire.stock;
 
   const saveWireToStore = async () => {
     if (
       !isEditable ||
       !wireSelection.inventory_id ||
       !wireSelection.length ||
-      isWireOverLimit
+      isOverLimit
     )
       return;
     setActionLoading(true);
     try {
-      await axios.post(
+      const res = await axios.post(
         `/api/wiring/createWiringItem`,
         {
           wiring_id: wiringId,
@@ -125,11 +123,13 @@ const TUpdateWiringLog = () => {
         { withCredentials: true },
       );
 
-      toast.success("Wire Issued");
-      setWireSelection({ inventory_id: "", length: "" });
-      fetchData(); // Refresh list and stock
+      if (res.status === 200 || res.status === 201) {
+        toast.success("Wire Issued");
+        setWireSelection({ inventory_id: "", length: "" });
+        fetchData();
+      }
     } catch (e) {
-      toast.error("Wire issuance failed");
+      toast.error("Save failed");
     } finally {
       setActionLoading(false);
     }
@@ -166,6 +166,45 @@ const TUpdateWiringLog = () => {
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const handleDeleteWire = async (log) => {
+    Swal.fire({
+      title: "Delete Issued Wire?",
+      text: `This will delete ${log.qty}m of ${log.brand_name} ${log.wire_type} and restore it to inventory.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#1a5695",
+      cancelButtonColor: "#cbd5e1",
+      confirmButtonText: "Yes, Delete",
+      showLoaderOnConfirm: true,
+
+      preConfirm: async () => {
+        try {
+          const response = await axios.delete(`/api/wiring/deleteWiringItem`, {
+            data: {
+              wiring_item_id: Number(log.id),
+              wiring_id: Number(log.wiring_id),
+              wire_inventory_id: Number(log.wire_inventory_id),
+            },
+            withCredentials: true,
+          });
+
+          return response.data;
+        } catch (error) {
+          Swal.showValidationMessage(
+            `Delete failed: ${error.response?.data?.message || "Server Error"}`,
+          );
+        }
+      },
+
+      allowOutsideClick: () => !Swal.isLoading(),
+    }).then((result) => {
+      if (result.isConfirmed) {
+        toast.success("Wire deleted and inventory restored");
+        fetchData();
+      }
+    });
   };
 
   const handleDeleteUnused = async (unusedId, customer_id, inventory_id) => {
@@ -210,6 +249,7 @@ const TUpdateWiringLog = () => {
   const handleNextStep = async () => {
     try {
       setUL(true);
+      // Add your API call here to change status to 'completed' or next phase
       toast.info("Moving to next stage...");
       const res = await axios.put(
         `/api/wiring/updateInventoryStatus/${wiringId}`,
@@ -217,7 +257,7 @@ const TUpdateWiringLog = () => {
         { withCredentials: true },
       );
       if (res.status == 200) {
-        navigate("/technician/wiring");
+        navigate("/wiring");
       }
     } catch (error) {
       toast.error("Status update failed");
@@ -249,7 +289,7 @@ const TUpdateWiringLog = () => {
               <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
                 <CheckCircle2 size={14} />
                 <span className="text-[10px] font-black uppercase tracking-widest">
-                  Finalized
+                  Inventory Finalized
                 </span>
               </div>
             )}
@@ -259,7 +299,7 @@ const TUpdateWiringLog = () => {
             <div className="h-64 flex flex-col items-center justify-center bg-white rounded-[32px] border border-slate-200 shadow-sm">
               <Loader2 className="animate-spin text-[#1a5695] mb-2" />
               <p className="text-[10px] font-black text-slate-300 uppercase">
-                Syncing Data...
+                Loading Details...
               </p>
             </div>
           ) : (
@@ -460,10 +500,20 @@ const TUpdateWiringLog = () => {
                               {log.qty}m Issued
                             </td>
                             <td className="p-4 text-right">
-                              <Check
-                                size={14}
-                                className="ml-auto text-emerald-500"
-                              />
+                              <div className="flex items-center justify-end gap-2">
+                                <Check size={14} className="text-emerald-500" />
+                                {isEditable && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteWire(log)}
+                                    disabled={actionLoading}
+                                    className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                                    title="Delete issued wire"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))}
