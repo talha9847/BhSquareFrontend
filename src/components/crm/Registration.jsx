@@ -252,6 +252,7 @@ const Registration = () => {
   };
 
   const completeRegistration = async () => {
+    console.log(loanRequired);
     try {
       setLoad(true);
       const res = await axios.post(
@@ -270,6 +271,7 @@ const Registration = () => {
       }
     } catch (error) {}
   };
+
   const confirmFinalize = async (data) => {
     try {
       if (rId > 0 && cId > 0 && lId > 0) {

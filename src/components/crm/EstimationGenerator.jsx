@@ -421,6 +421,21 @@ const EstimationGenerator = () => {
                     />
                   </div>
 
+                  <div>
+                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
+                      Panel Wattage (Wp)
+                    </label>
+                    <input
+                      type="text"
+                      name="panel_wattage"
+                      min="1"
+                      required
+                      value={inputData.panel_wattage}
+                      onChange={handleInputChange}
+                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
+                      placeholder="WATTAGE..."
+                    />
+                  </div>
                   {/* Panel Quantity */}
                   <div>
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
@@ -439,21 +454,6 @@ const EstimationGenerator = () => {
                   </div>
 
                   {/* Panel Wattage */}
-                  <div>
-                    <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
-                      Panel Wattage (Wp)
-                    </label>
-                    <input
-                      type="text"
-                      name="panel_wattage"
-                      min="1"
-                      required
-                      value={inputData.panel_wattage}
-                      onChange={handleInputChange}
-                      className="w-full mt-1.5 p-3.5 bg-slate-50 border border-slate-200 rounded-xl outline-none font-bold text-sm"
-                      placeholder="WATTAGE..."
-                    />
-                  </div>
 
                   {/* Rate Per Watt */}
                   <div>
@@ -638,6 +638,25 @@ const EstimationGenerator = () => {
                       )}
                       className="w-full mt-1.5 p-3.5 bg-slate-100 border border-slate-200 rounded-xl outline-none font-bold text-sm"
                     />
+                    {formatCurrency(
+                      estimationResult?.grand_total +
+                        (dealerCost *
+                          inputData.panel_qty *
+                          inputData.panel_wattage) /
+                          1000,
+                    )}{" "}
+                    / {(inputData.panel_wattage * inputData.panel_qty) / 1000}
+                    KW
+                    {" = "}
+                    {formatCurrency(
+                      (estimationResult?.grand_total +
+                        (dealerCost *
+                          inputData.panel_qty *
+                          inputData.panel_wattage) /
+                          1000) /
+                        ((inputData.panel_wattage * inputData.panel_qty) /
+                          1000),
+                    )}
                   </div>
                   <div>
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
@@ -659,6 +678,14 @@ const EstimationGenerator = () => {
                       )}
                       className="w-full mt-1.5 p-3.5 bg-slate-100 border border-slate-200 rounded-xl outline-none font-bold text-sm"
                     />
+                    {formatCurrency(
+                      ((inputData.panel_qty * inputData.panel_wattage) / 1000) *
+                        (profitPerKw - discountPerKw),
+                    )}{" "}
+                    / {(inputData.panel_qty * inputData.panel_wattage) / 1000}{" "}
+                    KW
+                    {" = "}
+                    {formatCurrency(profitPerKw - discountPerKw)}
                   </div>
                   <div>
                     <label className="text-[10px] font-black uppercase text-slate-400 ml-1 tracking-widest">
