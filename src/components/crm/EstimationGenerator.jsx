@@ -711,6 +711,34 @@ const EstimationGenerator = () => {
                       )}
                       className="w-full mt-1.5 p-3.5 bg-slate-100 border border-slate-200 rounded-xl outline-none font-bold text-sm"
                     />
+                    {formatCurrency(
+                      estimationResult?.grand_total +
+                        ((inputData.panel_qty * inputData.panel_wattage) /
+                          1000) *
+                          dealerCost +
+                        ((inputData.panel_qty * inputData.panel_wattage) /
+                          1000) *
+                          profitPerKw -
+                        ((inputData.panel_qty * inputData.panel_wattage) /
+                          1000) *
+                          discountPerKw,
+                    )}{" "}
+                    /{(inputData.panel_qty * inputData.panel_wattage) / 1000} KW
+                    {" = "}
+                    {formatCurrency(
+                      (estimationResult?.grand_total +
+                        ((inputData.panel_qty * inputData.panel_wattage) /
+                          1000) *
+                          dealerCost +
+                        ((inputData.panel_qty * inputData.panel_wattage) /
+                          1000) *
+                          profitPerKw -
+                        ((inputData.panel_qty * inputData.panel_wattage) /
+                          1000) *
+                          discountPerKw) /
+                        ((inputData.panel_qty * inputData.panel_wattage) /
+                          1000),
+                    )}
                   </div>
                 </div>
               </div>
