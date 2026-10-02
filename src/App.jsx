@@ -80,6 +80,7 @@ import EstimationGenerator from "./components/crm/EstimationGenerator";
 import LoanPage from "./components/crm/LoanPage";
 import AgencyManager from "./components/crm/AgencyManager";
 import AgencyInventoryManager from "./components/crm/AgencyInventoryManager";
+import Maintenance from "./Guards/Maintaince";
 // import Test from "./components/crm/Test";
 function App() {
   const [count, setCount] = useState(0);
@@ -106,7 +107,10 @@ function App() {
               </div>
             }
           />
-          <Route path="/login" element={<Login />} />
+
+          <Route path="*" element={<Maintenance />} />
+
+          {/* <Route path="/login" element={<Login />} />
 
           <Route
             path="/dashboard"
@@ -644,15 +648,15 @@ function App() {
               </ProtectedRoute>
             }
           /> */}
-          <Route
+          {/* <Route
             path="/backup"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Backup />
               </ProtectedRoute>
             }
-          />
-          <Route path="*" element={<NotFound />} />
+          /> */}
+          {/* <Route path="*" element={<NotFound />} /> */}
         </Routes>
       </BrowserRouter>
     </>
