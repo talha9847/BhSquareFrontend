@@ -108,9 +108,9 @@ function App() {
             }
           />
 
-          <Route path="*" element={<Maintenance />} />
+          {/* <Route path="*" element={<Maintenance />} /> */}
 
-          {/* <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login />} />
 
           <Route
             path="/dashboard"
@@ -640,23 +640,23 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* <Route
+          <Route
             path="/testData"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Test />
               </ProtectedRoute>
             }
-          /> */}
-          {/* <Route
+          />
+          <Route
             path="/backup"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Backup />
               </ProtectedRoute>
             }
-          /> */}
-          {/* <Route path="*" element={<NotFound />} /> */}
+          />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </>
