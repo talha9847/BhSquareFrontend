@@ -1,0 +1,928 @@
+/* ==========================================================================
+   BHSQUARE — FEEDBACK UI
+   Global theme for SweetAlert2 ("Swal.fire") and React-Toastify ("toast").
+   Matches the SolarOS admin UI: white cards, large radii, slate ink,
+   BHSquare blue (#1a5695) + solar orange (#f39200).
+   ========================================================================== */
+
+:root {
+  --bhq-blue: #1a5695;
+  --bhq-blue-bright: #2f7ac4;
+  --bhq-blue-deep: #123f6d;
+  --bhq-orange: #f39200;
+  --bhq-orange-deep: #b45309;
+  --bhq-gold: #ffd54a;
+
+  --bhq-ink: #1e293b;
+  --bhq-slate: #475569;
+  --bhq-muted: #64748b;
+  --bhq-soft: #94a3b8;
+  --bhq-line: #e2e8f0;
+  --bhq-line-soft: #f1f5f9;
+  --bhq-surface: #ffffff;
+
+  --bhq-success: #10b981;
+  --bhq-success-ink: #047857;
+  --bhq-danger: #e11d48;
+  --bhq-danger-ink: #be123c;
+  --bhq-warning: #f39200;
+  --bhq-warning-ink: #b45309;
+
+  --bhq-font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+}
+
+/* ==========================================================================
+   1. SWEETALERT2
+   ========================================================================== */
+
+.swal2-container {
+  --swal2-outline: 0 0 0 4px rgba(26, 86, 149, 0.18);
+  --swal2-container-padding: 1rem;
+  --swal2-backdrop: rgba(15, 23, 42, 0.55);
+  --swal2-backdrop-transition: background-color 0.2s ease;
+
+  --swal2-width: 30.5em;
+  --swal2-padding: 0 0 1.6em;
+  --swal2-border: 1px solid #e8edf4;
+  --swal2-border-radius: 28px;
+  --swal2-background: var(--bhq-surface);
+  --swal2-color: var(--bhq-slate);
+  --swal2-font: var(--bhq-font);
+
+  --swal2-title-padding: 0.7em 1.4em 0;
+  --swal2-html-container-padding: 0.5em 1.75em 0.1em;
+
+  --swal2-input-border: 1px solid var(--bhq-line);
+  --swal2-input-border-radius: 14px;
+  --swal2-input-box-shadow: none;
+  --swal2-input-background: #f8fafc;
+  --swal2-input-hover-box-shadow: none;
+  --swal2-input-focus-border: 1px solid var(--bhq-blue);
+  --swal2-input-focus-box-shadow: 0 0 0 4px rgba(26, 86, 149, 0.12);
+  --swal2-input-transition: border-color 0.18s ease, box-shadow 0.18s ease,
+    background-color 0.18s ease;
+
+  --swal2-validation-message-background: #fff1f2;
+  --swal2-validation-message-color: var(--bhq-danger-ink);
+
+  --swal2-footer-border-color: var(--bhq-line-soft);
+  --swal2-footer-background: #f8fafc;
+  --swal2-footer-color: var(--bhq-muted);
+
+  --swal2-timer-progress-bar-background: linear-gradient(
+    90deg,
+    var(--bhq-blue) 0%,
+    #3b82f6 55%,
+    var(--bhq-orange) 100%
+  );
+
+  --swal2-close-button-position: absolute;
+  --swal2-close-button-inset: 0.9em 0.9em auto auto;
+  --swal2-close-button-color: var(--bhq-soft);
+  --swal2-close-button-font-size: 2em;
+  --swal2-close-button-transition: color 0.18s ease, background-color 0.18s ease;
+  --swal2-close-button-hover-transform: none;
+
+  --swal2-actions-justify-content: center;
+  --swal2-actions-width: 100%;
+  --swal2-actions-margin: 1.55em auto 0;
+  --swal2-actions-padding: 0 1.6em;
+
+  --swal2-confirm-button-border-radius: 14px;
+  --swal2-confirm-button-background-color: var(--bhq-blue);
+  --swal2-confirm-button-color: #ffffff;
+  --swal2-confirm-button-box-shadow: none;
+
+  --swal2-cancel-button-border-radius: 14px;
+  --swal2-cancel-button-background-color: var(--bhq-line-soft);
+  --swal2-cancel-button-color: var(--bhq-slate);
+  --swal2-cancel-button-box-shadow: none;
+
+  --swal2-deny-button-border-radius: 14px;
+  --swal2-deny-button-background-color: var(--bhq-danger);
+  --swal2-deny-button-color: #ffffff;
+  --swal2-deny-button-box-shadow: none;
+
+  --swal2-icon-zoom: 0.92;
+  --swal2-action-button-focus-box-shadow: 0 0 0 4px rgba(26, 86, 149, 0.2);
+
+  --swal2-show-animation: bhq-swal-in 0.34s cubic-bezier(0.22, 1.15, 0.36, 1)
+    both;
+  --swal2-hide-animation: bhq-swal-out 0.18s ease-in both;
+  --swal2-toast-show-animation: bhq-swal-toast-in 0.3s
+    cubic-bezier(0.22, 1.15, 0.36, 1) both;
+  --swal2-toast-hide-animation: bhq-swal-toast-out 0.16s ease-in both;
+}
+
+.swal2-container.swal2-backdrop-show {
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+
+/* ---- Popup shell -------------------------------------------------------- */
+.swal2-container .swal2-popup {
+  border: 1px solid #e8edf4;
+  border-radius: 28px;
+  background:
+    linear-gradient(
+        90deg,
+        var(--bhq-blue) 0%,
+        var(--bhq-blue-bright) 46%,
+        var(--bhq-orange) 54%,
+        #ffb21e 100%
+      )
+      top left / 100% 4px no-repeat,
+    radial-gradient(
+      120% 90% at 100% 0%,
+      rgba(26, 86, 149, 0.07),
+      transparent 48%
+    ),
+    radial-gradient(
+      120% 90% at 0% 100%,
+      rgba(243, 146, 0, 0.055),
+      transparent 48%
+    ),
+    var(--bhq-surface);
+  color: var(--bhq-slate);
+  font-family: var(--bhq-font);
+  box-shadow:
+    0 40px 90px -32px rgba(15, 23, 42, 0.48),
+    0 18px 40px -24px rgba(15, 23, 42, 0.22),
+    0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+/* ---- Icon --------------------------------------------------------------- */
+.swal2-container .swal2-icon {
+  margin: 2.2em auto 0.5em;
+  border-width: 3px;
+  background: #f8fafc;
+  box-shadow:
+    0 0 0 7px rgba(148, 163, 184, 0.08),
+    0 18px 36px -24px rgba(15, 23, 42, 0.45);
+}
+
+/* Success uses white masking lines inside its SVG, so keep this icon white
+   to avoid the masks showing through the tint. The green glow supplies the hue. */
+.swal2-container .swal2-icon.swal2-success {
+  border-color: var(--bhq-success-ink);
+  color: var(--bhq-success-ink);
+  background: #ffffff;
+  box-shadow:
+    0 0 0 7px rgba(16, 185, 129, 0.09),
+    0 18px 36px -24px rgba(5, 150, 105, 0.5);
+}
+.swal2-container .swal2-icon.swal2-success .swal2-success-ring {
+  border-color: rgba(5, 150, 105, 0.4);
+}
+.swal2-container
+  .swal2-icon.swal2-success
+  [class^="swal2-success-line"] {
+  background-color: var(--bhq-success-ink);
+}
+
+.swal2-container .swal2-icon.swal2-error {
+  border-color: var(--bhq-danger);
+  color: var(--bhq-danger);
+  background: #fff1f2;
+  box-shadow:
+    0 0 0 7px rgba(225, 29, 72, 0.08),
+    0 18px 36px -24px rgba(190, 18, 60, 0.5);
+}
+.swal2-container .swal2-icon.swal2-error [class^="swal2-x-mark-line"] {
+  background-color: var(--bhq-danger);
+}
+
+.swal2-container .swal2-icon.swal2-warning {
+  border-color: var(--bhq-warning);
+  color: var(--bhq-warning);
+  background: #fff7ed;
+  box-shadow:
+    0 0 0 7px rgba(243, 146, 0, 0.09),
+    0 18px 36px -24px rgba(217, 119, 6, 0.5);
+}
+
+.swal2-container .swal2-icon.swal2-info {
+  border-color: var(--bhq-blue);
+  color: var(--bhq-blue);
+  background: #eff6ff;
+  box-shadow:
+    0 0 0 7px rgba(26, 86, 149, 0.08),
+    0 18px 36px -24px rgba(26, 86, 149, 0.5);
+}
+
+.swal2-container .swal2-icon.swal2-question {
+  border-color: var(--bhq-orange);
+  color: var(--bhq-orange);
+  background: #fff7ed;
+  box-shadow:
+    0 0 0 7px rgba(243, 146, 0, 0.09),
+    0 18px 36px -24px rgba(217, 119, 6, 0.5);
+}
+
+/* ---- Typography --------------------------------------------------------- */
+.swal2-container .swal2-title {
+  color: var(--bhq-ink);
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+.swal2-container .swal2-title::after {
+  content: "";
+  display: block;
+  width: 42px;
+  height: 3px;
+  margin: 0.55em auto 0;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    var(--bhq-blue) 0%,
+    var(--bhq-blue-bright) 48%,
+    var(--bhq-orange) 52%,
+    #ffb21e 100%
+  );
+  opacity: 0.9;
+}
+
+.swal2-container .swal2-html-container {
+  color: var(--bhq-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.65;
+}
+
+.swal2-container .swal2-html-container strong,
+.swal2-container .swal2-html-container b {
+  color: var(--bhq-ink);
+  font-weight: 800;
+}
+
+.swal2-container .swal2-html-container a {
+  color: var(--bhq-blue);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ---- Footer ------------------------------------------------------------- */
+.swal2-container .swal2-footer {
+  padding: 1em 1.6em 0;
+  border-top: 1px solid var(--bhq-line-soft);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+/* ---- Buttons ------------------------------------------------------------ */
+.swal2-container .swal2-actions {
+  gap: 0.65em;
+}
+
+.swal2-container .swal2-styled {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-width: 8.75em;
+  height: 46px;
+  margin: 0 !important;
+  padding: 0 1.6em !important;
+  border-radius: 14px !important;
+  font-family: var(--bhq-font);
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.13em !important;
+  text-transform: uppercase;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    filter 0.16s ease,
+    background-color 0.16s ease;
+}
+
+.swal2-container .swal2-confirm {
+  background-color: var(--swal2-confirm-button-background-color) !important;
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 255, 255, 0) 58%
+    ),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.08));
+  color: var(--swal2-confirm-button-color) !important;
+  box-shadow:
+    0 14px 28px -14px
+      color-mix(
+        in srgb,
+        var(--swal2-confirm-button-background-color) 70%,
+        transparent
+      ),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+}
+
+.swal2-container .swal2-confirm:hover {
+  background-color: var(--swal2-confirm-button-background-color) !important;
+  filter: brightness(1.06) saturate(1.04);
+  box-shadow:
+    0 18px 34px -14px
+      color-mix(
+        in srgb,
+        var(--swal2-confirm-button-background-color) 78%,
+        transparent
+      ),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+.swal2-container .swal2-confirm:active {
+  transform: translateY(1px) scale(0.985);
+  filter: brightness(0.97);
+}
+
+.swal2-container .swal2-cancel {
+  background: var(--bhq-line-soft) !important;
+  background-image: none !important;
+  color: var(--bhq-slate) !important;
+  box-shadow: inset 0 0 0 1px var(--bhq-line) !important;
+}
+
+.swal2-container .swal2-cancel:hover {
+  background: #e2e8f0 !important;
+  color: var(--bhq-ink) !important;
+}
+
+.swal2-container .swal2-cancel:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+.swal2-container .swal2-deny {
+  background-color: var(--swal2-deny-button-background-color) !important;
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.18),
+    rgba(0, 0, 0, 0.08)
+  );
+  color: var(--swal2-deny-button-color) !important;
+  box-shadow:
+    0 14px 28px -14px
+      color-mix(
+        in srgb,
+        var(--swal2-deny-button-background-color) 70%,
+        transparent
+      ),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+}
+
+.swal2-container .swal2-styled:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 4px rgba(26, 86, 149, 0.22),
+    0 14px 28px -14px rgba(15, 23, 42, 0.45) !important;
+}
+
+.swal2-container .swal2-styled[disabled] {
+  opacity: 0.55;
+  filter: grayscale(0.15);
+  cursor: not-allowed;
+}
+
+/* ---- Loader ------------------------------------------------------------- */
+.swal2-container .swal2-loader {
+  margin: 0 1.5em;
+  border-color: var(--bhq-blue) transparent var(--bhq-orange) transparent;
+}
+
+/* ---- Form controls ------------------------------------------------------ */
+.swal2-container .swal2-input,
+.swal2-container .swal2-textarea,
+.swal2-container .swal2-select,
+.swal2-container .swal2-file {
+  width: calc(100% - 3.3em) !important;
+  box-sizing: border-box;
+  margin: 1.1em 1.65em 0 !important;
+  border: 1px solid var(--bhq-line) !important;
+  border-radius: 14px !important;
+  background: #f8fafc !important;
+  color: var(--bhq-ink) !important;
+  font-family: var(--bhq-font);
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+  transition: var(--swal2-input-transition);
+}
+
+.swal2-container .swal2-input,
+.swal2-container .swal2-select {
+  height: 48px !important;
+  padding: 0 1em !important;
+}
+
+.swal2-container .swal2-textarea {
+  height: 112px !important;
+  padding: 0.8em 1em !important;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.swal2-container .swal2-file {
+  height: auto !important;
+  padding: 0.85em 1em !important;
+}
+
+.swal2-container .swal2-input::placeholder,
+.swal2-container .swal2-textarea::placeholder {
+  color: var(--bhq-soft) !important;
+  font-weight: 500;
+}
+
+.swal2-container .swal2-input:hover,
+.swal2-container .swal2-textarea:hover,
+.swal2-container .swal2-select:hover {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+}
+
+.swal2-container .swal2-input:focus,
+.swal2-container .swal2-textarea:focus,
+.swal2-container .swal2-select:focus {
+  background: #ffffff !important;
+  border-color: var(--bhq-blue) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 4px rgba(26, 86, 149, 0.12) !important;
+}
+
+.swal2-container .swal2-input.swal2-inputerror,
+.swal2-container .swal2-textarea.swal2-inputerror {
+  border-color: var(--bhq-danger) !important;
+  background: #fff1f2 !important;
+  box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.1) !important;
+}
+
+.swal2-container label.swal2-input-label {
+  margin: 1.2em auto 0;
+  color: var(--bhq-muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.swal2-container .swal2-radio,
+.swal2-container .swal2-checkbox {
+  margin-top: 1em;
+  background: transparent;
+  color: var(--bhq-slate);
+  font-family: var(--bhq-font);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.swal2-container .swal2-radio input,
+.swal2-container .swal2-checkbox input {
+  accent-color: var(--bhq-blue);
+}
+
+.swal2-container .swal2-range input {
+  accent-color: var(--bhq-blue);
+}
+
+/* ---- Validation --------------------------------------------------------- */
+.swal2-container .swal2-validation-message {
+  justify-content: flex-start;
+  margin: 1em 1.65em 0;
+  padding: 0.7em 0.9em;
+  border: 1px solid #fecdd3;
+  border-radius: 12px;
+  background: var(--swal2-validation-message-background);
+  color: var(--swal2-validation-message-color);
+  font-family: var(--bhq-font);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.swal2-container .swal2-validation-message::before {
+  width: 1.4em;
+  min-width: 1.4em;
+  height: 1.4em;
+  margin: 0 0.6em 0 0;
+  background-color: var(--bhq-danger);
+  font-size: 11px;
+  line-height: 1.4em;
+}
+
+/* ---- Timer + close ------------------------------------------------------ */
+.swal2-container .swal2-timer-progress-bar-container {
+  border-bottom-right-radius: 28px;
+  border-bottom-left-radius: 28px;
+}
+
+.swal2-container .swal2-timer-progress-bar {
+  height: 4px;
+  background: var(--swal2-timer-progress-bar-background);
+}
+
+.swal2-container .swal2-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.swal2-container .swal2-close:hover {
+  background: var(--bhq-line-soft);
+  color: var(--bhq-blue);
+}
+
+/* ---- Inline "toast" style SweetAlert ----------------------------------- */
+.swal2-container .swal2-popup.swal2-toast {
+  width: auto;
+  max-width: 26em;
+  padding: 0.9em 1.15em;
+  border: 1px solid var(--bhq-line);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, var(--bhq-blue), var(--bhq-orange)) left center /
+      4px calc(100% - 22px) no-repeat,
+    var(--bhq-surface);
+  box-shadow:
+    0 24px 60px -24px rgba(15, 23, 42, 0.35),
+    0 6px 18px -10px rgba(15, 23, 42, 0.12);
+}
+
+.swal2-container .swal2-popup.swal2-toast .swal2-title {
+  padding: 0;
+  color: var(--bhq-ink);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.swal2-container .swal2-popup.swal2-toast .swal2-title::after {
+  display: none;
+}
+
+.swal2-container .swal2-popup.swal2-toast .swal2-html-container {
+  padding: 0;
+  font-size: 0.82rem;
+  text-align: left;
+}
+
+/* ==========================================================================
+   2. REACT-TOASTIFY
+   ========================================================================== */
+
+:root {
+  --toastify-color-light: #ffffff;
+  --toastify-text-color-light: #475569;
+  --toastify-color-info: var(--bhq-blue);
+  --toastify-color-success: #059669;
+  --toastify-color-warning: var(--bhq-orange-deep);
+  --toastify-color-error: var(--bhq-danger);
+
+  --toastify-icon-color-info: var(--bhq-blue);
+  --toastify-icon-color-success: var(--bhq-success-ink);
+  --toastify-icon-color-warning: var(--bhq-warning-ink);
+  --toastify-icon-color-error: var(--bhq-danger-ink);
+
+  --toastify-toast-width: 384px;
+  --toastify-toast-bd-radius: 18px;
+  --toastify-toast-min-height: 0;
+  --toastify-toast-padding: 13px 40px 16px 16px;
+  --toastify-font-family: var(--bhq-font);
+  --toastify-toast-shadow:
+    0 24px 60px -24px rgba(15, 23, 42, 0.35),
+    0 6px 18px -10px rgba(15, 23, 42, 0.12);
+  --toastify-color-progress-light: linear-gradient(
+    90deg,
+    var(--bhq-blue),
+    #3b82f6 55%,
+    var(--bhq-orange)
+  );
+  --toastify-color-progress-bgo: 1;
+  --toastify-spinner-color: var(--bhq-blue);
+  --toastify-spinner-color-empty-area: var(--bhq-line);
+}
+
+.Toastify__toast-container {
+  --toastify-toast-width: 384px;
+  --toastify-toast-bd-radius: 18px;
+  --toastify-toast-min-height: 0;
+  --toastify-toast-padding: 13px 40px 16px 16px;
+  --toastify-toast-top: max(20px, env(safe-area-inset-top));
+  --toastify-toast-right: max(20px, env(safe-area-inset-right));
+  --toastify-toast-left: max(20px, env(safe-area-inset-left));
+  --toastify-toast-bottom: max(20px, env(safe-area-inset-bottom));
+  --toastify-font-family: var(--bhq-font);
+  --toastify-toast-shadow:
+    0 24px 60px -24px rgba(15, 23, 42, 0.35),
+    0 6px 18px -10px rgba(15, 23, 42, 0.12);
+}
+
+/* Type tokens — one place to tune every toast variant. */
+.Toastify__toast--default {
+  --toast-accent: var(--bhq-blue);
+  --toast-tint: rgba(26, 86, 149, 0.08);
+  --toast-icon-color: var(--bhq-blue);
+  --toast-icon-bg: #eff6ff;
+  --toast-progress: linear-gradient(
+    90deg,
+    var(--bhq-blue),
+    #3b82f6 58%,
+    var(--bhq-orange)
+  );
+}
+
+.Toastify__toast--info {
+  --toast-accent: var(--bhq-blue);
+  --toast-tint: rgba(26, 86, 149, 0.09);
+  --toast-icon-color: var(--bhq-blue);
+  --toast-icon-bg: #eff6ff;
+  --toast-progress: linear-gradient(90deg, #1a5695, #3b82f6);
+}
+
+.Toastify__toast--success {
+  --toast-accent: var(--bhq-success);
+  --toast-tint: rgba(16, 185, 129, 0.1);
+  --toast-icon-color: var(--bhq-success-ink);
+  --toast-icon-bg: #ecfdf5;
+  --toast-progress: linear-gradient(90deg, #059669, #34d399);
+}
+
+.Toastify__toast--warning {
+  --toast-accent: var(--bhq-warning);
+  --toast-tint: rgba(243, 146, 0, 0.1);
+  --toast-icon-color: var(--bhq-warning-ink);
+  --toast-icon-bg: #fff7ed;
+  --toast-progress: linear-gradient(90deg, #d97706, #fbbf24);
+}
+
+.Toastify__toast--error {
+  --toast-accent: var(--bhq-danger);
+  --toast-tint: rgba(225, 29, 72, 0.09);
+  --toast-icon-color: var(--bhq-danger-ink);
+  --toast-icon-bg: #fff1f2;
+  --toast-progress: linear-gradient(90deg, #be123c, #fb7185);
+}
+
+/* ---- Card --------------------------------------------------------------- */
+.Toastify__toast {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: var(--toastify-toast-padding);
+  border: 1px solid var(--bhq-line);
+  border-color: color-mix(in srgb, var(--toast-accent, #1a5695) 22%, #e2e8f0);
+  border-radius: 18px;
+  background-color: rgba(255, 255, 255, 0.97);
+  background-image: radial-gradient(
+    150% 200% at 0% 0%,
+    var(--toast-tint, rgba(26, 86, 149, 0.08)) 0%,
+    rgba(255, 255, 255, 0) 58%
+  );
+  color: var(--bhq-slate);
+  font-family: var(--bhq-font);
+  box-shadow: var(--toastify-toast-shadow);
+  -webkit-backdrop-filter: blur(14px) saturate(1.08);
+  backdrop-filter: blur(14px) saturate(1.08);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+/* Higher specificity than Toastify's own theme rule, so the light card wins
+   regardless of stylesheet load order. */
+.Toastify__toast.Toastify__toast-theme--light {
+  background-color: rgba(255, 255, 255, 0.97);
+  background-image: radial-gradient(
+    150% 200% at 0% 0%,
+    var(--toast-tint, rgba(26, 86, 149, 0.08)) 0%,
+    rgba(255, 255, 255, 0) 58%
+  );
+  color: var(--bhq-slate);
+}
+
+.Toastify__toast::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  bottom: 12px;
+  left: 0;
+  width: 4px;
+  border-radius: 0 999px 999px 0;
+  background: var(--toast-accent, var(--bhq-blue));
+  box-shadow: 0 0 12px -2px var(--toast-accent, var(--bhq-blue));
+  z-index: 2;
+}
+
+.Toastify__toast:hover {
+  border-color: color-mix(
+    in srgb,
+    var(--toast-accent, #1a5695) 38%,
+    #e2e8f0
+  );
+  box-shadow:
+    0 30px 70px -26px rgba(15, 23, 42, 0.4),
+    0 8px 22px -12px rgba(15, 23, 42, 0.16);
+}
+
+/* ---- Icon tile ---------------------------------------------------------- */
+.Toastify__toast .Toastify__toast-icon {
+  box-sizing: border-box;
+  width: 40px;
+  min-width: 40px;
+  height: 40px;
+  margin-inline-end: 13px;
+  padding: 9px;
+  border-radius: 12px;
+  background: var(--toast-icon-bg, #eff6ff);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--toast-accent, #1a5695) 18%, transparent);
+}
+
+.Toastify__toast .Toastify__toast-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: var(--toast-icon-color, var(--bhq-blue)) !important;
+}
+
+.Toastify__toast .Toastify__spinner {
+  width: 20px;
+  height: 20px;
+  border-color: var(--bhq-line);
+  border-right-color: var(--bhq-blue);
+}
+
+/* ---- Copy --------------------------------------------------------------- */
+.Toastify__toast .Toastify__toast-body {
+  margin: 0;
+  padding: 0;
+  color: var(--bhq-slate);
+  font-family: var(--bhq-font);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+  letter-spacing: 0.002em;
+}
+
+/* ---- Close -------------------------------------------------------------- */
+.Toastify__toast .Toastify__close-button {
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  padding: 4px;
+  border-radius: 8px;
+  color: var(--bhq-soft);
+  opacity: 1;
+  transition: color 0.18s ease, background-color 0.18s ease;
+}
+
+.Toastify__toast .Toastify__close-button--light {
+  color: var(--bhq-soft);
+  opacity: 1;
+}
+
+.Toastify__toast .Toastify__close-button:hover,
+.Toastify__toast .Toastify__close-button:focus-visible {
+  background: var(--bhq-line-soft);
+  color: var(--bhq-blue);
+  opacity: 1;
+  outline: none;
+}
+
+/* ---- Progress ----------------------------------------------------------- */
+.Toastify__toast .Toastify__progress-bar--wrp {
+  height: 3px;
+  border-bottom-right-radius: 18px;
+  border-bottom-left-radius: 18px;
+}
+
+.Toastify__toast .Toastify__progress-bar {
+  height: 100%;
+  opacity: 1;
+  background: var(--toast-progress, var(--toastify-color-progress-light));
+}
+
+.Toastify__toast .Toastify__progress-bar--bg {
+  background: #f1f5f9;
+  opacity: 1;
+}
+
+/* ---- Motion / responsive ------------------------------------------------ */
+@media (max-width: 640px) {
+  .Toastify__toast-container {
+    width: calc(100vw - 24px) !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: 12px !important;
+    align-items: stretch;
+  }
+
+  .Toastify__toast {
+    width: 100% !important;
+    margin-bottom: 0.6rem;
+    padding: 12px 38px 15px 14px;
+    border-radius: 16px;
+  }
+
+  .Toastify__toast .Toastify__toast-icon {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    padding: 8px;
+    margin-inline-end: 11px;
+  }
+
+  .Toastify__toast .Toastify__toast-body {
+    font-size: 12.5px;
+  }
+
+  .Toastify__toast .Toastify__progress-bar--wrp {
+    border-bottom-right-radius: 16px;
+    border-bottom-left-radius: 16px;
+  }
+
+  .swal2-container {
+    --swal2-width: 100%;
+    --swal2-padding: 0 0 1.4em;
+  }
+
+  .swal2-container .swal2-actions {
+    flex-direction: column-reverse;
+    padding: 0 1.25em;
+  }
+
+  .swal2-container .swal2-styled {
+    width: 100%;
+  }
+
+  .swal2-container .swal2-title {
+    font-size: 1.2rem;
+  }
+
+  .swal2-container .swal2-input,
+  .swal2-container .swal2-textarea,
+  .swal2-container .swal2-select {
+    width: calc(100% - 2.5em) !important;
+    margin-inline: 1.25em !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .swal2-container .swal2-popup,
+  .swal2-container .swal2-icon,
+  .Toastify__toast,
+  .Toastify__toast::before {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---- Keyframes ---------------------------------------------------------- */
+@keyframes bhq-swal-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes bhq-swal-out {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.97);
+  }
+}
+
+@keyframes bhq-swal-toast-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -12px, 0) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes bhq-swal-toast-out {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0) scale(0.98);
+  }
+}

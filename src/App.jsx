@@ -12,8 +12,9 @@ import Leads from "./components/crm/Leads";
 import Customer from "./components/crm/Customer";
 import DocumentCollection from "./components/crm/DocumentCollection";
 import Registration from "./components/crm/Registration";
-import { ToastContainer } from "react-toastify";
+import { ToastContainer, Slide } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import "./styles/notifications.css";
 import DocumentCollectionGuard from "./Guards/DocumentCollectionGuard";
 import NameChange from "./components/crm/NameChange";
 import NameChangeGuard from "./Guards/NameChangeGuard";
@@ -94,8 +95,11 @@ function App() {
         newestOnTop
         closeOnClick
         pauseOnHover
+        pauseOnFocusLoss
         draggable
-        theme="colored"
+        limit={4}
+        theme="light"
+        transition={Slide}
       />
       <BrowserRouter>
         <Routes>

@@ -137,7 +137,35 @@ const Leads = () => {
       return;
     }
 
-    const next = !lead[field];
+    const isSiteVisit = field === "site_visited";
+    const isEnabling = !lead[field];
+
+    // Confirm before changing a tracked milestone
+    const confirmation = await Swal.fire({
+      title: isSiteVisit
+        ? isEnabling
+          ? "Confirm Site Visit?"
+          : "Revert Site Visit?"
+        : isEnabling
+          ? "Confirm Estimation Sent?"
+          : "Revert Estimation Status?",
+      text: isSiteVisit
+        ? isEnabling
+          ? `Mark the site visit for "${lead.customer_name}" as completed?`
+          : `Mark the site visit for "${lead.customer_name}" as pending again?`
+        : isEnabling
+          ? `Confirm that the estimation has been sent to "${lead.customer_name}"?`
+          : `Mark the estimation for "${lead.customer_name}" as not sent?`,
+      icon: isEnabling ? "question" : "warning",
+      showCancelButton: true,
+      confirmButtonText: isEnabling ? "Yes, Mark Done" : "Yes, Revert",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+    });
+
+    if (!confirmation.isConfirmed) return;
+
+    const next = isEnabling;
 
     // Optimistic UI update
     setLeads((prev) =>
@@ -154,6 +182,16 @@ const Leads = () => {
       if (res.status !== 200 || !res.data.success) {
         throw new Error(res.data?.message || "Update failed");
       }
+
+      toast.success(
+        isSiteVisit
+          ? next
+            ? "Site visit confirmed"
+            : "Site visit reverted"
+          : next
+            ? "Estimation marked as sent"
+            : "Estimation reverted",
+      );
     } catch (error) {
       // Rollback on failure
       setLeads((prev) =>
