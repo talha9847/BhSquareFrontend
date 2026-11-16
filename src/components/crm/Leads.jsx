@@ -19,6 +19,7 @@ import {
   Database,
   Loader2,
   Eye,
+  Check,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -128,6 +129,41 @@ const Leads = () => {
         });
       }
     });
+  };
+
+  const toggleFlag = async (lead, field) => {
+    // Only allow the two flags we support
+    if (field !== "estimation_sent" && field !== "site_visited") {
+      return;
+    }
+
+    const next = !lead[field];
+
+    // Optimistic UI update
+    setLeads((prev) =>
+      prev.map((l) => (l.id === lead.id ? { ...l, [field]: next } : l)),
+    );
+
+    try {
+      const res = await axios.patch(
+        `/api/leads/updateLeadFlags/${lead.id}`,
+        { [field]: next },
+        { withCredentials: true },
+      );
+
+      if (res.status !== 200 || !res.data.success) {
+        throw new Error(res.data?.message || "Update failed");
+      }
+    } catch (error) {
+      // Rollback on failure
+      setLeads((prev) =>
+        prev.map((l) => (l.id === lead.id ? { ...l, [field]: !next } : l)),
+      );
+
+      toast.error(
+        error.response?.data?.message || error.message || "Failed to update",
+      );
+    }
   };
 
   const addSource = async () => {
@@ -240,7 +276,7 @@ const Leads = () => {
     getLeadsByStatus(activeTab);
   }, [activeTab]);
 
-  const getDateStyle = (dateString) => {
+  const getDateStyle = (dateString, siteVisited) => {
     if (!dateString) return "text-slate-400";
 
     const visitDate = new Date(dateString);
@@ -251,6 +287,11 @@ const Leads = () => {
 
     const diffTime = visitDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    // ✅ If already visited, never blink or show "overdue" red.
+    if (siteVisited) {
+      return "text-blue-600 font-bold"; // or "text-emerald-600"
+    }
 
     if (diffDays < 0) {
       return "text-red-700 font-black animate-blink";
@@ -818,15 +859,50 @@ const Leads = () => {
                         </td>
 
                         {/* 4. VISIT DATE */}
+                        {/* 4. VISIT DATE + site_visited tick */}
                         <td className="px-6 py-5 whitespace-nowrap">
-                          <div className="flex flex-col">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`text-[11px] font-black px-2 py-0.5 rounded-md uppercase tracking-tighter ${getDateStyle(
+                                  lead.site_visit_date,
+                                  lead.site_visited,
+                                )}`}
+                              >
+                                {lead.site_visit_date || "—"}
+                              </span>
+
+                              {/* Site visited tick — click to toggle */}
+                              <button
+                                onClick={() => toggleFlag(lead, "site_visited")}
+                                title={
+                                  lead.site_visited
+                                    ? "Site visited — click to unmark"
+                                    : "Mark site as visited"
+                                }
+                                className={`
+          inline-flex items-center justify-center w-5 h-5 rounded-full border transition-all
+          ${
+            lead.site_visited
+              ? "bg-blue-500 border-blue-500 text-white shadow-sm"
+              : "bg-white border-slate-300 text-slate-300 hover:border-blue-400 hover:text-blue-500"
+          }
+        `}
+                              >
+                                <Check size={12} strokeWidth={3} />
+                              </button>
+                            </div>
+
                             <span
-                              className={`text-[11px] font-black px-2 py-0.5 rounded-md w-fit uppercase tracking-tighter ${getDateStyle(lead.site_visit_date)}`}
+                              className={`text-[9px] font-bold uppercase ${
+                                lead.site_visited
+                                  ? "text-blue-500"
+                                  : "text-slate-400"
+                              }`}
                             >
-                              {lead.site_visit_date}
-                            </span>
-                            <span className="text-[9px] text-slate-400 font-bold mt-1 uppercase">
-                              Visit Schedule
+                              {lead.site_visited
+                                ? "✓ Visited"
+                                : "Visit schedule"}
                             </span>
                           </div>
                         </td>
@@ -839,10 +915,50 @@ const Leads = () => {
                         </td>
 
                         {/* 6. CAPACITY */}
+                        {/* 6. CAPACITY + estimation tick */}
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <span className="text-sm font-black text-[#1a5695]">
-                            {(lead.total_capacity / 1000).toFixed(2)}{" "}
-                            <small className="text-[10px] opacity-70">KW</small>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-black text-[#1a5695]">
+                              {(lead.total_capacity / 1000).toFixed(2)}{" "}
+                              <small className="text-[10px] opacity-70">
+                                KW
+                              </small>
+                            </span>
+
+                            {/* Estimation sent tick — click to toggle */}
+                            <button
+                              onClick={() =>
+                                toggleFlag(lead, "estimation_sent")
+                              }
+                              title={
+                                lead.estimation_sent
+                                  ? "Estimation sent — click to unmark"
+                                  : "Mark estimation as sent"
+                              }
+                              className={`
+        inline-flex items-center justify-center w-5 h-5 rounded-full border transition-all
+        ${
+          lead.estimation_sent
+            ? "bg-emerald-500 border-emerald-500 text-white shadow-sm"
+            : "bg-white border-slate-300 text-slate-300 hover:border-emerald-400 hover:text-emerald-500"
+        }
+      `}
+                            >
+                              <Check size={12} strokeWidth={3} />
+                            </button>
+                          </div>
+
+                          {/* tiny label so it's self-explanatory */}
+                          <span
+                            className={`block mt-1 text-[8px] font-bold uppercase tracking-wider ${
+                              lead.estimation_sent
+                                ? "text-emerald-500"
+                                : "text-slate-300"
+                            }`}
+                          >
+                            {lead.estimation_sent
+                              ? "Est. sent"
+                              : "Est. pending"}
                           </span>
                         </td>
 
