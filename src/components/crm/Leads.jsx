@@ -6,7 +6,6 @@ import {
   X,
   Calculator,
   Search,
-  UserCheck,
   ArrowRightLeft,
   Clock,
   Ban,
@@ -20,15 +19,16 @@ import {
   Loader2,
   Eye,
   Check,
+  MessageCircle,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { resume } from "react-dom/server";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import ShareEstimationModal from "./ShareEstimationModal";
 
 const Leads = () => {
   const navigate = useNavigate();
@@ -40,10 +40,10 @@ const Leads = () => {
   const [sourceMap, setSourceMap] = useState({});
   const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
   const [loadSaveLead, setLoadSaveLead] = useState(false);
-  const [activeTab, setActiveTab] = useState("pending"); // active, delayed, cancelled
+  const [activeTab, setActiveTab] = useState("pending");
   const [disPositionId, setDispositionId] = useState(0);
   const [disPosLoader, setDisPosLoader] = useState(false);
-  const [pageLoading, setPageLoading] = useState(true); // NEW: Used for initial fetch
+  const [pageLoading, setPageLoading] = useState(true);
 
   const [convertPendingModal, setConvertPendingModal] = useState({
     open: false,
@@ -51,7 +51,7 @@ const Leads = () => {
   });
   const [convertPendingLoader, setConvertPendingLoader] = useState(false);
   const [showTodaysVisits, setShowTodaysVisits] = useState(false);
-  // Disposition State
+
   const [dispositionModal, setDispositionModal] = useState({
     open: false,
     lead: null,
@@ -63,14 +63,32 @@ const Leads = () => {
   const [edit, setEdit] = useState(false);
   const [editId, setEditId] = useState(0);
 
+  // =========================================================
+  // WHATSAPP / ESTIMATION POPUP STATE
+  // =========================================================
+  const [whatsappModal, setWhatsappModal] = useState({
+    open: false,
+    lead: null,
+    number: "",
+  });
+
+  const [estimationModal, setEstimationModal] = useState({
+    open: false,
+    lead: null,
+    number: "",
+  });
+
+  // =========================================================
+  // EDIT CLICK
+  // =========================================================
   const editClick = async (lead) => {
     setEdit(true);
     setEditId(lead.id);
     setIsModalOpen(true);
-    setPlateWattage(lead.panel_wattage);
-    setQuantity(lead.number_of_panels);
-    setQty(lead.number_of_inverters);
-    setInvereterKWattage(lead.inverter_kw);
+    setPlateWattage(lead.panel_wattage || 0);
+    setQuantity(lead.number_of_panels || 0);
+    setQty(lead.number_of_inverters || 0);
+    setInvereterKWattage(lead.inverter_kw || 0);
     reset({
       customer_name: lead.customer_name,
       contact_number: lead.contact_number,
@@ -86,6 +104,9 @@ const Leads = () => {
     });
   };
 
+  // =========================================================
+  // DELETE
+  // =========================================================
   const handleDelete = async (lead) => {
     await Swal.fire({
       title: "Are you sure?",
@@ -97,19 +118,16 @@ const Leads = () => {
       confirmButtonText: "Yes, delete it!",
       showLoaderOnConfirm: true,
       allowOutsideClick: () => !Swal.isLoading(),
-
       preConfirm: async () => {
         try {
           const response = await axios.delete(
             `/api/leads/deleteLeadById/${lead.id}`,
           );
-
           if (response.status === 200) {
             await getLeadsByStatus("pending");
             return true;
-          } else {
-            throw new Error("Delete failed");
           }
+          throw new Error("Delete failed");
         } catch (error) {
           Swal.showValidationMessage(
             error.response?.data?.message ||
@@ -131,16 +149,15 @@ const Leads = () => {
     });
   };
 
+  // =========================================================
+  // TOGGLE FLAGS
+  // =========================================================
   const toggleFlag = async (lead, field) => {
-    // Only allow the two flags we support
-    if (field !== "estimation_sent" && field !== "site_visited") {
-      return;
-    }
+    if (field !== "estimation_sent" && field !== "site_visited") return;
 
     const isSiteVisit = field === "site_visited";
     const isEnabling = !lead[field];
 
-    // Confirm before changing a tracked milestone
     const confirmation = await Swal.fire({
       title: isSiteVisit
         ? isEnabling
@@ -167,7 +184,6 @@ const Leads = () => {
 
     const next = isEnabling;
 
-    // Optimistic UI update
     setLeads((prev) =>
       prev.map((l) => (l.id === lead.id ? { ...l, [field]: next } : l)),
     );
@@ -178,11 +194,9 @@ const Leads = () => {
         { [field]: next },
         { withCredentials: true },
       );
-
       if (res.status !== 200 || !res.data.success) {
         throw new Error(res.data?.message || "Update failed");
       }
-
       toast.success(
         isSiteVisit
           ? next
@@ -193,28 +207,52 @@ const Leads = () => {
             : "Estimation reverted",
       );
     } catch (error) {
-      // Rollback on failure
       setLeads((prev) =>
         prev.map((l) => (l.id === lead.id ? { ...l, [field]: !next } : l)),
       );
-
       toast.error(
         error.response?.data?.message || error.message || "Failed to update",
       );
     }
   };
 
+  // =========================================================
+  // WHATSAPP / ESTIMATION POPUP HANDLERS
+  // =========================================================
+  const openWhatsappModal = (lead) => {
+    const raw = (lead.contact_number || "").replace(/\D/g, "");
+    const cleaned = raw.replace(/^0+/, "");
+    setWhatsappModal({ open: true, lead, number: cleaned });
+  };
+
+  const closeWhatsappModal = () =>
+    setWhatsappModal({ open: false, lead: null, number: "" });
+
+  const openEstimationPopup = () => {
+    const { lead, number } = whatsappModal;
+    if (!lead) return;
+    if (!number || number.length < 8) {
+      toast.error("Please enter a valid WhatsApp number");
+      return;
+    }
+    setEstimationModal({ open: true, lead, number });
+    setWhatsappModal({ open: false, lead: null, number: "" });
+  };
+
+  const closeEstimationPopup = () =>
+    setEstimationModal({ open: false, lead: null, number: "" });
+
+  // =========================================================
+  // ADD SOURCE
+  // =========================================================
   const addSource = async () => {
     try {
       setLoadSaveLead(true);
       const res = await axios.post(
         `/api/sources/addSource`,
-        {
-          name: sourceName,
-        },
+        { name: sourceName },
         { withCredentials: true },
       );
-
       if (res.status == 201) {
         getSources();
         toast.success("Source added successfully");
@@ -237,36 +275,10 @@ const Leads = () => {
     formState: { errors },
   } = useForm();
 
-  // Lead Data with status
-  const [leads, setLeads] = useState([
-    {
-      id: 1,
-      customer_name: "Ramanbhai Patel",
-      contact_number: "+91 87338 17262",
-      address: "Vaskui, Mahuva",
-      total_capacity: "8.32 kW",
-      site_visit_date: "01-01-2026",
-      status: "active",
-    },
-    {
-      id: 2,
-      customer_name: "Suresh Mehta",
-      contact_number: "+91 98221 00234",
-      address: "Adajan, Surat",
-      total_capacity: "5.50 kW",
-      site_visit_date: "01-01-2026",
-      status: "delayed",
-    },
-    {
-      id: 3,
-      customer_name: "Anita Desai",
-      contact_number: "+91 70445 99122",
-      address: "Bardoli, GJ",
-      total_capacity: "12.00 kW",
-      site_visit_date: "01-01-2026",
-      status: "cancelled",
-    },
-  ]);
+  // =========================================================
+  // LEADS STATE
+  // =========================================================
+  const [leads, setLeads] = useState([]);
   const apiUrl = import.meta.env.VITE_API_URL;
 
   const getSources = async () => {
@@ -274,23 +286,24 @@ const Leads = () => {
       const result = await axios.get(`/api/sources/fetchSources`, {
         withCredentials: true,
       });
-
       setSources(result.data.data);
-
-      result.data.data.map((v) => {
-        sourceMap[v.id] = v.name;
+      const map = {};
+      result.data.data.forEach((v) => {
+        map[v.id] = v.name;
       });
-    } catch (error) {}
+      setSourceMap(map);
+    } catch (error) {
+      /* silent */
+    }
   };
 
   const getLeadsByStatus = async (status) => {
     setPageLoading(true);
     try {
       const result = await axios.get(`/api/leads/fetchLeadsByStatus`, {
-        params: { status: status },
-        withCredentials: true, // ✅ send cookies
+        params: { status },
+        withCredentials: true,
       });
-
       setLeads(result.data.data);
       setPageLoading(false);
     } catch (error) {
@@ -301,12 +314,10 @@ const Leads = () => {
   useEffect(() => {
     const fetchData = async () => {
       await getSources();
-
       if (activeTab === "pending") {
         await getLeadsByStatus("pending");
       }
     };
-
     fetchData();
   }, []);
 
@@ -314,37 +325,31 @@ const Leads = () => {
     getLeadsByStatus(activeTab);
   }, [activeTab]);
 
+  // =========================================================
+  // VISIT DATE STYLING
+  // =========================================================
   const getDateStyle = (dateString, siteVisited) => {
     if (!dateString) return "text-slate-400";
-
     const visitDate = new Date(dateString);
     const today = new Date();
-
     today.setHours(0, 0, 0, 0);
     visitDate.setHours(0, 0, 0, 0);
+    const diffDays = Math.ceil((visitDate - today) / (1000 * 60 * 60 * 24));
 
-    const diffTime = visitDate - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    // ✅ If already visited, never blink or show "overdue" red.
-    if (siteVisited) {
-      return "text-blue-600 font-bold"; // or "text-emerald-600"
-    }
-
-    if (diffDays < 0) {
-      return "text-red-700 font-black animate-blink";
-    } else if (diffDays <= 2) {
-      return "text-amber-600 font-bold";
-    } else {
-      return "text-emerald-600 font-medium";
-    }
+    if (siteVisited) return "text-blue-600 font-bold";
+    if (diffDays < 0) return "text-red-700 font-black animate-blink";
+    if (diffDays <= 2) return "text-amber-600 font-bold";
+    return "text-emerald-600 font-medium";
   };
 
+  // =========================================================
+  // SUBMIT ADD / EDIT LEAD
+  // =========================================================
   const onSubmit = async (data) => {
     if (edit) {
       try {
         if (editId == 0) {
-          toast.error("plase select lead to edit");
+          toast.error("Please select lead to edit");
           setLoadSaveLead(false);
           setIsModalOpen(false);
           return;
@@ -360,15 +365,14 @@ const Leads = () => {
             source_id: data.source_id,
             address: data.address,
             notes: data.notes,
-            panel_wattage: Number(data.panel_wattage), // cast to number
+            panel_wattage: Number(data.panel_wattage),
             number_of_panels: Number(data.number_of_panels),
-            inverter_kw: Number(data.inverter_kw), // cast to number
+            inverter_kw: Number(data.inverter_kw),
             number_of_inverters: Number(data.number_of_inverters),
             installation_type: data.installation_type,
           },
           { withCredentials: true },
         );
-
         if (res.status == 200) {
           toast.success("Lead edited successfully");
           getLeadsByStatus(activeTab);
@@ -386,10 +390,11 @@ const Leads = () => {
             installation_type: "",
             panel_wattage: "",
             number_of_panels: "",
+            inverter_kw: "",
+            number_of_inverters: "",
           });
         }
       } catch (error) {
-        setLoadSaveLead(false);
         setLoadSaveLead(false);
         setEdit(false);
         setEditId(0);
@@ -416,9 +421,8 @@ const Leads = () => {
           },
           { withCredentials: true },
         );
-
         if (res.status == 201) {
-          toast.success("Lead save successfully");
+          toast.success("Lead saved successfully");
           getLeadsByStatus(activeTab);
           setLoadSaveLead(false);
           setIsModalOpen(false);
@@ -441,7 +445,10 @@ const Leads = () => {
       }
     }
   };
-  // Capacity Estimator Logic
+
+  // =========================================================
+  // CAPACITY CALCULATORS
+  // =========================================================
   const [plateWattage, setPlateWattage] = useState(550);
   const [invereterKWattage, setInvereterKWattage] = useState(550);
   const [quantity, setQuantity] = useState(0);
@@ -449,22 +456,20 @@ const Leads = () => {
   const invCapacity = invereterKWattage * qty;
   const systemCapacity = (plateWattage * quantity) / 1000;
 
-  const handleAction = (lead, type) => {
+  // =========================================================
+  // DISPOSITION ACTIONS
+  // =========================================================
+  const handleAction = (lead, type) =>
     setDispositionModal({ open: true, lead, type });
-  };
 
   const convertToPending = async () => {
     try {
       setConvertPendingLoader(true);
-      console.log("convert to pending");
       const res = await axios.post(
         `/api/leads/delayToPending`,
-        {
-          lead_id: convertPendingModal.lead.id,
-        },
+        { lead_id: convertPendingModal.lead.id },
         { withCredentials: true },
       );
-
       if (res.status == 200) {
         getLeadsByStatus(activeTab);
         toast.success("converted successfully");
@@ -486,8 +491,10 @@ const Leads = () => {
         setDispositionModal({ open: false, lead: null, type: null });
         return;
       }
-      if (!followUpDate || !remark) return;
-
+      if (!followUpDate || !remark) {
+        setDisPosLoader(false);
+        return;
+      }
       try {
         const res = await axios.post(
           `/api/leads/delayLead`,
@@ -500,7 +507,7 @@ const Leads = () => {
         );
         if (res.status == 201) {
           getLeadsByStatus(activeTab);
-          toast.success("Lead dealyed successfully");
+          toast.success("Lead delayed successfully");
           setRemark("");
           setFollowUpDate("");
           setDispositionModal({ open: false, lead: null, type: null });
@@ -519,16 +526,12 @@ const Leads = () => {
         setDispositionModal({ open: false, lead: null, type: null });
         return;
       }
-
       try {
         const res = await axios.post(
           `/api/leads/convertToCustomer`,
-          {
-            lead_id: disPositionId,
-          },
+          { lead_id: disPositionId },
           { withCredentials: true },
         );
-
         if (res.status == 200) {
           toast.success("Lead converted to customer successfully");
           getLeadsByStatus(activeTab);
@@ -557,12 +560,9 @@ const Leads = () => {
       try {
         const res = await axios.post(
           `/api/leads/cancelLead`,
-          {
-            lead_id: disPositionId,
-          },
+          { lead_id: disPositionId, reason: remark },
           { withCredentials: true },
         );
-
         if (res.status == 200) {
           getLeadsByStatus(activeTab);
           toast.success("Lead cancelled successfully");
@@ -581,6 +581,9 @@ const Leads = () => {
     }
   };
 
+  // =========================================================
+  // DATE FORMATTERS
+  // =========================================================
   const formatDateIST = (dateString) => {
     if (!dateString) return null;
     const date = new Date(
@@ -589,7 +592,6 @@ const Leads = () => {
         : `${dateString.replace(" ", "T")}Z`,
     );
     if (isNaN(date.getTime())) return "Invalid Date";
-
     return date.toLocaleString("en-IN", {
       timeZone: "Asia/Kolkata",
       day: "2-digit",
@@ -606,7 +608,6 @@ const Leads = () => {
         : `${dateString.replace(" ", "T")}Z`,
     );
     if (isNaN(date.getTime())) return "";
-
     return date.toLocaleString("en-IN", {
       timeZone: "Asia/Kolkata",
       hour: "2-digit",
@@ -615,64 +616,45 @@ const Leads = () => {
     });
   };
 
-  // Filter leads based on Tab + Search
+  // =========================================================
+  // FILTER
+  // =========================================================
   const filteredLeads = leads.filter((lead) => {
     const matchesTab = lead.status === activeTab;
-
-    // --------------------------------
-    // Today's Visit Filter
-    // --------------------------------
-    const today = new Date();
-
-    const todayDate = today.toLocaleDateString("en-CA", {
+    const todayDate = new Date().toLocaleDateString("en-CA", {
       timeZone: "Asia/Kolkata",
     });
-
     const visitDate = lead.site_visit_date
       ? new Date(lead.site_visit_date).toLocaleDateString("en-CA", {
           timeZone: "Asia/Kolkata",
         })
       : null;
-
     const matchesTodaysVisit = !showTodaysVisits || visitDate === todayDate;
 
-    // --------------------------------
-    // Search
-    // --------------------------------
     const dateObj = new Date(lead.created_at);
-
-    const monthName = dateObj
-      .toLocaleString("en-IN", {
-        month: "long",
-      })
-      .toLowerCase();
-
-    const year = dateObj.getFullYear().toString();
-
-    const combinedDate = `${monthName} ${year}`;
-
+    const combinedDate = `${dateObj
+      .toLocaleString("en-IN", { month: "long" })
+      .toLowerCase()} ${dateObj.getFullYear()}`;
     const query = searchQuery.toLowerCase().trim();
 
     const matchesSearch = (() => {
       if (!query) return true;
-
       const basicFields =
         lead.customer_name?.toLowerCase().includes(query) ||
         lead.contact_number?.includes(query) ||
         String(lead.panel_wattage || "").includes(query) ||
         ((lead.total_capacity || 0) / 1000).toFixed(2).includes(query) ||
         sourceMap[lead.source_id]?.toLowerCase().includes(query);
-
       if (basicFields) return true;
-
-      const searchWords = query.split(" ");
-
-      return searchWords.every((word) => combinedDate.includes(word));
+      return query.split(" ").every((word) => combinedDate.includes(word));
     })();
 
     return matchesTab && matchesTodaysVisit && matchesSearch;
   });
 
+  // =========================================================
+  // RENDER
+  // =========================================================
   return (
     <div className="min-h-screen bg-slate-50 flex">
       <Sidebar
@@ -685,8 +667,8 @@ const Leads = () => {
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="p-4 lg:p-8">
+          {/* HEADER */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            {/* Left Side: Title & Info */}
             <div>
               <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase flex items-center gap-3">
                 Leads Pipeline
@@ -697,7 +679,6 @@ const Leads = () => {
               <p className="text-sm text-slate-500">
                 Manage and convert solar prospects
               </p>
-
               <button
                 onClick={() => navigate("/sources")}
                 className="flex items-center gap-2 px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
@@ -705,16 +686,7 @@ const Leads = () => {
                 <Eye size={16} /> View Sources
               </button>
             </div>
-
-            {/* Right Side: Button Group (Side by Side) */}
             <div className="flex items-center gap-3">
-              {/* <button
-                onClick={() => setIsSourceModalOpen(true)}
-                className="flex items-center justify-center gap-2 bg-slate-800 text-white px-5 py-3 rounded-2xl font-bold shadow-lg hover:bg-slate-900 transition-all active:scale-95 text-sm"
-              >
-                <Database size={18} /> Add Source
-              </button> */}
-
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="flex items-center justify-center gap-2 bg-[#1a5695] text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-900/20 hover:bg-[#15467a] transition-all active:scale-95 text-sm"
@@ -723,7 +695,8 @@ const Leads = () => {
               </button>
             </div>
           </div>
-          {/* TABS SYSTEM */}
+
+          {/* TABS */}
           <div className="flex gap-2 mb-6 bg-slate-200/50 p-1.5 rounded-[22px] w-fit">
             {[
               { id: "pending", label: "Active", color: "bg-emerald-500" },
@@ -746,14 +719,14 @@ const Leads = () => {
               </button>
             ))}
           </div>
-          {/* Search Bar */}
+
+          {/* SEARCH */}
           <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
             <div className="flex-1 relative">
               <Search
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                 size={18}
               />
-
               <input
                 type="text"
                 placeholder={`Search ${activeTab} leads...`}
@@ -762,8 +735,6 @@ const Leads = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-
-            {/* Today's Visits Button */}
             <button
               onClick={() => setShowTodaysVisits((prev) => !prev)}
               className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
@@ -773,11 +744,11 @@ const Leads = () => {
               }`}
             >
               <Calendar size={16} />
-
               {showTodaysVisits ? "All Visits" : "Today's Visits"}
             </button>
           </div>
 
+          {/* TABLE */}
           <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
             {pageLoading ? (
               <div className="flex flex-col items-center justify-center py-32">
@@ -809,7 +780,7 @@ const Leads = () => {
                       <th className="px-4 py-3 text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100">
                         Capacity
                       </th>
-                      <th className=" px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100 text-center">
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] border-b border-slate-100 text-center">
                         Action
                       </th>
                     </tr>
@@ -820,40 +791,34 @@ const Leads = () => {
                         key={lead.id}
                         className="group hover:bg-slate-50/80 transition-all"
                       >
-                        {/* 1. NAME & MOBILE */}
+                        {/* NAME & MOBILE */}
                         <td className="px-6 py-5 whitespace-nowrap">
-                          {/* Name */}
                           <div className="flex items-center gap-2">
                             <p className="font-bold text-slate-800 text-sm uppercase tracking-tight">
                               {lead.customer_name}
                             </p>
                           </div>
-
-                          {/* Mobile & Colorful Short-form Badge */}
                           <div className="flex items-center gap-1.5 mt-0.5">
                             <p className="text-slate-400 text-[11px] font-semibold">
                               {lead.contact_number}
                             </p>
                             <span
                               className={`
-      text-[9px] px-1 rounded font-bold uppercase transition-colors
-      ${
-        lead.installation_type === "Residential"
-          ? "bg-blue-50 text-blue-500/80 border border-blue-100"
-          : lead.installation_type === "Commercial"
-            ? "bg-purple-50 text-purple-500/80 border border-purple-100"
-            : lead.installation_type === "Industrial"
-              ? "bg-amber-50 text-amber-600/80 border border-amber-100"
-              : "bg-slate-100 text-slate-400"
-      }
-    `}
+                                text-[9px] px-1 rounded font-bold uppercase transition-colors
+                                ${
+                                  lead.installation_type === "Residential"
+                                    ? "bg-blue-50 text-blue-500/80 border border-blue-100"
+                                    : lead.installation_type === "Commercial"
+                                      ? "bg-purple-50 text-purple-500/80 border border-purple-100"
+                                      : lead.installation_type === "Industrial"
+                                        ? "bg-amber-50 text-amber-600/80 border border-amber-100"
+                                        : "bg-slate-100 text-slate-400"
+                                }
+                              `}
                             >
                               {lead.installation_type?.substring(0, 3)}
                             </span>
-                            <span
-                              className="
-                                inline-flex items-center gap-1 px-1.5 py-[2px] rounded-full bg-amber-50/80 border-amber-200/70  text-amber-700 text-[9px] font-bold leading-none shadow-[0_1px_2px_rgba(245,158,11,0.08)]"
-                            >
+                            <span className="inline-flex items-center gap-1 px-1.5 py-[2px] rounded-full bg-amber-50/80 border-amber-200/70 text-amber-700 text-[9px] font-bold leading-none">
                               <span className="text-amber-500">⚡</span>
                               <span>{lead.panel_wattage}</span>
                               <span className="text-amber-500/70 text-[8px]">
@@ -863,15 +828,12 @@ const Leads = () => {
                           </div>
                         </td>
 
-                        {/* 2. DATE CREATED (Fixed Row Issue) */}
+                        {/* DATE CREATED */}
                         <td className="px-6 py-5 whitespace-nowrap">
                           <div className="flex flex-col gap-1">
-                            {/* Upper Row: Date */}
                             <span className="text-[13px] font-bold text-slate-700 leading-none">
                               {formatDateIST(lead.created_at)}
                             </span>
-
-                            {/* Lower Row: Time */}
                             <div className="flex items-center gap-1.5">
                               <span className="text-[11px] font-medium text-slate-500 uppercase tracking-tight">
                                 {formatTimeIST(lead.created_at)}
@@ -883,7 +845,7 @@ const Leads = () => {
                           </div>
                         </td>
 
-                        {/* 3. ADDRESS (Flexible) */}
+                        {/* ADDRESS */}
                         <td className="px-6 py-5 min-w-[200px]">
                           <div className="flex items-start gap-2 text-slate-500 text-xs">
                             <MapPin
@@ -896,8 +858,7 @@ const Leads = () => {
                           </div>
                         </td>
 
-                        {/* 4. VISIT DATE */}
-                        {/* 4. VISIT DATE + site_visited tick */}
+                        {/* VISIT DATE + tick */}
                         <td className="px-6 py-5 whitespace-nowrap">
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2">
@@ -909,8 +870,6 @@ const Leads = () => {
                               >
                                 {lead.site_visit_date || "—"}
                               </span>
-
-                              {/* Site visited tick — click to toggle */}
                               <button
                                 onClick={() => toggleFlag(lead, "site_visited")}
                                 title={
@@ -918,19 +877,15 @@ const Leads = () => {
                                     ? "Site visited — click to unmark"
                                     : "Mark site as visited"
                                 }
-                                className={`
-          inline-flex items-center justify-center w-5 h-5 rounded-full border transition-all
-          ${
-            lead.site_visited
-              ? "bg-blue-500 border-blue-500 text-white shadow-sm"
-              : "bg-white border-slate-300 text-slate-300 hover:border-blue-400 hover:text-blue-500"
-          }
-        `}
+                                className={`inline-flex items-center justify-center w-5 h-5 rounded-full border transition-all ${
+                                  lead.site_visited
+                                    ? "bg-blue-500 border-blue-500 text-white shadow-sm"
+                                    : "bg-white border-slate-300 text-slate-300 hover:border-blue-400 hover:text-blue-500"
+                                }`}
                               >
                                 <Check size={12} strokeWidth={3} />
                               </button>
                             </div>
-
                             <span
                               className={`text-[9px] font-bold uppercase ${
                                 lead.site_visited
@@ -945,15 +900,14 @@ const Leads = () => {
                           </div>
                         </td>
 
-                        {/* 5. SOURCE */}
+                        {/* SOURCE */}
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span className="px-3 py-1.5 bg-slate-100 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-slate-200/50">
                             {sourceMap[lead.source_id] || "Direct"}
                           </span>
                         </td>
 
-                        {/* 6. CAPACITY */}
-                        {/* 6. CAPACITY + estimation tick */}
+                        {/* CAPACITY + tick */}
                         <td className="px-4 py-3 whitespace-nowrap">
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-black text-[#1a5695]">
@@ -962,8 +916,6 @@ const Leads = () => {
                                 KW
                               </small>
                             </span>
-
-                            {/* Estimation sent tick — click to toggle */}
                             <button
                               onClick={() =>
                                 toggleFlag(lead, "estimation_sent")
@@ -973,20 +925,15 @@ const Leads = () => {
                                   ? "Estimation sent — click to unmark"
                                   : "Mark estimation as sent"
                               }
-                              className={`
-        inline-flex items-center justify-center w-5 h-5 rounded-full border transition-all
-        ${
-          lead.estimation_sent
-            ? "bg-emerald-500 border-emerald-500 text-white shadow-sm"
-            : "bg-white border-slate-300 text-slate-300 hover:border-emerald-400 hover:text-emerald-500"
-        }
-      `}
+                              className={`inline-flex items-center justify-center w-5 h-5 rounded-full border transition-all ${
+                                lead.estimation_sent
+                                  ? "bg-emerald-500 border-emerald-500 text-white shadow-sm"
+                                  : "bg-white border-slate-300 text-slate-300 hover:border-emerald-400 hover:text-emerald-500"
+                              }`}
                             >
                               <Check size={12} strokeWidth={3} />
                             </button>
                           </div>
-
-                          {/* tiny label so it's self-explanatory */}
                           <span
                             className={`block mt-1 text-[8px] font-bold uppercase tracking-wider ${
                               lead.estimation_sent
@@ -1000,9 +947,19 @@ const Leads = () => {
                           </span>
                         </td>
 
-                        {/* 7. ACTIONS */}
+                        {/* ACTIONS */}
                         <td className="px-6 py-5 text-right whitespace-nowrap">
                           <div className="flex items-center justify-end gap-2">
+                            {activeTab === "pending" && (
+                              <button
+                                onClick={() => openWhatsappModal(lead)}
+                                className="p-2.5 bg-green-50 text-green-600 rounded-xl border border-green-100 hover:bg-green-600 hover:text-white transition-all shadow-sm"
+                                title="Send estimation via WhatsApp"
+                              >
+                                <MessageCircle size={16} />
+                              </button>
+                            )}
+
                             {(activeTab === "delayed" ||
                               activeTab === "cancelled") && (
                               <button
@@ -1015,6 +972,7 @@ const Leads = () => {
                                 <ArrowRightLeft size={16} />
                               </button>
                             )}
+
                             {activeTab === "pending" && (
                               <>
                                 <button
@@ -1049,8 +1007,9 @@ const Leads = () => {
                                 </button>
                               </>
                             )}
-                            <div className="w-[1px] h-4 bg-slate-200 mx-1" />{" "}
-                            {/* Visual Divider */}
+
+                            <div className="w-[1px] h-4 bg-slate-200 mx-1" />
+
                             <button
                               onClick={() => editClick(lead)}
                               className="p-2.5 bg-blue-50 text-[#1a5695] rounded-xl border border-blue-100 hover:bg-[#1a5695] hover:text-white transition-all"
@@ -1080,6 +1039,9 @@ const Leads = () => {
         </main>
       </div>
 
+      {/* =========================================================
+          ADD SOURCE MODAL
+      ========================================================= */}
       {isSourceModalOpen && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-sm rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in duration-200">
@@ -1094,7 +1056,7 @@ const Leads = () => {
             </div>
             <div className="p-6">
               <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block ml-1">
-                Source Name (e.g. Instagram, Newspaper)
+                Source Name
               </label>
               <input
                 autoFocus
@@ -1122,19 +1084,132 @@ const Leads = () => {
         </div>
       )}
 
-      {/* --- ADD LEAD MODAL (Updated with Visit & Notes) --- */}
+      {/* =========================================================
+          WHATSAPP POPUP (small — asks for number)
+      ========================================================= */}
+      {whatsappModal.open && whatsappModal.lead && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="relative bg-white w-full max-w-md rounded-[28px] shadow-2xl overflow-hidden animate-in zoom-in duration-200">
+            <button
+              onClick={closeWhatsappModal}
+              className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100"
+            >
+              <X size={18} className="text-slate-600" />
+            </button>
+
+            <div className="p-6 bg-green-600 text-white">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                  <MessageCircle size={20} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-black uppercase tracking-tight">
+                    Share Estimation
+                  </h2>
+                  <p className="text-white/80 text-xs font-bold">
+                    {whatsappModal.lead.customer_name}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block ml-1">
+                  WhatsApp Number
+                </label>
+                <input
+                  type="tel"
+                  value={whatsappModal.number}
+                  onChange={(e) =>
+                    setWhatsappModal((s) => ({
+                      ...s,
+                      number: e.target.value.replace(/\D/g, ""),
+                    }))
+                  }
+                  placeholder="919876543210"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-green-600 font-bold"
+                />
+                <p className="text-[10px] text-slate-400 mt-1 ml-1">
+                  Include country code without "+". Default comes from the
+                  lead's contact number.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-600 space-y-0.5">
+                <div className="flex justify-between">
+                  <span>Capacity</span>
+                  <span className="font-bold">
+                    {(
+                      ((Number(whatsappModal.lead?.panel_wattage) || 0) *
+                        (Number(whatsappModal.lead?.number_of_panels) || 0)) /
+                      1000
+                    ).toFixed(2)}{" "}
+                    kW
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Panels</span>
+                  <span className="font-bold">
+                    {whatsappModal.lead?.number_of_panels || 0} ×{" "}
+                    {whatsappModal.lead?.panel_wattage || 0}W
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Inverter</span>
+                  <span className="font-bold">
+                    {whatsappModal.lead?.inverter_kw || 0} kW ×{" "}
+                    {whatsappModal.lead?.number_of_inverters || 0}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={closeWhatsappModal}
+                  className="flex-1 px-4 py-3 rounded-xl font-bold text-slate-500 bg-white border border-slate-200 hover:bg-slate-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={openEstimationPopup}
+                  disabled={
+                    !whatsappModal.number || whatsappModal.number.length < 8
+                  }
+                  className="flex-[2] px-4 py-3 rounded-xl font-black text-white bg-green-600 hover:bg-green-700 transition-all shadow-lg disabled:opacity-50 flex items-center justify-center gap-2 uppercase text-[11px] tracking-wider"
+                >
+                  <MessageCircle size={16} />
+                  Open Estimation
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================
+          ESTIMATION POPUP — delegated to ShareEstimationModal
+      ========================================================= */}
+      <ShareEstimationModal
+        open={estimationModal.open}
+        lead={estimationModal.lead}
+        whatsappNumber={estimationModal.number}
+        onClose={closeEstimationPopup}
+      />
+
+      {/* =========================================================
+          ADD/EDIT LEAD MODAL
+      ========================================================= */}
       {isModalOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          {/* Modal Container: Max height constrained to 90vh */}
           <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-[32px] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in duration-200">
-            {/* Fixed Header */}
             <div className="bg-[#1a5695] p-5 text-white flex justify-between items-center shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                   <Users size={20} />
                 </div>
                 <h2 className="text-xl font-bold font-syne uppercase tracking-tight">
-                  {edit ? "Edit Lead" : " Create New Lead"}
+                  {edit ? "Edit Lead" : "Create New Lead"}
                 </h2>
               </div>
               <button
@@ -1161,12 +1236,10 @@ const Leads = () => {
               </button>
             </div>
 
-            {/* Scrollable Form Body */}
             <form
               className="p-6 overflow-y-auto custom-scrollbar flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-5 gap-y-4"
               onSubmit={handleSubmit(onSubmit)}
             >
-              {/* Row 1: Identity */}
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">
                   Customer Name
@@ -1190,14 +1263,12 @@ const Leads = () => {
                 <input
                   {...register("contact_number", {
                     required: "Contact number is required",
-                    setValueAs: (v) => v.toUpperCase(),
                   })}
                   placeholder="+91 00000 00000"
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
                 />
               </div>
 
-              {/* Row 2: Logistics */}
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase flex items-center gap-1">
                   <Calendar size={10} /> Visit Schedule
@@ -1213,9 +1284,7 @@ const Leads = () => {
                   <Database size={10} /> Lead Source
                 </label>
                 <select
-                  {...register("source_id", {
-                    required: "source is required",
-                  })}
+                  {...register("source_id", { required: "source is required" })}
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695] appearance-none"
                 >
                   {sources.map((v, i) => (
@@ -1226,7 +1295,6 @@ const Leads = () => {
                 </select>
               </div>
 
-              {/* Row 3: Category */}
               <div className="md:col-span-2 space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">
                   Project Category
@@ -1243,7 +1311,6 @@ const Leads = () => {
                 </select>
               </div>
 
-              {/* Row 4: Address */}
               <div className="md:col-span-2 space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase">
                   Full Address
@@ -1262,15 +1329,13 @@ const Leads = () => {
                 ></textarea>
               </div>
 
-              {/* Row 5: Internal Notes */}
               <div className="md:col-span-2 space-y-1">
                 <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase flex items-center gap-1">
                   <ClipboardList size={10} /> Internal Notes
                 </label>
                 <textarea
                   {...register("notes", {
-                    required: "Notes is required",
-                    setValueAs: (v) => v.toUpperCase(),
+                    setValueAs: (v) => (v ? v.toUpperCase() : ""),
                   })}
                   onInput={(e) => {
                     e.target.value = e.target.value.toUpperCase();
@@ -1281,7 +1346,7 @@ const Leads = () => {
                 ></textarea>
               </div>
 
-              {/* Calculator Panel */}
+              {/* PANEL CALCULATOR */}
               <div className="md:col-span-2 bg-blue-50/50 p-4 rounded-3xl border border-blue-100">
                 <div className="flex items-center gap-2 mb-3 text-[#1a5695] font-bold text-[10px] uppercase tracking-widest">
                   <Calculator size={14} /> Panel Capacity Estimator
@@ -1295,7 +1360,6 @@ const Leads = () => {
                       {...register("panel_wattage")}
                       type="text"
                       value={plateWattage}
-                      min={200}
                       onChange={(e) => setPlateWattage(e.target.value)}
                       className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
                     />
@@ -1308,7 +1372,6 @@ const Leads = () => {
                       {...register("number_of_panels")}
                       type="text"
                       value={quantity}
-                      min={1}
                       onChange={(e) => setQuantity(e.target.value)}
                       className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
                     />
@@ -1319,12 +1382,12 @@ const Leads = () => {
                     System Size
                   </span>
                   <span className="text-xl font-black text-[#1a5695]">
-                    {systemCapacity.toFixed(2)} kW
+                    {Number(systemCapacity).toFixed(2)} kW
                   </span>
                 </div>
               </div>
 
-              {/* Calculator Panel */}
+              {/* INVERTER CALCULATOR */}
               <div className="md:col-span-2 bg-blue-50/50 p-4 rounded-3xl border border-blue-100">
                 <div className="flex items-center gap-2 mb-3 text-[#1a5695] font-bold text-[10px] uppercase tracking-widest">
                   <Calculator size={14} />
@@ -1339,8 +1402,6 @@ const Leads = () => {
                       {...register("inverter_kw")}
                       type="text"
                       value={invereterKWattage}
-                      min={0}
-                      step="0.01" // 👈 allows floating values like 1.5, 2.75
                       onChange={(e) => setInvereterKWattage(e.target.value)}
                       className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
                     />
@@ -1353,7 +1414,6 @@ const Leads = () => {
                       {...register("number_of_inverters")}
                       type="text"
                       value={qty}
-                      min={0}
                       onChange={(e) => setQty(e.target.value)}
                       className="w-full px-4 py-2 rounded-xl border border-white shadow-sm outline-none"
                     />
@@ -1364,12 +1424,12 @@ const Leads = () => {
                     System Size
                   </span>
                   <span className="text-xl font-black text-[#1a5695]">
-                    {invCapacity.toFixed(2)} kW
+                    {Number(invCapacity).toFixed(2)} kW
                   </span>
                 </div>
               </div>
 
-              <div className="p-6 border-t border-slate-100 bg-slate-50/50 shrink-0 flex gap-3">
+              <div className="p-6 border-t border-slate-100 bg-slate-50/50 shrink-0 flex gap-3 md:col-span-2 -mx-6 -mb-6 mt-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -1380,7 +1440,7 @@ const Leads = () => {
                 <button
                   type="submit"
                   className="flex-[2] px-6 py-3.5 rounded-2xl font-bold text-white bg-[#f39200] shadow-lg shadow-orange-500/20 hover:bg-[#e08600] active:scale-95 transition-all flex items-center justify-center gap-2"
-                  disabled={loadSaveLead} // disable button while loading
+                  disabled={loadSaveLead}
                 >
                   {loadSaveLead ? (
                     <>
@@ -1397,11 +1457,12 @@ const Leads = () => {
         </div>
       )}
 
-      {/* --- DISPOSITION MODAL (Handles Convert/Delay/Cancel) --- */}
+      {/* =========================================================
+          DISPOSITION MODAL
+      ========================================================= */}
       {dispositionModal.open && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="relative bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-200">
-            {/* Close Button */}
             <button
               onClick={() =>
                 setDispositionModal({ ...dispositionModal, open: false })
@@ -1489,6 +1550,9 @@ const Leads = () => {
         </div>
       )}
 
+      {/* =========================================================
+          CONVERT-TO-PENDING MODAL
+      ========================================================= */}
       {convertPendingModal.open && (
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="relative bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in duration-200">
@@ -1507,14 +1571,14 @@ const Leads = () => {
               </h2>
               <p className="text-white/80 text-sm mt-2">
                 Are you sure you want to convert{" "}
-                <strong>{convertPendingModal.lead.customer_name}</strong> back
+                <strong>{convertPendingModal.lead?.customer_name}</strong> back
                 to pending status?
               </p>
             </div>
 
             <div className="p-6 flex justify-center gap-4">
               <button
-                onClick={() => convertToPending()}
+                onClick={convertToPending}
                 className="px-6 py-3 bg-emerald-600 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 disabled:opacity-50"
                 disabled={convertPendingLoader}
               >
