@@ -82,6 +82,7 @@ import LoanPage from "./components/crm/LoanPage";
 import AgencyManager from "./components/crm/AgencyManager";
 import AgencyInventoryManager from "./components/crm/AgencyInventoryManager";
 import Maintenance from "./Guards/Maintaince";
+import FollowUp from "./components/crm/FollowUp";
 // import Test from "./components/crm/Test";
 function App() {
   const [count, setCount] = useState(0);
@@ -129,6 +130,14 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Leads />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/followup"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <FollowUp />
               </ProtectedRoute>
             }
           />

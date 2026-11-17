@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Users,
   Plus,
@@ -29,6 +29,9 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import ShareEstimationModal from "./ShareEstimationModal";
+import FollowUpTemplatePicker, {
+  renderTemplate,
+} from "./FollowUpTemplatePicker";
 
 const Leads = () => {
   const navigate = useNavigate();
@@ -44,6 +47,15 @@ const Leads = () => {
   const [disPositionId, setDispositionId] = useState(0);
   const [disPosLoader, setDisPosLoader] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
+  const [followUpModal, setFollowUpModal] = useState({
+    open: false,
+    lead: null,
+  });
+  const [followUpNumber, setFollowUpNumber] = useState("");
+  const [followUpRemark, setFollowUpRemark] = useState("");
+  const [followUpDateTime, setFollowUpDateTime] = useState("");
+  const [followUpTemplateId, setFollowUpTemplateId] = useState(null);
+  const appliedTextRef = useRef("");
 
   const [convertPendingModal, setConvertPendingModal] = useState({
     open: false,
@@ -77,6 +89,128 @@ const Leads = () => {
     lead: null,
     number: "",
   });
+
+  // =========================================================
+  // FOLLOW-UP HANDLERS
+  // =========================================================
+  const defaultLocalDateTime = (minutesAhead = 60) => {
+    const d = new Date(Date.now() + minutesAhead * 60_000);
+    d.setSeconds(0, 0);
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+      d.getHours(),
+    )}:${pad(d.getMinutes())}`;
+  };
+
+  const openFollowUpModal = (lead) => {
+    setFollowUpModal({ open: true, lead });
+
+    // Prefill from the lead's stored contact number, normalized:
+    // strip non-digits, drop leading zeros
+    const raw = String(lead?.contact_number || "").replace(/\D/g, "");
+    setFollowUpNumber(raw.replace(/^0+/, ""));
+
+    setFollowUpRemark("");
+    setFollowUpDateTime(defaultLocalDateTime(60));
+    setFollowUpTemplateId(null);
+    appliedTextRef.current = "";
+  };
+
+  const closeFollowUpModal = () => {
+    setFollowUpModal({ open: false, lead: null });
+    setFollowUpNumber(""); // ← clear
+    setFollowUpRemark("");
+    setFollowUpDateTime("");
+    setFollowUpTemplateId(null);
+    appliedTextRef.current = "";
+  };
+
+  // template clicked → render {name} against this lead and drop into textarea
+  const handleApplyTemplate = (tpl) => {
+    const rendered = renderTemplate(tpl.message, followUpModal.lead);
+    setFollowUpTemplateId(tpl.id);
+    setFollowUpRemark(rendered);
+    appliedTextRef.current = rendered;
+  };
+
+  // typing after applying a template turns it into a custom message
+  const handleFollowUpMessageChange = (e) => {
+    const value = e.target.value;
+    setFollowUpRemark(value);
+    if (followUpTemplateId && value !== appliedTextRef.current) {
+      setFollowUpTemplateId(null);
+    }
+  };
+
+  const handleClearMessage = () => {
+    setFollowUpRemark("");
+    setFollowUpTemplateId(null);
+    appliedTextRef.current = "";
+  };
+
+  const [followUpLoading, setFollowUpLoading] = useState(false);
+
+  const submitFollowUp = async () => {
+    if (!followUpNumber || !/^[1-9][0-9]{7,14}$/.test(followUpNumber)) {
+      toast.error("Please enter a valid WhatsApp number");
+      return;
+    }
+    if (!followUpRemark.trim()) {
+      toast.error("Please enter a follow-up message");
+      return;
+    }
+    if (!followUpDateTime) {
+      toast.error("Please pick a date and time");
+      return;
+    }
+
+    const scheduled = new Date(followUpDateTime);
+    if (isNaN(scheduled.getTime())) {
+      toast.error("Invalid date/time");
+      return;
+    }
+    if (scheduled.getTime() < Date.now()) {
+      toast.error("Please pick a future date/time");
+      return;
+    }
+
+    const payload = {
+      lead_id: followUpModal.lead.id,
+      whatsapp_number: followUpNumber,
+      scheduled_at: scheduled.toISOString(),
+      message: followUpRemark.trim(),
+      template_id: followUpTemplateId ?? null,
+      timezone: "Asia/Kolkata",
+    };
+
+    try {
+      setFollowUpLoading(true);
+      const res = await axios.post("/api/whatsapp-followups", payload, {
+        withCredentials: true,
+      });
+
+      if (res.status === 201 && res.data?.success) {
+        toast.success(
+          `Follow-up scheduled for ${scheduled.toLocaleString("en-IN", {
+            timeZone: "Asia/Kolkata",
+            dateStyle: "medium",
+            timeStyle: "short",
+          })} IST`,
+        );
+        closeFollowUpModal();
+      } else {
+        throw new Error(res.data?.message || "Failed to schedule follow-up");
+      }
+    } catch (error) {
+      const msg =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to schedule follow-up";
+      toast.error(msg);
+    } finally {
+      setFollowUpLoading(false);
+    }
+  };
 
   // =========================================================
   // EDIT CLICK
@@ -959,6 +1093,15 @@ const Leads = () => {
                                 <MessageCircle size={16} />
                               </button>
                             )}
+                            {activeTab === "pending" && (
+                              <button
+                                onClick={() => openFollowUpModal(lead)}
+                                className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-sm"
+                                title="Schedule Follow-up"
+                              >
+                                <MessageSquare size={16} />
+                              </button>
+                            )}
 
                             {(activeTab === "delayed" ||
                               activeTab === "cancelled") && (
@@ -1602,6 +1745,205 @@ const Leads = () => {
                 className="px-6 py-3 bg-rose-600 text-white rounded-2xl font-bold shadow-lg"
               >
                 No
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================
+          FOLLOW-UP MODAL — with template picker
+      ========================================================= */}
+      {followUpModal?.open && followUpModal?.lead && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md max-h-[92vh] rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in duration-200 flex flex-col">
+            {/* HEADER */}
+            <div className="bg-[#1a5695] p-5 text-white flex justify-between items-center shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                  <MessageSquare size={20} />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold tracking-tight">
+                    Schedule Follow-up
+                  </h2>
+                  <p className="text-white/70 text-[11px] font-bold mt-0.5">
+                    {followUpModal.lead.customer_name} ·{" "}
+                    {followUpModal.lead.contact_number}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={closeFollowUpModal}
+                className="hover:bg-white/10 p-2 rounded-full transition-colors cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* BODY */}
+            <div className="p-6 space-y-4 overflow-y-auto">
+              {/* DATE & TIME */}
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase flex items-center gap-1">
+                  <MessageCircle size={10} /> WhatsApp Number
+                </label>
+
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={followUpNumber}
+                  onChange={(e) =>
+                    setFollowUpNumber(e.target.value.replace(/\D/g, ""))
+                  }
+                  placeholder="919876543210"
+                  className={`w-full px-4 py-2.5 rounded-xl border bg-slate-50 outline-none font-bold transition-all ${
+                    followUpNumber.length >= 8 &&
+                    !/^[1-9][0-9]{7,14}$/.test(followUpNumber)
+                      ? "border-rose-300 focus:border-rose-500"
+                      : "border-slate-200 focus:border-[#1a5695] focus:bg-white"
+                  }`}
+                />
+
+                <p className="text-[10px] text-slate-400 mt-1 ml-1">
+                  {followUpModal.lead?.contact_number ? (
+                    <>
+                      Prefilled from lead's number{" "}
+                      <span className="font-bold text-slate-600">
+                        {followUpModal.lead.contact_number}
+                      </span>{" "}
+                      — edit to send to a different number.
+                    </>
+                  ) : (
+                    "No number on this lead — enter the WhatsApp number manually."
+                  )}
+                </p>
+
+                {followUpNumber.length >= 8 &&
+                  !/^[1-9][0-9]{7,14}$/.test(followUpNumber) && (
+                    <p className="text-[10px] text-rose-500 mt-1 ml-1 font-bold">
+                      Invalid number — must be 8–15 digits, no leading zero
+                    </p>
+                  )}
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase flex items-center gap-1">
+                  <Calendar size={10} /> Send At (Date & Time)
+                </label>
+                <input
+                  type="datetime-local"
+                  value={followUpDateTime || ""}
+                  min={
+                    typeof defaultLocalDateTime === "function"
+                      ? defaultLocalDateTime(0)
+                      : undefined
+                  }
+                  onChange={(e) => setFollowUpDateTime(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-[#1a5695]"
+                />
+                {followUpDateTime && (
+                  <p className="text-[10px] text-slate-400 mt-1 ml-1">
+                    Will be sent on{" "}
+                    <span className="font-bold text-[#1a5695]">
+                      {new Date(followUpDateTime).toLocaleString("en-IN", {
+                        timeZone: "Asia/Kolkata",
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}{" "}
+                      IST
+                    </span>
+                  </p>
+                )}
+              </div>
+
+              {/* TEMPLATE PICKER */}
+              {typeof FollowUpTemplatePicker !== "undefined" && (
+                <FollowUpTemplatePicker
+                  lead={followUpModal.lead}
+                  selectedId={followUpTemplateId}
+                  onSelect={handleApplyTemplate}
+                />
+              )}
+
+              {/* MESSAGE */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-[10px] font-bold text-slate-400 ml-1 uppercase flex items-center gap-1">
+                    <MessageCircle size={10} /> Follow-up Message
+                  </label>
+                  {followUpRemark?.trim() && (
+                    <button
+                      type="button"
+                      onClick={handleClearMessage}
+                      className="text-[9px] font-black uppercase tracking-wider text-slate-400 hover:text-rose-500 transition-colors"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+                <textarea
+                  rows="5"
+                  placeholder="Pick a template above or type your own message..."
+                  value={followUpRemark || ""}
+                  onChange={handleFollowUpMessageChange}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none resize-none focus:border-[#1a5695] focus:bg-white transition-all"
+                />
+                <div className="flex items-center justify-between px-1">
+                  <p className="text-[10px] text-slate-400">
+                    {followUpTemplateId
+                      ? "Using a saved template"
+                      : "Custom message"}
+                  </p>
+                  <span className="text-[10px] font-bold text-slate-400 tabular-nums">
+                    {followUpRemark?.length || 0} chars
+                  </span>
+                </div>
+              </div>
+
+              {/* INFO STRIP */}
+              <div className="bg-blue-50/50 rounded-xl p-3 border border-blue-100 text-[11px] text-slate-600 flex items-center gap-2">
+                <Clock size={14} className="text-[#1a5695] shrink-0" />
+                <span>
+                  A WhatsApp message will be delivered automatically at the
+                  scheduled time.
+                </span>
+              </div>
+            </div>
+
+            {/* FOOTER */}
+            <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={closeFollowUpModal}
+                className="flex-1 px-6 py-3 rounded-2xl font-bold text-slate-400 bg-white border border-slate-200 hover:bg-slate-50 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={submitFollowUp}
+                disabled={
+                  followUpLoading ||
+                  !followUpRemark?.trim() ||
+                  !followUpDateTime ||
+                  !/^[1-9][0-9]{7,14}$/.test(followUpNumber)
+                }
+                className="flex-[2] px-6 py-3 rounded-2xl font-bold text-white bg-[#f39200] shadow-lg shadow-orange-500/20 hover:bg-[#e08600] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:active:scale-100 cursor-pointer"
+              >
+                {followUpLoading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    Scheduling...
+                  </>
+                ) : (
+                  <>
+                    <Check size={18} />
+                    Schedule Follow-up
+                  </>
+                )}
               </button>
             </div>
           </div>
