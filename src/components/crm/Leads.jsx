@@ -20,6 +20,7 @@ import {
   Eye,
   Check,
   MessageCircle,
+  CalendarClock,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
@@ -790,73 +791,93 @@ const Leads = () => {
   // RENDER
   // =========================================================
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="crm-shell min-h-screen bg-slate-50 flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Leads"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8">
+        <main className="crm-main p-4 lg:p-8">
           {/* HEADER */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            <div>
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase flex items-center gap-3">
+
+          {/* PAGE HEADER */}
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5 mb-7">
+            <div className="space-y-1">
+              <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase">
                 Leads Pipeline
-                <button className="flex items-center gap-1 bg-slate-200 text-slate-600 text-[10px] px-2 py-1 rounded-full hover:bg-slate-300 transition-all">
-                  SHOW ALL LEADS <ChevronRight size={12} />
-                </button>
               </h1>
-              <p className="text-sm text-slate-500">
-                Manage and convert solar prospects
+              <p className="text-sm text-slate-500 font-medium">
+                Manage, track and convert your solar prospects
               </p>
+            </div>
+
+            {/* HEADER ACTIONS */}
+            <div className="flex flex-wrap items-center gap-3">
               <button
                 onClick={() => navigate("/sources")}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold text-xs uppercase tracking-wide hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm"
               >
-                <Eye size={16} /> View Sources
+                <Eye size={16} />
+                View Sources
               </button>
-            </div>
-            <div className="flex items-center gap-3">
+
+              <button
+                onClick={() => navigate("/followup")}
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white text-[#1a5695] border border-blue-200 rounded-xl font-bold text-xs uppercase tracking-wide hover:bg-blue-50 transition-all shadow-sm"
+              >
+                <CalendarClock size={16} />
+                Follow-ups
+              </button>
+
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="flex items-center justify-center gap-2 bg-[#1a5695] text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-blue-900/20 hover:bg-[#15467a] transition-all active:scale-95 text-sm"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#1a5695] text-white rounded-xl font-bold text-xs uppercase tracking-wide shadow-lg shadow-blue-900/15 hover:bg-[#15467a] transition-all active:scale-95"
               >
-                <Plus size={20} /> Add New Lead
+                <Plus size={18} />
+                Add New Lead
               </button>
             </div>
           </div>
 
-          {/* TABS */}
-          <div className="flex gap-2 mb-6 bg-slate-200/50 p-1.5 rounded-[22px] w-fit">
-            {[
-              { id: "pending", label: "Active", color: "bg-emerald-500" },
-              { id: "delayed", label: "Delayed", color: "bg-amber-500" },
-              { id: "cancelled", label: "Cancelled", color: "bg-rose-500" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-6 py-2.5 rounded-[18px] text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${
-                  activeTab === tab.id
-                    ? "bg-white text-slate-800 shadow-sm"
-                    : "text-slate-500 hover:text-slate-700"
-                }`}
-              >
-                {activeTab === tab.id && (
+          {/* LEAD STATUS TABS */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="inline-flex flex-wrap items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200/70">
+              {[
+                { id: "pending", label: "Active", color: "bg-emerald-500" },
+                { id: "delayed", label: "Delayed", color: "bg-amber-500" },
+                { id: "cancelled", label: "Cancelled", color: "bg-rose-500" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-5 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wide transition-all flex items-center gap-2 ${
+                    activeTab === tab.id
+                      ? "bg-white text-[#1a5695] shadow-sm border border-slate-200/70"
+                      : "text-slate-500 hover:text-slate-800 hover:bg-white/60"
+                  }`}
+                >
                   <span className={`w-2 h-2 rounded-full ${tab.color}`} />
-                )}
-                {tab.label}
-              </button>
-            ))}
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setActiveTab("all")}
+              className="inline-flex items-center gap-2 text-xs font-bold text-[#1a5695] hover:text-[#123c6b] transition-colors"
+            >
+              Show All Leads
+              <ChevronRight size={15} />
+            </button>
           </div>
 
           {/* SEARCH */}
-          <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
-            <div className="flex-1 relative">
+          <div className="crm-surface bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex flex-col gap-3 shadow-sm sm:flex-row sm:items-center">
+            <div className="relative w-full min-w-0 flex-1">
               <Search
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
                 size={18}
@@ -871,7 +892,7 @@ const Leads = () => {
             </div>
             <button
               onClick={() => setShowTodaysVisits((prev) => !prev)}
-              className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`flex w-full items-center justify-center gap-2 px-5 py-3 rounded-2xl font-black text-xs uppercase tracking-wider transition-all whitespace-nowrap sm:w-auto ${
                 showTodaysVisits
                   ? "bg-[#1a5695] text-white shadow-lg shadow-blue-900/20"
                   : "bg-blue-50 text-[#1a5695] border border-blue-100 hover:bg-blue-100"
@@ -883,7 +904,7 @@ const Leads = () => {
           </div>
 
           {/* TABLE */}
-          <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
+          <div className="crm-surface bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
             {pageLoading ? (
               <div className="flex flex-col items-center justify-center py-32">
                 <Loader2 className="w-10 h-10 text-[#1a5695] animate-spin mb-4" />
@@ -1189,7 +1210,7 @@ const Leads = () => {
         <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-sm rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in duration-200">
             <div className="bg-slate-800 p-6 text-white flex justify-between items-center">
-              <h2 className="text-lg font-bold font-syne">Add New Source</h2>
+              <h2 className="text-lg font-bold">Add New Source</h2>
               <button
                 onClick={() => setIsSourceModalOpen(false)}
                 className="hover:bg-white/10 p-2 rounded-full"
@@ -1351,7 +1372,7 @@ const Leads = () => {
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                   <Users size={20} />
                 </div>
-                <h2 className="text-xl font-bold font-syne uppercase tracking-tight">
+                <h2 className="text-xl font-bold uppercase tracking-tight">
                   {edit ? "Edit Lead" : "Create New Lead"}
                 </h2>
               </div>
@@ -1624,7 +1645,7 @@ const Leads = () => {
                     : "bg-rose-600"
               }`}
             >
-              <h2 className="text-xl font-black font-syne uppercase tracking-tight">
+              <h2 className="text-xl font-black uppercase tracking-tight">
                 {dispositionModal.type} Lead
               </h2>
               <p className="text-white/80 text-xs font-bold">

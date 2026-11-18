@@ -172,19 +172,19 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
+    <div className="crm-shell min-h-screen bg-slate-50 flex font-sans text-slate-900">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Users"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase flex items-center gap-3">
+        <main className="crm-main p-4 lg:p-8">
+          <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
+            <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase flex flex-wrap items-center gap-3">
               <Users className="text-[#1a5695]" size={28} /> User Management
             </h1>
             <button
@@ -196,7 +196,7 @@ const UserManagement = () => {
           </div>
 
           {/* Search */}
-          <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 shadow-sm">
+          <div className="crm-surface bg-white p-4 rounded-3xl border border-slate-200 mb-6 shadow-sm">
             <div className="relative">
               <Search
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -359,7 +359,7 @@ const UserManagement = () => {
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
           <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-8">
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
                 <h2 className="text-xl font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
                   {modalType === "create" ? (
                     <UserPlus className="text-[#1a5695]" />

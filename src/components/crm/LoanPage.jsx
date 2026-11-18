@@ -64,7 +64,7 @@ const LoanPage = () => {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="crm-shell min-h-screen bg-slate-50 flex">
       {/* SIDEBAR */}
       <Sidebar
         isOpen={sidebarOpen}
@@ -73,14 +73,14 @@ const LoanPage = () => {
       />
 
       {/* MAIN */}
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         {/* NAVBAR */}
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8">
+        <main className="crm-main p-4 lg:p-8">
           {/* PAGE HEADER */}
           <div className="mb-8">
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase">
+            <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase">
               Loan Management
             </h1>
 
@@ -90,7 +90,7 @@ const LoanPage = () => {
           </div>
 
           {/* SEARCH BAR */}
-          <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
+          <div className="crm-surface bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
             <div className="flex-1 relative">
               <Search
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -108,7 +108,7 @@ const LoanPage = () => {
           </div>
 
           {/* TABLE */}
-          <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
+          <div className="crm-surface bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
             {pageLoading ? (
               /* LOADING */
               <div className="flex flex-col items-center justify-center py-32">

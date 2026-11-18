@@ -19,10 +19,11 @@ import {
   ChevronDown,
   Layers,
   Loader2,
+  ArrowDownAZ,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
-import { useLocation, useNavigate } from "react-router-dom";
+import { data, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
@@ -426,43 +427,73 @@ const DocumentCollection = () => {
     ? Math.round((verifiedCount / collectionStatus.length) * 100)
     : 0;
 
-  const saveTechnicalFinalization = (e) => {
+  const saveTechnicalFinalization = async (e) => {
     e?.preventDefault();
+
+    if (!isFound) {
+      toast.error("Fill detail above and then finalize");
+      return;
+    }
+
     const errs = {};
+
     if (!finalizeForm.cs_no.trim()) errs.cs_no = "Consumer number is required";
+
     if (!finalizeForm.panel_brand_id)
       errs.panel_brand_id = "Panel brand is required";
+
     if (!finalizeForm.inverter_brand_id)
       errs.inverter_brand_id = "Inverter brand is required";
+
     if (!finalizeForm.panel_id) errs.panel_id = "Panel is required";
+
     if (!finalizeForm.inverter_id) errs.inverter_id = "Inverter is required";
 
     setFinalizeErrors(errs);
+
     if (Object.keys(errs).length > 0) {
       toast.error("Please fill required fields");
       return;
     }
 
-    setFinalizeLoading(true);
-    setTimeout(() => {
-      console.log("✅ Technical Finalize Saved:", finalizeForm);
-      toast.success("Technical finalization saved (UI preview)");
+    try {
+      setFinalizeLoading(true);
+
+      const res = await axios.post(`/api/registrations/saveTechFinalize`, {
+        leadId: leadsData.id,
+        customerId: customerId,
+        data: finalizeForm,
+      });
+
+      if (res.status == 200) {
+        toast.success(
+          res.data.message || "Technical finalization saved successfully",
+        );
+      }
+    } catch (error) {
+      console.error("Technical Finalization Error:", error);
+
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to save technical finalization",
+      );
+    } finally {
       setFinalizeLoading(false);
-    }, 600);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-syne">
+    <div className="crm-shell min-h-screen bg-slate-50 flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Customers"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        <main className="crm-main flex-1 w-full px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
           <div className="mx-auto w-full max-w-[1600px]">
             {/* ── Page header ───────────────────────────────── */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6 lg:mb-8">
@@ -520,7 +551,7 @@ const DocumentCollection = () => {
                            [&::-webkit-scrollbar-track]:bg-transparent"
               >
                 {/* Lead Identity */}
-                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col">
+                <div className="crm-surface bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col">
                   <SectionHeading
                     icon={<User size={14} />}
                     title="Lead Identity"
@@ -593,7 +624,7 @@ const DocumentCollection = () => {
                 </div>
 
                 {/* System Calculation */}
-                <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col">
+                <div className="crm-surface bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col">
                   <SectionHeading
                     icon={<Zap size={14} />}
                     title="System Calculation"
@@ -739,7 +770,7 @@ const DocumentCollection = () => {
               {/* ══════════ RIGHT: main work area ══════════ */}
               <div className="lg:col-span-7 xl:col-span-8 2xl:col-span-8 space-y-6">
                 {/* Registration Info */}
-                <div className="bg-white p-6 lg:p-8 rounded-3xl border border-slate-200 shadow-sm">
+                <div className="crm-surface bg-white p-6 lg:p-8 rounded-3xl border border-slate-200 shadow-sm">
                   <div className="flex justify-between items-center gap-4 mb-8 flex-wrap">
                     <SectionHeading
                       icon={<ClipboardCheck size={14} />}
@@ -1106,8 +1137,8 @@ const DocumentCollection = () => {
                 </div>
 
                 {/* Documentation */}
-                <div className="bg-white p-6 lg:p-8 rounded-3xl border border-slate-200 shadow-sm">
-                  <div className="flex justify-between items-center mb-8 flex-wrap gap-3">
+                <div className="crm-surface bg-white p-6 lg:p-8 rounded-3xl border border-slate-200 shadow-sm">
+                  <div className="flex flex-wrap justify-between items-center gap-4 mb-8 flex-wrap gap-3">
                     <SectionHeading
                       icon={<FileText size={14} />}
                       title="Documentation"

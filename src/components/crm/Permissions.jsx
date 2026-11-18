@@ -94,18 +94,18 @@ const Permissions = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 overflow-x-hidden">
+    <div className="crm-shell flex min-h-screen bg-slate-50 overflow-x-hidden">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Customers"
       />
 
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 w-full">
+      <div className="crm-workspace flex-1 flex flex-col min-w-0 lg:pl-64 w-full">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         <div className="flex-1 overflow-y-auto">
-          <main className="p-4 md:p-8 lg:p-12 max-w-5xl mx-auto pb-24">
+          <main className="crm-main p-4 md:p-8 lg:p-12 max-w-5xl mx-auto pb-24">
             {/* Back Button */}
             <button
               onClick={() => navigate(-1)}
@@ -126,7 +126,7 @@ const Permissions = () => {
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 text-[#1a5695] rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-100">
                   <Shield size={12} /> Portal Security
                 </div>
-                <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight font-syne uppercase leading-tight">
+                <h1 className="text-2xl md:text-3xl font-black text-slate-800 tracking-tight uppercase leading-tight">
                   {pageLoading ? "Loading..." : customer?.lead?.customer_name}
                 </h1>
                 {!pageLoading && (
@@ -141,7 +141,7 @@ const Permissions = () => {
             </div>
 
             {/* Content Card */}
-            <div className="bg-white rounded-[32px] md:rounded-[40px] border border-slate-200 overflow-hidden shadow-sm min-h-[400px] flex flex-col">
+            <div className="crm-surface bg-white rounded-[32px] md:rounded-[40px] border border-slate-200 overflow-hidden shadow-sm min-h-[400px] flex flex-col">
               {pageLoading ? (
                 <div className="flex-1 flex flex-col items-center justify-center py-24">
                   <Loader2 className="w-12 h-12 text-[#1a5695] animate-spin mb-4" />

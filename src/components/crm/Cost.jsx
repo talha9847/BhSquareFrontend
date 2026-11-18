@@ -125,20 +125,20 @@ const Cost = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="crm-shell min-h-screen bg-slate-50 flex font-sans">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Completion"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8">
+        <main className="crm-main p-4 lg:p-8">
           <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-8">
             <div>
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase flex items-center gap-3">
+              <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase flex flex-wrap items-center gap-3">
                 <Trophy className="text-[#1a5695]" size={28} /> Project
                 Completion
               </h1>
@@ -149,7 +149,7 @@ const Cost = () => {
             </div>
 
             {/* 🔹 Date Filter UI */}
-            <div className="flex flex-wrap items-center gap-3 bg-white p-2 rounded-3xl border border-slate-200 shadow-sm">
+            <div className="crm-surface flex flex-wrap items-center gap-3 bg-white p-2 rounded-3xl border border-slate-200 shadow-sm">
               <div className="flex items-center gap-2 px-3">
                 <Calendar size={14} className="text-slate-400" />
                 <input
@@ -179,7 +179,7 @@ const Cost = () => {
 
           {/* Stats Section */}
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
+            <div className="crm-surface bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
               <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">
                 Total Completed
               </p>
@@ -320,7 +320,7 @@ const Cost = () => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
           <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in duration-200">
             <div className="p-8">
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
                 <h3 className="text-xl font-black text-slate-800 uppercase tracking-tight">
                   Adjust Extra Cost
                 </h3>

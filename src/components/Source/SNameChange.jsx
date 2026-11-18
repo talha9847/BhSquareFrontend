@@ -105,17 +105,17 @@ const SNameChange = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-syne">
+    <div className="crm-shell min-h-screen bg-slate-50 flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Customers"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8 max-w-7xl mx-auto w-full space-y-6 lg:space-y-8">
+        <main className="crm-main p-4 lg:p-8 max-w-7xl mx-auto w-full space-y-6 lg:space-y-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -160,7 +160,7 @@ const SNameChange = () => {
               <ClipboardList size={240} />
             </div>
 
-            <div className="flex justify-between items-center mb-8 relative z-10">
+            <div className="flex flex-wrap justify-between items-center gap-4 mb-8 relative z-10">
               <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                 <FileText size={14} className="text-[#1a5695]" /> Required
                 Evidence

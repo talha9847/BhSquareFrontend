@@ -1,6 +1,11 @@
 @import "tailwindcss"; /* ========================================================= TAILWIND THEME ========================================================= */
 @theme {
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --animate-blink: blink 1s step-end infinite;
+  --animate-float: float 16s ease-in-out infinite;
+  --animate-float-slow: float 22s ease-in-out infinite;
+  --animate-rise: rise 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
   @keyframes blink {
     0%,
     100% {
@@ -8,6 +13,25 @@
     }
     50% {
       opacity: 0;
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(0, -28px, 0) scale(1.04);
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 } /* ========================================================= GLOBAL RESET Keep this section neutral. DO NOT put website-specific colors here. ========================================================= */
@@ -172,5 +196,69 @@ html.lenis body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ========================================================= LOGIN ========================================================= */
+.login-page {
+  color-scheme: dark;
+}
+.login-page ::selection {
+  background: rgba(245, 197, 24, 0.28);
+  color: #ffffff;
+}
+/* Keep browser autofill consistent with the dark form fields. */
+.login-page input:-webkit-autofill,
+.login-page input:-webkit-autofill:hover,
+.login-page input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #f8fafc;
+  caret-color: #f5c518;
+  transition: background-color 9999s ease-out 0s;
+  box-shadow: 0 0 0 1000px #0c1a33 inset;
+  -webkit-box-shadow: 0 0 0 1000px #0c1a33 inset;
+}
+/* Short desktop viewports: keep the full sign-in composition above the fold. */
+@media (min-width: 1024px) and (max-height: 880px) {
+  .login-page .login-brand {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+  .login-page .login-hero {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+  .login-page .login-headline {
+    font-size: 2.65rem;
+  }
+  .login-page .login-features {
+    margin-top: 1.75rem;
+  }
+  .login-page .login-features > li {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+  .login-page .login-roles {
+    padding-top: 1rem;
+  }
+  .login-page .login-main {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+  .login-page .login-back {
+    margin-bottom: 1rem;
+  }
+  .login-page .login-card {
+    padding: 1.5rem;
+  }
+  .login-page .login-form {
+    margin-top: 1.5rem;
+    gap: 0.875rem;
+  }
+  .login-page .login-support {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+  }
+  .login-page .login-legal {
+    margin-top: 1rem;
   }
 }

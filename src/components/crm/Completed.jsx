@@ -128,20 +128,20 @@ const Completed = () => {
   }, [data]);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans">
+    <div className="crm-shell min-h-screen bg-slate-50 flex font-sans">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Completed"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8">
+        <main className="crm-main p-4 lg:p-8">
           <header className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6 mb-8">
             <div>
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase flex items-center gap-3">
+              <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase flex flex-wrap items-center gap-3">
                 <CheckCircle2 className="text-[#1a5695]" size={28} /> Completed
                 Projects
               </h1>
@@ -151,7 +151,7 @@ const Completed = () => {
             </div>
 
             {/* Date Filters */}
-            <div className="flex flex-wrap items-center gap-3 bg-white p-2 rounded-3xl border border-slate-200 shadow-sm">
+            <div className="crm-surface flex flex-wrap items-center gap-3 bg-white p-2 rounded-3xl border border-slate-200 shadow-sm">
               <div className="flex items-center gap-2 px-3">
                 <Calendar size={14} className="text-slate-400" />
                 <input
@@ -181,7 +181,7 @@ const Completed = () => {
 
           {/* KPI Cards */}
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
+            <div className="crm-surface bg-white p-6 rounded-[32px] border border-slate-200 shadow-sm">
               <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2">
                 Project Count
               </p>

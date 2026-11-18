@@ -182,7 +182,7 @@ const KitReady = () => {
           "rounded-xl font-black text-[10px] uppercase tracking-widest px-6 py-3",
         cancelButton:
           "rounded-xl font-black text-[10px] uppercase tracking-widest px-6 py-3 text-slate-500",
-        popup: "rounded-[40px] border-none shadow-2xl font-syne",
+        popup: "rounded-[40px] border-none shadow-2xl",
       },
     });
     if (result.isConfirmed) {
@@ -210,7 +210,7 @@ const KitReady = () => {
             timer: 1500,
             showConfirmButton: false,
             customClass: {
-              popup: "rounded-[40px] font-syne",
+              popup: "rounded-[40px]",
             },
           });
           getCustomers(); // Refresh the table
@@ -241,7 +241,7 @@ const KitReady = () => {
         "aria-label": "Type your note here",
       },
       customClass: {
-        popup: "rounded-[32px] border-none shadow-2xl font-syne",
+        popup: "rounded-[32px] border-none shadow-2xl",
         confirmButton:
           "rounded-xl font-black text-[10px] uppercase tracking-widest px-8 py-4",
         cancelButton:
@@ -416,19 +416,19 @@ const KitReady = () => {
   });
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="crm-shell min-h-screen bg-slate-50 flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Kit Ready"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8">
+        <main className="crm-main p-4 lg:p-8">
           <div className="mb-8">
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase flex items-center gap-3">
+            <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase flex flex-wrap items-center gap-3">
               Kit Readiness{" "}
               <button
                 onClick={() => {
@@ -469,7 +469,7 @@ const KitReady = () => {
           </div>
 
           {/* Search Bar */}
-          <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
+          <div className="crm-surface bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
             <div className="flex-1 relative">
               <Search
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -486,7 +486,7 @@ const KitReady = () => {
           </div>
 
           {/* Table Container */}
-          <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
+          <div className="crm-surface bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
             {pageLoading ? (
               <div className="flex flex-col items-center justify-center py-32">
                 <Loader2 className="w-10 h-10 text-[#1a5695] animate-spin mb-4" />

@@ -40,15 +40,27 @@ const DocumentCollectionGuard = ({ children }) => {
 
   if (allowed === null)
     return (
-      <div className="flex">
+      <div className="crm-shell flex min-h-screen bg-slate-50">
         <Sidebar />
 
-        <div className="flex-1">
+        <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
           <Navbar />
 
-          <div className="flex items-center justify-center h-[80vh]">
-            <Loader2 className="w-10 h-10 animate-spin text-gray-600" />
-          </div>
+          <main className="crm-main flex flex-1 items-center justify-center p-6">
+            <div className="crm-surface flex flex-col items-center gap-4 rounded-3xl border border-slate-200 bg-white px-10 py-9">
+              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-blue-50 text-[#1a5695]">
+                <Loader2 className="h-5 w-5 animate-spin" />
+              </span>
+              <div className="text-center">
+                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                  Verifying access
+                </p>
+                <p className="mt-1.5 text-sm font-bold text-slate-700">
+                  Preparing your workspace…
+                </p>
+              </div>
+            </div>
+          </main>
         </div>
       </div>
     );

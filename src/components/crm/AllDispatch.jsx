@@ -70,21 +70,21 @@ const AllDispatch = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex font-sans">
+    <div className="crm-shell min-h-screen bg-[#f8fafc] flex font-sans">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="All Dispatch"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-10 max-w-[1600px] mx-auto w-full">
+        <main className="crm-main p-4 lg:p-10 max-w-[1600px] mx-auto w-full">
           {/* HEADER SECTION - Styled like AllKitReady */}
           <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
             <div>
-              <h1 className="text-4xl font-black tracking-tight uppercase text-slate-800">
+              <h1 className="text-3xl lg:text-4xl font-black tracking-tight uppercase text-slate-900">
                 Dispatch <span className="text-[#1a5695]">Registry</span>
               </h1>
               <p className="mt-1 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
@@ -149,7 +149,7 @@ const AllDispatch = () => {
           </div>
 
           {/* DATA TABLE */}
-          <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
+          <div className="crm-surface bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
             {pageLoading ? (
               <div className="flex flex-col items-center justify-center py-40">
                 <Loader2 className="w-10 h-10 text-[#1a5695] animate-spin mb-4" />

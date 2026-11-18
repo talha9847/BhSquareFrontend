@@ -30,7 +30,7 @@ const ModuleCard = ({
   accentColor = "text-[#1a5695]",
 }) => (
   <div className="bg-white rounded-[40px] p-10 border border-slate-200 shadow-sm relative transition-all hover:shadow-md animate-in fade-in slide-in-from-bottom-2 duration-500">
-    <div className="flex justify-between items-center mb-10">
+    <div className="flex flex-wrap justify-between items-center gap-4 mb-10">
       <h3
         className={`text-[11px] font-black ${accentColor} uppercase tracking-[0.2em] flex items-center gap-3`}
       >
@@ -186,7 +186,7 @@ const KitModule = ({ customerId }) => {
   const isComplete = kitData.status?.toLowerCase() === "done";
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="crm-surface bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       {/* HEADER: CLEAN & COMPACT */}
       <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white">
         <div className="flex items-center gap-3">
@@ -310,7 +310,7 @@ const DispatchModule = ({ customerId }) => {
   if (!loading && (!dispatchData || dispatchData.length === 0)) return null;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
+    <div className="crm-surface bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
       <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white">
         <div className="flex items-center gap-3">
           <Truck size={18} className="text-[#1a5695]" />
@@ -435,7 +435,7 @@ const FabricationModule = ({ customerId }) => {
   if (!loading && (!fabData || fabData.length === 0)) return null;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
+    <div className="crm-surface bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
       {/* HEADER */}
       <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-white">
         <div className="flex items-center gap-3">
@@ -586,7 +586,7 @@ const WiringModule = ({ customerId }) => {
     wiringData?.status?.toLowerCase() === "completed";
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
+    <div className="crm-surface bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in fade-in duration-500">
       {/* HEADER: UPDATED WITH TECHNICIAN NAME */}
       <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-start bg-white">
         <div className="flex flex-col gap-1">
@@ -751,15 +751,15 @@ const TCustomerMaster = () => {
   }, [customerId, leadId, navigate]);
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex font-sans text-slate-900">
+    <div className="crm-shell min-h-screen bg-[#f8fafc] flex font-sans text-slate-900">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Customers"
       />
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="p-4 lg:p-10 max-w-[1600px] mx-auto w-full">
+        <main className="crm-main p-4 lg:p-10 max-w-[1600px] mx-auto w-full">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-40">
               <div className="w-16 h-16 border-4 border-slate-100 border-t-[#1a5695] rounded-full animate-spin"></div>
@@ -779,7 +779,7 @@ const TCustomerMaster = () => {
                       <Activity size={12} /> Live Status
                     </span>
                   </div>
-                  <h1 className="text-5xl font-black tracking-tight uppercase leading-none text-slate-800">
+                  <h1 className="text-3xl lg:text-4xl font-black tracking-tight uppercase leading-none text-slate-900">
                     {lead?.customer_name}
                   </h1>
                 </div>

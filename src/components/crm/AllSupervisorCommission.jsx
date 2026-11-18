@@ -100,21 +100,21 @@ const AllSupervisorCommission = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex font-sans text-slate-900">
+    <div className="crm-shell min-h-screen bg-[#f8fafc] flex font-sans text-slate-900">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Commissions"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-10 max-w-[1600px] mx-auto w-full">
+        <main className="crm-main p-4 lg:p-10 max-w-[1600px] mx-auto w-full">
           {/* HEADER */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-12">
             <div>
-              <h1 className="text-5xl font-black tracking-tight uppercase text-slate-800">
+              <h1 className="text-3xl lg:text-4xl font-black tracking-tight uppercase text-slate-900">
                 Commission <span className="text-[#1a5695]">Logs</span>
               </h1>
               <p className="mt-2 text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
@@ -265,7 +265,7 @@ const AllSupervisorCommission = () => {
           />
           <div className="relative bg-white w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in duration-200">
             <div className="p-8">
-              <div className="flex justify-between items-center mb-6">
+              <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
                 <h2 className="text-lg font-black text-slate-800 uppercase tracking-tight">
                   Update Commission
                 </h2>

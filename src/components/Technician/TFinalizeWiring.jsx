@@ -117,17 +117,17 @@ const TFinalizeWiring = () => {
     return <div className="p-10 text-center">No data found.</div>;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="crm-shell min-h-screen bg-slate-50 flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Wiring"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-10 pb-32">
+        <main className="crm-main p-4 lg:p-10 pb-32">
           <div className="max-w-5xl mx-auto">
             {/* Header Section */}
             <div className="flex items-center justify-between mb-10">
@@ -138,7 +138,7 @@ const TFinalizeWiring = () => {
                 >
                   <ArrowLeft size={20} />
                 </button>
-                <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+                <h1 className="text-3xl lg:text-4xl font-black text-slate-900 uppercase tracking-tight">
                   Finalize Site
                 </h1>
               </div>
@@ -152,7 +152,7 @@ const TFinalizeWiring = () => {
               <div className="space-y-10">
                 {/* Documents Content Logic stays same... */}
                 <div className="bg-white rounded-[40px] border border-slate-200 p-6 lg:p-10 shadow-sm">
-                  <div className="flex justify-between items-center mb-8">
+                  <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
                     <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
                       Additional Documents
                     </h3>

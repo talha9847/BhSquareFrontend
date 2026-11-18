@@ -21,7 +21,7 @@ const AccessControl = ({ type = "denied" }) => {
   const isNoAuth = type === "login";
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
+    <div className="crm-shell min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
       <div className="w-full max-w-md bg-white rounded-[40px] border border-slate-200 shadow-2xl overflow-hidden p-10 text-center relative">
         {/* Background Decorative Icon */}
         <div className="absolute top-0 right-0 p-8 opacity-5">
