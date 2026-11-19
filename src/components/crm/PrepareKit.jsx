@@ -163,7 +163,10 @@ const PrepareKit = () => {
     }
 
     // 3. Stock Check: If adding, ensure warehouse has enough
-    if (adjustmentMode === "add" && currentQty + val >= editingItem.stock) {
+    if (adjustmentMode === "add" && val >= editingItem.stock) {
+      // console.log(val);
+      // console.log(currentQty);
+      // console.log(editingItem.stock);
       return toast.error(
         `Warehouse limit exceeded! Max available: ${editingItem.stock}`,
       );
@@ -176,6 +179,7 @@ const PrepareKit = () => {
         {
           kitItemId: editingItem.id,
           qty: deltaValue,
+          customerId,
         },
         { withCredentials: true },
       );
@@ -235,6 +239,7 @@ const PrepareKit = () => {
         {
           kit_item_id: item.id,
           qty: item.qty,
+          customerId,
         },
         { withCredentials: true },
       );
@@ -446,6 +451,9 @@ const PrepareKit = () => {
                             <th className="px-8 py-5">Product</th>
                             <th className="px-8 py-5 text-center">Warehouse</th>
                             <th className="px-8 py-5 text-center">Pick Qty</th>
+                            <th className="px-8 py-5 text-center">
+                              Partial Dispatch
+                            </th>
                             <th className="px-8 py-5 text-right">Action</th>
                           </tr>
                         </thead>

@@ -73,7 +73,10 @@ const DocumentCollection = () => {
     inverter_capacity: "",
     panel_qty: "",
     inverter_qty: "",
+    loan_required: "yes",
   });
+
+  const [isTechFound, setIsTechFound] = useState(false);
   const [finalizeErrors, setFinalizeErrors] = useState({});
   const [finalizeLoading, setFinalizeLoading] = useState(false);
 
@@ -176,6 +179,32 @@ const DocumentCollection = () => {
       );
       if (res.status === 200) {
         setCollectionStatus(res.data.data.documents);
+      }
+    } catch (error) {
+      console.error("Error fetching status", error);
+    }
+  };
+  const getTechsForDocCollection = async () => {
+    try {
+      const res = await axios.get(
+        `/api/registrations/getTechsForDocCollection/${customerId}`,
+        { withCredentials: true },
+      );
+      if (res.status == 200) {
+        setIsTechFound(true);
+        const data = res.data.data;
+        setselectInverterBrand(data.inverter_brand_id);
+        setselectPanelBrand(data.panel_brand_id);
+
+        setFinalizeForm({
+          ...finalizeForm,
+          loan_required: data.loan_required ? "yes" : "no",
+          cs_no: data.cs_no,
+          panel_brand_id: data.panel_brand_id,
+          inverter_brand_id: data.inverter_brand_id,
+          inverter_id: data.inverter_Id,
+          panel_id: data.panel_id,
+        });
       }
     } catch (error) {
       console.error("Error fetching status", error);
@@ -364,6 +393,7 @@ const DocumentCollection = () => {
     getLeadsData();
     getDocInfo();
     getDocCollectStatus();
+    getTechsForDocCollection();
     getBrands();
     getPanels();
     getInverters();
@@ -429,7 +459,10 @@ const DocumentCollection = () => {
 
   const saveTechnicalFinalization = async (e) => {
     e?.preventDefault();
-
+    if (isTechFound) {
+      toast.error("Already finalized..");
+      return;
+    }
     if (!isFound) {
       toast.error("Fill detail above and then finalize");
       return;
@@ -863,7 +896,7 @@ const DocumentCollection = () => {
                     <button
                       type="button"
                       onClick={saveTechnicalFinalization}
-                      disabled={finalizeLoading}
+                      disabled={finalizeLoading || isTechFound}
                       className="bg-[#1a5695] text-white px-6 py-2.5 rounded-xl font-bold text-[10px] uppercase flex items-center gap-2 hover:bg-[#15467a] transition-all shadow-md shadow-[#1a5695]/20 disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {finalizeLoading ? (
@@ -894,6 +927,7 @@ const DocumentCollection = () => {
                         <ModalInput
                           label="Consumer No (CS_NO)"
                           placeholder="Enter CS Number"
+                          readOnly={isTechFound}
                           value={finalizeForm.cs_no}
                           error={finalizeErrors.cs_no}
                           onChange={(e) => {
@@ -912,6 +946,7 @@ const DocumentCollection = () => {
                         <LoanToggle
                           value={finalizeForm.loan_required}
                           error={finalizeErrors.loan_required}
+                          disable={isTechFound}
                           onChange={(v) => {
                             setFinalizeForm({
                               ...finalizeForm,
@@ -938,6 +973,7 @@ const DocumentCollection = () => {
                         <ModalSelect
                           label="Panel Brand"
                           name="panel_brand_id"
+                          disabled={isTechFound}
                           value={finalizeForm.panel_brand_id}
                           error={finalizeErrors.panel_brand_id}
                           onChange={(e) => {
@@ -969,6 +1005,7 @@ const DocumentCollection = () => {
                         <ModalSelect
                           label="Inverter Brand"
                           name="inverter_brand_id"
+                          disabled={isTechFound}
                           value={finalizeForm.inverter_brand_id}
                           error={finalizeErrors.inverter_brand_id}
                           onChange={(e) => {
@@ -1011,7 +1048,7 @@ const DocumentCollection = () => {
                           name="panel_id"
                           value={finalizeForm.panel_id}
                           error={finalizeErrors.panel_id}
-                          disabled={!finalizeForm.panel_brand_id}
+                          disabled={!finalizeForm.panel_brand_id || isTechFound}
                           onChange={(e) => {
                             const id = e.target.value;
                             const found = fileteredPanel.find(
@@ -1053,7 +1090,9 @@ const DocumentCollection = () => {
                           name="inverter_id"
                           value={finalizeForm.inverter_id}
                           error={finalizeErrors.inverter_id}
-                          disabled={!finalizeForm.inverter_brand_id}
+                          disabled={
+                            !finalizeForm.inverter_brand_id || isTechFound
+                          }
                           onChange={(e) => {
                             const id = e.target.value;
                             const found = fileteredInverter.find(
@@ -1104,18 +1143,18 @@ const DocumentCollection = () => {
                           name={
                             fileteredPanel.find(
                               (p) => p.id === finalizeForm.panel_id,
-                            )?.name || "—"
+                            )?.name
                           }
-                          qty={finalizeForm.panel_qty}
+                          qty={leadsData.number_of_panels}
                         />
                         <SummaryCell
                           label="Inverter"
                           name={
                             fileteredInverter.find(
                               (i) => i.id === finalizeForm.inverter_id,
-                            )?.name || "—"
+                            )?.name
                           }
-                          qty={finalizeForm.inverter_qty}
+                          qty={leadsData.number_of_inverters}
                         />
                       </div>
 
@@ -1334,7 +1373,7 @@ const SummaryCell = ({ label, name, qty }) => (
   </div>
 );
 
-const LoanToggle = ({ value, onChange, error }) => {
+const LoanToggle = ({ value, onChange, error, disable }) => {
   const on = value === "yes";
 
   return (
@@ -1346,6 +1385,7 @@ const LoanToggle = ({ value, onChange, error }) => {
       <button
         type="button"
         role="switch"
+        disabled={disable}
         aria-checked={on}
         aria-invalid={!!error}
         aria-describedby={error ? "loan-toggle-error" : undefined}
