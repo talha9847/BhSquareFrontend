@@ -156,20 +156,20 @@ const InventoryManager = () => {
     selectedCategoryName === "PANEL" || selectedCategoryName === "INVERTER";
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="crm-shell min-h-screen bg-slate-50 flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Inventory"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8">
+        <main className="crm-main p-4 lg:p-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-            <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase">
+            <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase">
               Stock Inventory
             </h1>
             <div className="flex flex-col items-end gap-3">
@@ -278,7 +278,7 @@ const InventoryManager = () => {
                       <div className="flex-1 h-[1px] bg-slate-200 ml-2"></div>
                     </div>
 
-                    <div className="bg-white rounded-[32px] border border-slate-200 overflow-x-auto shadow-sm">
+                    <div className="crm-surface bg-white rounded-[32px] border border-slate-200 overflow-x-auto shadow-sm">
                       <table className="w-full text-left border-collapse">
                         <thead className="bg-slate-50/50">
                           <tr>

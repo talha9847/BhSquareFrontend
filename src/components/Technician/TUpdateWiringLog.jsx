@@ -267,17 +267,17 @@ const TUpdateWiringLog = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="crm-shell min-h-screen bg-slate-50 flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Wiring"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
+        <main className="crm-main p-4 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
           <div className="flex justify-between items-center">
             <button
               onClick={() => navigate(-1)}
@@ -296,7 +296,7 @@ const TUpdateWiringLog = () => {
           </div>
 
           {pageLoading ? (
-            <div className="h-64 flex flex-col items-center justify-center bg-white rounded-[32px] border border-slate-200 shadow-sm">
+            <div className="crm-surface h-64 flex flex-col items-center justify-center bg-white rounded-[32px] border border-slate-200 shadow-sm">
               <Loader2 className="animate-spin text-[#1a5695] mb-2" />
               <p className="text-[10px] font-black text-slate-300 uppercase">
                 Loading Details...
@@ -438,7 +438,7 @@ const TUpdateWiringLog = () => {
 
               {/* UNUSED LOGS LIST */}
               {unusedLogs.length > 0 && (
-                <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden mt-6">
+                <div className="crm-surface bg-white rounded-[32px] border border-slate-200 overflow-hidden mt-6">
                   <div className="p-4 bg-orange-50/50 border-b border-orange-100">
                     <h3 className="font-black text-orange-600 uppercase text-[10px] tracking-widest">
                       Logged Returns
@@ -478,7 +478,7 @@ const TUpdateWiringLog = () => {
               )}
 
               {/* RECENT ACTIVITY (WIRES) */}
-              <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
+              <div className="crm-surface bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-slate-50 bg-slate-50/50">
                   <h3 className="font-black text-slate-500 uppercase text-[10px] tracking-widest">
                     Issued Wire History

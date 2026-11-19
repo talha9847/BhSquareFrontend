@@ -192,17 +192,17 @@ const LoanStep = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex">
+    <div className="crm-shell min-h-screen bg-[#f8fafc] flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Kit Ready"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-10 max-w-[1400px] mx-auto w-full">
+        <main className="crm-main p-4 lg:p-10 max-w-[1400px] mx-auto w-full">
           {/* HEADER SECTION */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
             <div className="flex items-center gap-4">
@@ -213,7 +213,7 @@ const LoanStep = () => {
                 <ArrowLeft size={20} />
               </button>
               <div>
-                <h1 className="text-2xl font-black text-slate-800 tracking-tight uppercase">
+                <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase">
                   Loan Processing
                 </h1>
                 <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">

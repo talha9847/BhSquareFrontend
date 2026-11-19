@@ -292,17 +292,17 @@ const FinalizeWiring = () => {
     return <div className="p-10 text-center">No data found.</div>;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="crm-shell min-h-screen bg-slate-50 flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Wiring"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-10 pb-32">
+        <main className="crm-main p-4 lg:p-10 pb-32">
           <div className="max-w-5xl mx-auto">
             {/* Header Section */}
             <div className="flex items-center justify-between mb-10">
@@ -313,7 +313,7 @@ const FinalizeWiring = () => {
                 >
                   <ArrowLeft size={20} />
                 </button>
-                <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight">
+                <h1 className="text-3xl lg:text-4xl font-black text-slate-900 uppercase tracking-tight">
                   Finalize Site
                 </h1>
               </div>
@@ -341,7 +341,7 @@ const FinalizeWiring = () => {
               <div className="space-y-10">
                 {/* Documents Content Logic stays same... */}
                 <div className="bg-white rounded-[40px] border border-slate-200 p-6 lg:p-10 shadow-sm">
-                  <div className="flex justify-between items-center mb-8">
+                  <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
                     <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
                       Additional Documents
                     </h3>
@@ -458,7 +458,7 @@ const FinalizeWiring = () => {
             <div className="bg-white w-full max-w-2xl rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
               <div className="bg-[#1a5695] p-8 text-white flex justify-between items-center">
                 <div>
-                  <h2 className="text-xl font-black font-syne uppercase tracking-tight">
+                  <h2 className="text-xl font-black uppercase tracking-tight">
                     Component Serials
                   </h2>
                   <p className="text-white/60 text-xs mt-1 font-bold">

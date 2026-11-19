@@ -14,7 +14,7 @@ const ModuleCard = ({
   accentColor = "text-[#1a5695]",
 }) => (
   <div className="bg-white rounded-[40px] p-10 border border-slate-200 shadow-sm relative transition-all hover:shadow-md animate-in fade-in slide-in-from-bottom-2 duration-500">
-    <div className="flex justify-between items-center mb-10">
+    <div className="flex flex-wrap justify-between items-center gap-4 mb-10">
       <h3
         className={`text-[11px] font-black ${accentColor} uppercase tracking-[0.2em] flex items-center gap-3`}
       >
@@ -93,15 +93,15 @@ const SCustomerMaster = () => {
   }, [leadId, navigate]);
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex font-sans text-slate-900">
+    <div className="crm-shell min-h-screen bg-[#f8fafc] flex font-sans text-slate-900">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Customers"
       />
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
-        <main className="p-4 lg:p-10 max-w-[1600px] mx-auto w-full">
+        <main className="crm-main p-4 lg:p-10 max-w-[1600px] mx-auto w-full">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-40">
               <div className="w-16 h-16 border-4 border-slate-100 border-t-[#1a5695] rounded-full animate-spin"></div>
@@ -121,7 +121,7 @@ const SCustomerMaster = () => {
                       <Activity size={12} /> Live Status
                     </span>
                   </div>
-                  <h1 className="text-5xl font-black tracking-tight uppercase leading-none text-slate-800">
+                  <h1 className="text-3xl lg:text-4xl font-black tracking-tight uppercase leading-none text-slate-900">
                     {lead?.customer_name}
                   </h1>
                 </div>

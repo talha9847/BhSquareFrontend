@@ -308,17 +308,17 @@ const FollowUp = () => {
   // RENDER
   // =========================================================
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="crm-shell min-h-screen bg-slate-50 flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="FollowUp"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8">
+        <main className="crm-main p-4 lg:p-8">
           {/* HERO HEADER */}
           <div className="relative overflow-hidden bg-gradient-to-br from-[#1a5695] via-[#1a5695] to-[#0f3a68] rounded-[32px] p-6 lg:p-8 mb-6 shadow-xl shadow-blue-900/20">
             <div className="absolute -top-16 -right-16 w-56 h-56 bg-white/10 rounded-full blur-2xl pointer-events-none" />
@@ -330,7 +330,7 @@ const FollowUp = () => {
                   <Sparkles size={12} className="text-[#f39200]" />
                   Templates Manager
                 </div>
-                <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight font-syne uppercase flex items-center gap-3">
+                <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight uppercase flex flex-wrap items-center gap-3">
                   <MessageSquare size={28} className="text-[#f39200]" />
                   Follow-up Templates
                 </h1>
@@ -359,7 +359,7 @@ const FollowUp = () => {
           </div>
 
           {/* SEARCH */}
-          <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
+          <div className="crm-surface bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
             <div className="flex-1 relative">
               <Search
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -512,7 +512,7 @@ const FollowUp = () => {
                     <MessageSquare size={20} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold font-syne uppercase tracking-tight">
+                    <h2 className="text-lg font-bold uppercase tracking-tight">
                       {editingId !== null ? "Edit Template" : "New Template"}
                     </h2>
                     <p className="text-white/70 text-[11px] font-bold mt-0.5">

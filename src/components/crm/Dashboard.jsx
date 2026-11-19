@@ -308,20 +308,20 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex">
+    <div className="crm-shell min-h-screen bg-[#f8fafc] flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-h-screen">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-10">
+        <main className="crm-main p-4 lg:p-10">
           {/* Header */}
           <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-black text-slate-900">
+              <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
                 Solar<span className="text-[#1a5695]">OS</span> Dashboard
               </h1>
 
@@ -332,12 +332,12 @@ const Dashboard = () => {
               </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
               {/* Sync Data */}
               <button
                 onClick={() => fetchCounts(true)}
                 disabled={isSyncing}
-                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-[#1a5695] text-white text-sm font-bold hover:bg-[#15467a] shadow-lg shadow-blue-900/20 transition-all active:scale-95 disabled:opacity-50"
+                className="flex w-full items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-[#1a5695] text-white text-sm font-bold hover:bg-[#15467a] shadow-lg shadow-blue-900/20 transition-all active:scale-95 disabled:opacity-50 sm:w-auto"
               >
                 <RefreshCcw
                   size={18}
@@ -352,7 +352,7 @@ const Dashboard = () => {
                 onClick={() => {
                   navigate("/estimation");
                 }}
-                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-green-600 text-white text-sm font-bold hover:bg-green-700 shadow-lg shadow-green-900/20 transition-all active:scale-95"
+                className="flex w-full items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-green-600 text-white text-sm font-bold hover:bg-green-700 shadow-lg shadow-green-900/20 transition-all active:scale-95 sm:w-auto"
               >
                 <Calculator size={18} />
                 Generate Estimation
@@ -609,7 +609,7 @@ const Dashboard = () => {
 
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 relative z-10">
                 <div>
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight flex flex-wrap items-center gap-3">
                     <div className="p-2 bg-amber-100 rounded-xl">
                       <Zap
                         className="text-amber-600"

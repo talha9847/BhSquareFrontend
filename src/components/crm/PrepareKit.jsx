@@ -354,21 +354,21 @@ const PrepareKit = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] flex overflow-x-hidden">
+    <div className="crm-shell min-h-screen bg-[#f8fafc] flex overflow-x-hidden">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Kit Ready"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0 w-full">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0 w-full">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8 w-full max-w-[1600px] mx-auto">
+        <main className="crm-main p-4 lg:p-8 w-full max-w-[1600px] mx-auto">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-xl lg:text-2xl font-[1000] text-slate-800 tracking-tight uppercase italic flex items-center gap-3">
+              <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase flex flex-wrap items-center gap-3">
                 <Layers className="text-[#1a5695]" /> Kit Preparation
               </h1>
               <div className="flex items-center gap-3 mt-2">
@@ -438,7 +438,7 @@ const PrepareKit = () => {
                     </span>
                   </div>
 
-                  <div className="bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
+                  <div className="crm-surface bg-white rounded-[32px] border border-slate-200 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                       <table className="w-full text-left border-separate border-spacing-0">
                         <thead className="bg-slate-50/50">

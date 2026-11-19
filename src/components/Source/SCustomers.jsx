@@ -65,21 +65,21 @@ const SCustomers = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="crm-shell min-h-screen bg-slate-50 flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="All Customers"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8">
+        <main className="crm-main p-4 lg:p-8">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase flex items-center gap-3">
+              <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase flex flex-wrap items-center gap-3">
                 CUSTOMER DIRECTORY
               </h1>
               <p className="text-sm text-slate-500 font-medium uppercase tracking-wider">
@@ -89,7 +89,7 @@ const SCustomers = () => {
           </div>
 
           {/* Search */}
-          <div className="bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
+          <div className="crm-surface bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
             <div className="flex-1 relative">
               <Search
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -106,7 +106,7 @@ const SCustomers = () => {
           </div>
 
           {/* Table Container */}
-          <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm min-h-[400px] flex flex-col">
+          <div className="crm-surface bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm min-h-[400px] flex flex-col">
             {pageLoading ? (
               // LOADER SECTION
               <div className="flex-1 flex flex-col items-center justify-center py-32">

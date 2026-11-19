@@ -71,21 +71,21 @@ const WebLeads = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="crm-shell min-h-screen bg-slate-50 flex">
       <Sidebar
         isOpen={sidebarOpen}
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Web Leads"
       />
 
-      <div className="flex-1 lg:ml-64 flex flex-col min-w-0">
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="p-4 lg:p-8">
+        <main className="crm-main p-4 lg:p-8">
           {/* Header Section */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight font-syne uppercase flex items-center gap-3">
+              <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase flex flex-wrap items-center gap-3">
                 <Globe className="text-[#1a5695]" size={28} />
                 Website Inquiries
               </h1>
@@ -120,7 +120,7 @@ const WebLeads = () => {
           </div>
 
           {/* Data Table */}
-          <div className="bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
+          <div className="crm-surface bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm">
             {loading ? (
               <div className="py-32 flex flex-col items-center justify-center">
                 <Loader2
@@ -218,7 +218,7 @@ const WebLeads = () => {
                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                   <CheckCircle2 size={20} />
                 </div>
-                <h2 className="text-lg font-bold font-syne uppercase">
+                <h2 className="text-lg font-bold uppercase">
                   Update Inquiry
                 </h2>
               </div>
