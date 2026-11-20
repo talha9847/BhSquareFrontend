@@ -190,23 +190,38 @@ const DocumentCollection = () => {
         `/api/registrations/getTechsForDocCollection/${customerId}`,
         { withCredentials: true },
       );
-      if (res.status == 200) {
-        setIsTechFound(true);
-        const data = res.data.data;
-        setselectInverterBrand(data.inverter_brand_id);
-        setselectPanelBrand(data.panel_brand_id);
 
-        setFinalizeForm({
-          ...finalizeForm,
+      if (res.status === 200) {
+        const data = res.data.data;
+
+        const isComplete =
+          data &&
+          data.inverter_brand_id &&
+          data.panel_brand_id &&
+          data.inverter_Id &&
+          data.panel_id &&
+          data.cs_no != null &&
+          data.loan_required != null;
+
+        setIsTechFound(Boolean(isComplete));
+
+        if (!data) return;
+
+        setselectInverterBrand(data.inverter_brand_id || "");
+        setselectPanelBrand(data.panel_brand_id || "");
+
+        setFinalizeForm((prev) => ({
+          ...prev,
           loan_required: data.loan_required ? "yes" : "no",
-          cs_no: data.cs_no,
-          panel_brand_id: data.panel_brand_id,
-          inverter_brand_id: data.inverter_brand_id,
-          inverter_id: data.inverter_Id,
-          panel_id: data.panel_id,
-        });
+          cs_no: data.cs_no || "",
+          panel_brand_id: data.panel_brand_id || "",
+          inverter_brand_id: data.inverter_brand_id || "",
+          inverter_id: data.inverter_Id || "",
+          panel_id: data.panel_id || "",
+        }));
       }
     } catch (error) {
+      setIsTechFound(false);
       console.error("Error fetching status", error);
     }
   };
