@@ -19,14 +19,17 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import Swal from "sweetalert2";
+import WiringTabs from "./WiringTabs";
 
 const UpdateWiringLog = () => {
   const { id } = useParams();
+  const { state } = useLocation();
   const navigate = useNavigate();
   const location = useLocation();
   const wiringId = location.state?.wiring_id;
   const customerId = location.state?.customer_id;
   const apiUrl = import.meta.env.VITE_API_URL;
+  const { selectedWiring } = state || {};
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
@@ -76,8 +79,10 @@ const UpdateWiringLog = () => {
       setInventory(invRes.data.data || []);
       setLocalLog(issuedRes.data.data || []);
       setUnusedLogs(unusedRes.data.data || []);
+
+      console.log(unusedRes.data);
       setKitItems(kitRes.data.data || []);
-      setDone(issuedRes.data.extraData?.inventory_status || "pending");
+      setDone("pending");
     } catch (error) {
       toast.error("Failed to load inventory data");
     } finally {
@@ -86,6 +91,7 @@ const UpdateWiringLog = () => {
   }, [wiringId, customerId]);
 
   useEffect(() => {
+    if (!selectedWiring) return navigate("/wiring");
     if (!customerId || !wiringId) return navigate("/wiring");
     fetchData();
   }, [fetchData, navigate, customerId, wiringId]);
@@ -273,26 +279,41 @@ const UpdateWiringLog = () => {
         toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         activePage="Wiring"
       />
-
       <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="crm-main p-4 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
-          <div className="flex justify-between items-center">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-[#1a5695]"
-            >
-              <ArrowLeft size={14} /> Back
-            </button>
-            {!isEditable && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
-                <CheckCircle2 size={14} />
-                <span className="text-[10px] font-black uppercase tracking-widest">
-                  Inventory Finalized
-                </span>
+          <div className="flex flex-col gap-4 mb-10">
+            {/* Row 1: back + heading  •  tabs on the right */}
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-5 min-w-0">
+                <button
+                  onClick={() => navigate(-1)}
+                  className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#1a5695] transition-all shadow-sm shrink-0"
+                >
+                  <ArrowLeft size={20} />
+                </button>
+                <h1 className="text-3xl lg:text-4xl font-black text-slate-900 uppercase tracking-tight truncate">
+                  Wiring Log
+                </h1>
               </div>
-            )}
+
+              <div className="ml-auto shrink-0">
+                <WiringTabs activeTab="log" selectedWiring={selectedWiring} />
+              </div>
+            </div>
+
+            {/* Row 2: status badge (always reserve the row height) */}
+            <div className="flex justify-end min-h-[44px]">
+              {!isEditable && (
+                <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
+                  <CheckCircle2 size={14} />
+                  <span className="text-[10px] font-black uppercase tracking-widest">
+                    Inventory Finalized
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {pageLoading ? (
@@ -533,7 +554,7 @@ const UpdateWiringLog = () => {
                 </div>
               </div>
 
-              {isEditable && (
+              {/* {isEditable && (
                 <div className="pt-4">
                   <button
                     onClick={handleNextStep}
@@ -548,7 +569,7 @@ const UpdateWiringLog = () => {
                     )}
                   </button>
                 </div>
-              )}
+              )} */}
             </>
           )}
         </main>

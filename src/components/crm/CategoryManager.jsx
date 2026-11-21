@@ -5,8 +5,6 @@ import {
   Edit3,
   Trash2,
   Grid,
-  X,
-  Check,
   Loader2,
   Layers,
 } from "lucide-react";
@@ -14,6 +12,7 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { Modal, Button, Input } from "../ui";
 
 const CategoryManager = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -240,72 +239,50 @@ const CategoryManager = () => {
       </div>
 
       {/* CATEGORY MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-sm rounded-[40px] shadow-2xl overflow-hidden border border-white/20">
-            <div
-              className={`p-8 text-white flex justify-between items-center ${
-                editingId ? "bg-indigo-500" : "bg-slate-900"
-              }`}
+      <Modal
+        as="form"
+        onSubmit={handleSubmit}
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingId ? "Edit Category" : "New Category"}
+        subtitle="System classification used to group inventory items."
+        eyebrow="Inventory"
+        icon={Layers}
+        tone={editingId ? "warning" : "primary"}
+        size="sm"
+        preventClose={loading}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setIsModalOpen(false)}
+              disabled={loading}
             >
-              <div>
-                <h2 className="text-xl font-black uppercase tracking-tight">
-                  {editingId ? "Edit Category" : "New Category"}
-                </h2>
-                <div className="flex items-center gap-2 mt-1">
-                  <Layers size={12} className="text-white/60" />
-                  <p className="text-white/40 text-[10px] font-bold uppercase">
-                    System Classification
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-full transition-all"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
-                  Category Name
-                </label>
-                <input
-                  required
-                  type="text"
-                  placeholder="e.g. PANEL INVERTER, FIXED..."
-                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none text-sm font-bold"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ name: e.target.value.toUpperCase() })
-                  }
-                />
-              </div>
-
-              <button
-                disabled={loading}
-                type="submit"
-                className={`w-full py-4 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-3 ${
-                  editingId
-                    ? "bg-indigo-500 hover:bg-indigo-600"
-                    : "bg-slate-900 hover:bg-black"
-                }`}
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin" size={18} />
-                ) : (
-                  <>
-                    <Check size={18} />
-                    {editingId ? "Update Category" : "Save Category"}
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              loading={loading}
+              icon={Layers}
+              variant={editingId ? "warning" : "primary"}
+            >
+              {editingId ? "Update Category" : "Save Category"}
+            </Button>
+          </>
+        }
+      >
+        <div className="crm-form-stack">
+          <Input
+            label="Category Name"
+            placeholder="e.g. PANEL INVERTER, FIXED..."
+            value={formData.name}
+            onChange={(e) =>
+              setFormData({ name: e.target.value.toUpperCase() })
+            }
+            required
+          />
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

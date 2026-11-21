@@ -278,6 +278,7 @@ const Wiring = () => {
                                     state: {
                                       wiring_id: item.wiring_id,
                                       customer_id: item.customer_id,
+                                      selectedWiring: item,
                                     },
                                   })
                                 }
@@ -287,11 +288,19 @@ const Wiring = () => {
                               </button>
                             ) : (
                               <button
-                                onClick={() =>
-                                  navigate("/finalizewiring", {
-                                    state: { selectedWiring: item },
-                                  })
-                                }
+                                onClick={() => {
+                                  // navigate("/finalizewiring", {
+                                  //   state: { selectedWiring: item },
+                                  // });
+
+                                  navigate("/updatewiring", {
+                                    state: {
+                                      wiring_id: item.wiring_id,
+                                      customer_id: item.customer_id,
+                                      selectedWiring: item,
+                                    },
+                                  });
+                                }}
                                 className="p-2.5 bg-[#1a5695] text-white hover:bg-[#15467a] rounded-xl shadow-lg shadow-blue-100 transition-all"
                               >
                                 <Share size={16} />

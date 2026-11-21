@@ -3,7 +3,6 @@ import {
   Search,
   Truck,
   ShieldCheck,
-  X,
   Plus,
   Edit2,
   Trash2,
@@ -13,6 +12,7 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { Modal, Button, Input } from "../ui";
 
 const Cars = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -221,76 +221,54 @@ const Cars = () => {
       </div>
 
       {/* VEHICLE MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-            <div className="bg-[#1a5695] p-8 text-white flex justify-between items-center">
-              <div>
-                <h2 className="text-xl font-black uppercase tracking-tight">
-                  {editingCar ? "Update Vehicle" : "New Vehicle"}
-                </h2>
-                <p className="text-blue-100/60 text-[10px] font-bold uppercase mt-1">
-                  Fleet Assets
-                </p>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-full transition-all"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <div className="p-8 space-y-5">
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
-                  Plate Number
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#1a5695]/10 outline-none transition-all text-sm font-bold uppercase"
-                  placeholder="GJ-XX-XXXX"
-                  value={formData.number}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      number: e.target.value.toUpperCase(),
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
-                  Model / Type
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#1a5695]/10 outline-none transition-all text-sm font-bold"
-                  placeholder="e.g. Tata Ace"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      name: e.target.value.toUpperCase(),
-                    })
-                  }
-                />
-              </div>
-              <button
-                onClick={createCar}
-                disabled={loading}
-                className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:bg-[#15467a] transition-all flex items-center justify-center gap-3 disabled:opacity-70"
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin h-4 w-4" />
-                ) : (
-                  <ShieldCheck size={18} />
-                )}
-                {editingCar ? "Confirm Update" : "Register Vehicle"}
-              </button>
-            </div>
-          </div>
+      <Modal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingCar ? "Update Vehicle" : "New Vehicle"}
+        subtitle="Register the plate number and model used for dispatch."
+        eyebrow="Fleet assets"
+        icon={Truck}
+        size="sm"
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setIsModalOpen(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={createCar}
+              loading={loading}
+              icon={ShieldCheck}
+            >
+              {editingCar ? "Confirm Update" : "Register Vehicle"}
+            </Button>
+          </>
+        }
+      >
+        <div className="crm-form-stack">
+          <Input
+            label="Plate Number"
+            placeholder="GJ-XX-XXXX"
+            value={formData.number}
+            onChange={(e) =>
+              setFormData({ ...formData, number: e.target.value.toUpperCase() })
+            }
+            required
+          />
+          <Input
+            label="Model / Type"
+            placeholder="e.g. Tata Ace"
+            value={formData.name}
+            onChange={(e) =>
+              setFormData({ ...formData, name: e.target.value.toUpperCase() })
+            }
+            required
+          />
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

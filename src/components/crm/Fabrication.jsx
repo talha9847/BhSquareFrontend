@@ -104,6 +104,7 @@ const Fabrication = () => {
           ? `/api/dispatch/updateFabricatorViaId`
           : `/api/dispatch/updateFabrication`;
 
+      
       const res = await axios.put(endpoint, payload, { withCredentials: true });
 
       if (res.status === 200) {

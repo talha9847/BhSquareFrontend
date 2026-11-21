@@ -4,7 +4,6 @@ import {
   User,
   Phone,
   ShieldCheck,
-  X,
   Plus,
   Edit2,
   Trash2,
@@ -14,6 +13,7 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { Modal, Button, Input } from "../ui";
 
 const Drivers = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -224,76 +224,50 @@ const Drivers = () => {
       </div>
 
       {/* DRIVER MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-            <div className="bg-[#1a5695] p-8 text-white flex justify-between items-center relative">
-              <div>
-                <h2 className="text-xl font-black uppercase tracking-tight">
-                  {editingDriver ? "Edit Driver" : "Add Driver"}
-                </h2>
-                <p className="text-blue-100/60 text-[10px] font-bold uppercase mt-1">
-                  Personnel Information
-                </p>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-full transition-all"
-              >
-                <X size={24} />
-              </button>
-            </div>
-            <div className="p-8 space-y-5">
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#1a5695]/10 outline-none transition-all text-sm font-bold"
-                  placeholder="Enter driver name"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      name: e.target.value.toUpperCase(),
-                    })
-                  }
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-2 block">
-                  Phone Number
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3.5 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#1a5695]/10 outline-none transition-all text-sm font-bold"
-                  placeholder="+91 XXXXX XXXXX"
-                  value={formData.mobile}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      mobile: e.target.value.toUpperCase(),
-                    })
-                  }
-                />
-              </div>
-              <button
-                onClick={createDriver}
-                disabled={loading}
-                className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] shadow-lg hover:bg-[#15467a] transition-all flex items-center justify-center gap-3 disabled:opacity-70"
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin h-4 w-4" />
-                ) : (
-                  <ShieldCheck size={18} />
-                )}
-                {editingDriver ? "Update Personnel" : "Save Driver"}
-              </button>
-            </div>
-          </div>
+      <Modal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingDriver ? "Edit Driver" : "Add Driver"}
+        subtitle="Keep dispatch contact details current for every trip."
+        eyebrow="Personnel"
+        icon={User}
+        size="sm"
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setIsModalOpen(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button onClick={createDriver} loading={loading} icon={ShieldCheck}>
+              {editingDriver ? "Update Personnel" : "Save Driver"}
+            </Button>
+          </>
+        }
+      >
+        <div className="crm-form-stack">
+          <Input
+            label="Full Name"
+            placeholder="Enter driver name"
+            value={formData.name}
+            onChange={(e) =>
+              setFormData({ ...formData, name: e.target.value.toUpperCase() })
+            }
+            required
+          />
+          <Input
+            label="Phone Number"
+            placeholder="+91 XXXXX XXXXX"
+            value={formData.mobile}
+            onChange={(e) =>
+              setFormData({ ...formData, mobile: e.target.value.toUpperCase() })
+            }
+            required
+          />
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

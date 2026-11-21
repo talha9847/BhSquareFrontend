@@ -5,8 +5,6 @@ import {
   Edit3,
   Trash2,
   Tags,
-  X,
-  Check,
   Loader2,
   Save,
   AlertCircle,
@@ -15,6 +13,7 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { Modal, Button, Input } from "../ui";
 
 const BrandManager = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -234,63 +233,50 @@ const BrandManager = () => {
       </div>
 
       {/* BRAND MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-sm rounded-[40px] shadow-2xl overflow-hidden border border-white/20">
-            <div
-              className={`p-8 text-white flex justify-between items-center ${editingId ? "bg-amber-500" : "bg-slate-800"}`}
+      <Modal
+        as="form"
+        onSubmit={handleSubmit}
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingId ? "Modify Brand" : "New Brand"}
+        subtitle="Brand names are shared across inventory and kit building."
+        eyebrow="Brand management"
+        icon={Tags}
+        tone={editingId ? "warning" : "primary"}
+        size="sm"
+        preventClose={loading}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setIsModalOpen(false)}
+              disabled={loading}
             >
-              <div>
-                <h2 className="text-xl font-black uppercase tracking-tight">
-                  {editingId ? "Modify Brand" : "New Brand"}
-                </h2>
-                <p className="text-white/40 text-[10px] font-bold uppercase mt-1">
-                  Brand Management
-                </p>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-full transition-all"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
-                  Brand Name
-                </label>
-                <input
-                  required
-                  type="text"
-                  placeholder="e.g. Samsung, Toyota..."
-                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none text-sm font-bold"
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ name: e.target.value.toUpperCase() })
-                  }
-                />
-              </div>
-
-              <button
-                disabled={loading}
-                type="submit"
-                className={`w-full py-4 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-3 ${editingId ? "bg-amber-500 hover:bg-amber-600" : "bg-slate-800 hover:bg-slate-900"}`}
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin" size={18} />
-                ) : (
-                  <>
-                    <Check size={18} />{" "}
-                    {editingId ? "Update Brand" : "Create Brand"}
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              loading={loading}
+              icon={Save}
+              variant={editingId ? "warning" : "primary"}
+            >
+              {editingId ? "Update Brand" : "Create Brand"}
+            </Button>
+          </>
+        }
+      >
+        <div className="crm-form-stack">
+          <Input
+            label="Brand Name"
+            placeholder="e.g. Samsung, Toyota..."
+            value={formData.name}
+            onChange={(e) =>
+              setFormData({ name: e.target.value.toUpperCase() })
+            }
+            required
+          />
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

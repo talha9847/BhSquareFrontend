@@ -23,6 +23,7 @@ import Swal from "sweetalert2";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import { useAuth } from "../../context/authContext";
+import WiringTabs from "./WiringTabs";
 
 const FinalizeWiring = () => {
   const { state } = useLocation();
@@ -304,42 +305,54 @@ const FinalizeWiring = () => {
 
         <main className="crm-main p-4 lg:p-10 pb-32">
           <div className="max-w-5xl mx-auto">
-            {/* Header Section */}
-            <div className="flex items-center justify-between mb-10">
-              <div className="flex items-center gap-5">
-                <button
-                  onClick={() => navigate(-1)}
-                  className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#1a5695] transition-all shadow-sm"
-                >
-                  <ArrowLeft size={20} />
-                </button>
-                <h1 className="text-3xl lg:text-4xl font-black text-slate-900 uppercase tracking-tight">
-                  Finalize Site
-                </h1>
+            {/* ---------- HEADER ---------- */}
+            <div className="flex flex-col gap-4 mb-10">
+              {/* Row 1: back + title  •  tabs on the right */}
+              <div className="flex items-center justify-between gap-4 flex-wrap">
+                <div className="flex items-center gap-5 min-w-0">
+                  <button
+                    onClick={() => navigate(-1)}
+                    className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#1a5695] transition-all shadow-sm shrink-0"
+                  >
+                    <ArrowLeft size={20} />
+                  </button>
+                  <h1 className="text-2xl lg:text-4xl font-black text-slate-900 uppercase tracking-tight truncate">
+                    Finalize Site
+                  </h1>
+                </div>
+
+                <div className="ml-auto shrink-0">
+                  <WiringTabs
+                    activeTab="photos"
+                    selectedWiring={selectedWiring}
+                  />
+                </div>
               </div>
 
-              {/* NEW ENTER SERIALS BUTTON */}
-              <button
-                onClick={fetchSerials}
-                disabled={serialLoading}
-                className="flex items-center gap-2 px-6 py-3 bg-[#1a5695] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:scale-105 active:scale-95 transition-all"
-              >
-                {serialLoading ? (
-                  <Loader2 className="animate-spin" size={16} />
-                ) : (
-                  <Hash size={16} />
-                )}
-                Enter Serials
-              </button>
+              {/* Row 2: Enter Serials */}
+              <div className="flex justify-end min-h-[44px]">
+                <button
+                  onClick={fetchSerials}
+                  disabled={serialLoading}
+                  className="flex items-center gap-2 px-6 py-3 bg-[#1a5695] text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-900/20 hover:scale-105 active:scale-95 transition-all shrink-0"
+                >
+                  {serialLoading ? (
+                    <Loader2 className="animate-spin" size={16} />
+                  ) : (
+                    <Hash size={16} />
+                  )}
+                  Enter Serials
+                </button>
+              </div>
             </div>
 
+            {/* ---------- CONTENT ---------- */}
             {initialLoading ? (
               <div className="flex justify-center py-20">
                 <Loader2 className="animate-spin text-[#1a5695]" size={40} />
               </div>
             ) : (
               <div className="space-y-10">
-                {/* Documents Content Logic stays same... */}
                 <div className="bg-white rounded-[40px] border border-slate-200 p-6 lg:p-10 shadow-sm">
                   <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
                     <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-widest">
@@ -352,6 +365,7 @@ const FinalizeWiring = () => {
                       <Plus size={14} /> Add Row
                     </button>
                   </div>
+
                   <div className="space-y-4">
                     {otherDocs.map((doc) => (
                       <div
@@ -377,6 +391,7 @@ const FinalizeWiring = () => {
                             )
                           }
                         />
+
                         {doc.existingLink ? (
                           <div className="flex-1 flex items-center justify-between bg-emerald-50 px-5 py-3 rounded-2xl w-full gap-4">
                             <span className="text-[10px] font-black text-emerald-600 uppercase flex items-center gap-2 font-mono">
@@ -386,6 +401,7 @@ const FinalizeWiring = () => {
                               <a
                                 href={doc.existingLink}
                                 target="_blank"
+                                rel="noreferrer"
                                 className="text-[9px] font-black bg-white text-emerald-600 px-4 py-2 rounded-lg shadow-sm flex items-center gap-1"
                               >
                                 <ExternalLink size={12} /> View
@@ -435,6 +451,7 @@ const FinalizeWiring = () => {
                             </button>
                           </div>
                         )}
+
                         {!doc.isFromDB && (
                           <button
                             onClick={() => removeOtherDocRow(doc.dbId)}

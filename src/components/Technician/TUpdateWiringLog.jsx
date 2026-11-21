@@ -19,15 +19,17 @@ import Navbar from "../crm/Navbar";
 import Sidebar from "../Supervisor/Sidebar";
 import axios from "axios";
 import Swal from "sweetalert2";
+import TWiringTabs from "./TWiringTabs";
 
 const TUpdateWiringLog = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { state } = useLocation();
   const location = useLocation();
   const wiringId = location.state?.wiring_id;
   const customerId = location.state?.customer_id;
   const apiUrl = import.meta.env.VITE_API_URL;
-
+  const { selectedWiring } = state || {};
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
@@ -77,7 +79,7 @@ const TUpdateWiringLog = () => {
       setLocalLog(issuedRes.data.data || []);
       setUnusedLogs(unusedRes.data.data || []);
       setKitItems(kitRes.data.data || []);
-      setDone(issuedRes.data.extraData?.inventory_status || "pending");
+      setDone("pending");
     } catch (error) {
       toast.error("Failed to load inventory data");
     } finally {
@@ -87,6 +89,7 @@ const TUpdateWiringLog = () => {
 
   useEffect(() => {
     if (!customerId || !wiringId) return navigate("/wiring");
+    if (!selectedWiring) return navigate("/wiring");
     fetchData();
   }, [fetchData, navigate, customerId, wiringId]);
 
@@ -278,21 +281,24 @@ const TUpdateWiringLog = () => {
         <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="crm-main p-4 lg:p-8 max-w-5xl mx-auto w-full space-y-6">
-          <div className="flex justify-between items-center">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-slate-400 font-black uppercase text-[10px] tracking-widest hover:text-[#1a5695]"
-            >
-              <ArrowLeft size={14} /> Back
-            </button>
-            {!isEditable && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-600 rounded-full border border-emerald-100">
-                <CheckCircle2 size={14} />
-                <span className="text-[10px] font-black uppercase tracking-widest">
-                  Inventory Finalized
-                </span>
-              </div>
-            )}
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            {/* Left: back + title */}
+            <div className="flex items-center gap-5 min-w-0">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#1a5695] transition-all shadow-sm shrink-0"
+              >
+                <ArrowLeft size={20} />
+              </button>
+              <h1 className="text-3xl lg:text-4xl font-black text-slate-900 uppercase tracking-tight truncate">
+                Wiring Log
+              </h1>
+            </div>
+
+            {/* Right: tabs */}
+            <div className="ml-auto w-full sm:w-auto">
+              <TWiringTabs activeTab="log" selectedWiring={selectedWiring} />
+            </div>
           </div>
 
           {pageLoading ? (
@@ -532,23 +538,6 @@ const TUpdateWiringLog = () => {
                   )}
                 </div>
               </div>
-
-              {isEditable && (
-                <div className="pt-4">
-                  <button
-                    onClick={handleNextStep}
-                    className="w-full py-6 bg-emerald-500 text-white rounded-[32px] font-black uppercase text-[11px] tracking-[0.2em] hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-100 flex items-center justify-center gap-3"
-                  >
-                    {uL ? (
-                      "Moving..."
-                    ) : (
-                      <>
-                        Move to Next Step <ArrowRight size={18} />
-                      </>
-                    )}
-                  </button>
-                </div>
-              )}
             </>
           )}
         </main>

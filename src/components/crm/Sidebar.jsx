@@ -118,7 +118,12 @@ const MENU_ITEMS = [
     icon: <Zap size={18} />,
     type: "Project Lifecycle",
     path: "wiring",
-    activePaths: ["/wiring", "/technicians"],
+    activePaths: [
+      "/wiring",
+      "/technicians",
+      "/updatewiring",
+      "/finalizewiring",
+    ],
   },
   {
     name: "Final Stage",

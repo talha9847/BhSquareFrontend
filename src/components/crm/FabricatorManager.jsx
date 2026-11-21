@@ -5,8 +5,6 @@ import {
   Edit3,
   Trash2,
   Hammer,
-  X,
-  Check,
   Loader2,
   UserCheck,
 } from "lucide-react";
@@ -14,6 +12,7 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { Modal, Button, Input } from "../ui";
 
 const FabricatorManager = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -246,91 +245,69 @@ const FabricatorManager = () => {
       </div>
 
       {/* FABRICATOR MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-sm rounded-[40px] shadow-2xl overflow-hidden border border-white/20">
-            <div
-              className={`p-8 text-white flex justify-between items-center ${editingId ? "bg-amber-500" : "bg-[#1a5695]"}`}
+      <Modal
+        as="form"
+        onSubmit={handleSubmit}
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingId ? "Edit Fabricator" : "New Fabricator"}
+        subtitle="Fabrication partners and their per-kW commission rate."
+        eyebrow="Team management"
+        icon={Hammer}
+        tone={editingId ? "warning" : "primary"}
+        size="sm"
+        preventClose={loading}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setIsModalOpen(false)}
+              disabled={loading}
             >
-              <div>
-                <h2 className="text-xl font-black uppercase tracking-tight">
-                  {editingId ? "Edit Personnel" : "New Fabricator"}
-                </h2>
-                <p className="text-white/40 text-[10px] font-bold uppercase mt-1">
-                  Team Management
-                </p>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-full transition-all"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <input
-                    required
-                    type="text"
-                    placeholder="e.g. John Doe, Apex Industries..."
-                    className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none text-sm font-bold"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        name: e.target.value.toLocaleUpperCase(),
-                      })
-                    }
-                  />
-                  <UserCheck
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"
-                    size={18}
-                  />
-                </div>
-                <div className="relative">
-                  <input
-                    required
-                    type="number"
-                    placeholder="e.g. 800"
-                    className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none text-sm font-bold"
-                    value={formData.commission_rate}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        commission_rate: e.target.value,
-                      })
-                    }
-                  />
-                  <UserCheck
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"
-                    size={18}
-                  />
-                </div>
-              </div>
-
-              <button
-                disabled={loading}
-                type="submit"
-                className={`w-full py-4 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-3 ${editingId ? "bg-amber-500 hover:bg-amber-600" : "bg-[#1a5695] hover:bg-[#15467a]"}`}
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin" size={18} />
-                ) : (
-                  <>
-                    <Check size={18} />{" "}
-                    {editingId ? "Update Record" : "Confirm Entry"}
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              loading={loading}
+              icon={Hammer}
+              variant={editingId ? "warning" : "primary"}
+            >
+              {editingId ? "Update Record" : "Confirm Entry"}
+            </Button>
+          </>
+        }
+      >
+        <div className="crm-form-stack">
+          <Input
+            label="Full Name"
+            placeholder="e.g. John Doe, Apex Industries..."
+            icon={UserCheck}
+            value={formData.name}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                name: e.target.value.toLocaleUpperCase(),
+              })
+            }
+            required
+          />
+          <Input
+            label="Commission Rate (₹ / kW)"
+            type="number"
+            min="0"
+            step="any"
+            placeholder="e.g. 800"
+            value={formData.commission_rate}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                commission_rate: e.target.value,
+              })
+            }
+            required
+          />
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

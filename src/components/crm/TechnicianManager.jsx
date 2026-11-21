@@ -5,8 +5,6 @@ import {
   Edit3,
   Trash2,
   Zap,
-  X,
-  Check,
   Loader2,
   UserCheck,
 } from "lucide-react";
@@ -14,6 +12,7 @@ import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { Modal, Button, Input } from "../ui";
 
 const TechnicianManager = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -210,72 +209,51 @@ const TechnicianManager = () => {
       </div>
 
       {/* TECHNICIAN MODAL */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white w-full max-w-sm rounded-[40px] shadow-2xl overflow-hidden border border-white/20">
-            <div
-              className={`p-8 text-white flex justify-between items-center ${editingId ? "bg-amber-500" : "bg-[#1a5695]"}`}
+      <Modal
+        as="form"
+        onSubmit={handleSubmit}
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={editingId ? "Edit Technician" : "New Technician"}
+        subtitle="Wiring personnel available for project assignment."
+        eyebrow="Wiring personnel"
+        icon={UserCheck}
+        tone={editingId ? "warning" : "primary"}
+        size="sm"
+        preventClose={loading}
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => setIsModalOpen(false)}
+              disabled={loading}
             >
-              <div>
-                <h2 className="text-xl font-black uppercase tracking-tight">
-                  {editingId ? "Edit Technician" : "New Entry"}
-                </h2>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="w-1.5 h-1.5 bg-yellow-400 rounded-full animate-pulse"></span>
-                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">
-                    Wiring Personnel
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 hover:bg-white/10 rounded-full transition-all"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="p-8 space-y-6">
-              <div>
-                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
-                  Technician Full Name
-                </label>
-                <div className="relative">
-                  <input
-                    required
-                    type="text"
-                    placeholder="e.g. SURESH PRAJAPATI"
-                    className="w-full mt-1 p-4 bg-slate-50 border border-slate-100 rounded-2xl focus:bg-white outline-none text-sm font-bold"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ name: e.target.value.toUpperCase() })
-                    }
-                  />
-                  <Zap
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300"
-                    size={18}
-                  />
-                </div>
-              </div>
-
-              <button
-                disabled={loading}
-                type="submit"
-                className={`w-full py-4 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all flex items-center justify-center gap-3 ${editingId ? "bg-amber-500 hover:bg-amber-600" : "bg-[#1a5695] hover:bg-[#15467a]"}`}
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin" size={18} />
-                ) : (
-                  <>
-                    <Check size={18} />{" "}
-                    {editingId ? "Update Record" : "Confirm Entry"}
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              loading={loading}
+              icon={Zap}
+              variant={editingId ? "warning" : "primary"}
+            >
+              {editingId ? "Update Record" : "Confirm Entry"}
+            </Button>
+          </>
+        }
+      >
+        <div className="crm-form-stack">
+          <Input
+            label="Technician Full Name"
+            placeholder="e.g. SURESH PRAJAPATI"
+            icon={Zap}
+            value={formData.name}
+            onChange={(e) =>
+              setFormData({ name: e.target.value.toUpperCase() })
+            }
+            required
+          />
         </div>
-      )}
+      </Modal>
     </div>
   );
 };

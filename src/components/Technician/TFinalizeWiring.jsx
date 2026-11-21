@@ -23,6 +23,7 @@ import Swal from "sweetalert2";
 import Navbar from "../crm/Navbar";
 import Sidebar from "../Supervisor/Sidebar";
 import { useAuth } from "../../context/authContext";
+import TWiringTabs from "./TWiringTabs";
 
 const TFinalizeWiring = () => {
   const { state } = useLocation();
@@ -130,17 +131,26 @@ const TFinalizeWiring = () => {
         <main className="crm-main p-4 lg:p-10 pb-32">
           <div className="max-w-5xl mx-auto">
             {/* Header Section */}
-            <div className="flex items-center justify-between mb-10">
-              <div className="flex items-center gap-5">
+            <div className="flex items-center justify-between gap-4 flex-wrap mb-10">
+              {/* Left: back + title */}
+              <div className="flex items-center gap-5 min-w-0">
                 <button
                   onClick={() => navigate(-1)}
-                  className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#1a5695] transition-all shadow-sm"
+                  className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-400 hover:text-[#1a5695] transition-all shadow-sm shrink-0"
                 >
                   <ArrowLeft size={20} />
                 </button>
-                <h1 className="text-3xl lg:text-4xl font-black text-slate-900 uppercase tracking-tight">
+                <h1 className="text-3xl lg:text-4xl font-black text-slate-900 uppercase tracking-tight truncate">
                   Finalize Site
                 </h1>
+              </div>
+
+              {/* Right: tabs */}
+              <div className="ml-auto w-full sm:w-auto">
+                <TWiringTabs
+                  activeTab="photos"
+                  selectedWiring={selectedWiring}
+                />
               </div>
             </div>
 

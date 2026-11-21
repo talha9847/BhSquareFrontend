@@ -401,6 +401,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/technician/finalizewiring"
             element={
@@ -452,7 +453,7 @@ function App() {
           <Route
             path="/finalizewiring"
             element={
-              <ProtectedRoute allowedRoles={["admin", "technician"]}>
+              <ProtectedRoute allowedRoles={["admin"]}>
                 <FinalizeWiring />
               </ProtectedRoute>
             }
