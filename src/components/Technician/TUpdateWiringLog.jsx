@@ -541,23 +541,6 @@ const TUpdateWiringLog = () => {
             </>
           )}
         </main>
-
-        {isEditable && (
-          <div className="pt-4">
-            <button
-              onClick={handleNextStep}
-              className="w-full py-6 bg-emerald-500 text-white rounded-[32px] font-black uppercase text-[11px] tracking-[0.2em] hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-100 flex items-center justify-center gap-3"
-            >
-              {uL ? (
-                "Moving..."
-              ) : (
-                <>
-                  Move to Next Step <ArrowRight size={18} />
-                </>
-              )}
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
