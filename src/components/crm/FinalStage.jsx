@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Search,
   Loader2,
@@ -14,10 +14,12 @@ import {
   X,
   ChevronRight,
   Inbox,
+  Filter,
+  RotateCcw,
 } from "lucide-react";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
-import { toast } from "react-toastify"; // Keeping for success messages only
+import { toast } from "react-toastify";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
@@ -29,6 +31,26 @@ const FinalStage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [finalLogs, setFinalLogs] = useState([]);
 
+  // ===== FILTER STATE =====
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    supervisor: "", // "assigned" | "unassigned" | ""
+    stage: "", // "file_approved" | "file_uploaded" | "inspection" | "redeem" | "disbursal" | ""
+    stageState: "", // "complete" | "incomplete" | ""
+  });
+
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const resetFilters = () => {
+    setFilters({ supervisor: "", stage: "", stageState: "" });
+    setSearchQuery("");
+  };
+
+  const activeFilterCount = Object.values(filters).filter(Boolean).length;
+
+  // ===== EXISTING STATE =====
   const [isFabModalOpen, setIsFabModalOpen] = useState(false);
   const [supervisors, setSupervisor] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -54,7 +76,6 @@ const FinalStage = () => {
         },
         { withCredentials: true },
       );
-
       if (res.status === 200) {
         toast.success("Status updated");
         getFinalStageData();
@@ -135,7 +156,6 @@ const FinalStage = () => {
 
   const handleToggle = async (id, field, currentStatus, label, item) => {
     if (!item.supervisor_id) {
-      // Keep this toast as it's a validation warning for the user, not a system error
       toast.warn("Please assign Supervisor first");
       return;
     }
@@ -163,7 +183,6 @@ const FinalStage = () => {
             redeem: "updateStage13",
             disbursal: "updateStage14",
           };
-
           const res = await axios.post(
             `/api/sources/${endpoints[field]}`,
             { customerId: item.customer_id, flag: !currentStatus },
@@ -194,9 +213,49 @@ const FinalStage = () => {
     }
   };
 
-  const filteredItems = finalLogs.filter((item) =>
-    item.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  // ===== FILTER LOGIC =====
+  const filteredItems = useMemo(() => {
+    return finalLogs.filter((item) => {
+      // Search
+      if (
+        searchQuery &&
+        !item.customer_name?.toLowerCase().includes(searchQuery.toLowerCase())
+      ) {
+        return false;
+      }
+
+      // Supervisor filter
+      if (filters.supervisor === "assigned" && !item.supervisor_id)
+        return false;
+      if (filters.supervisor === "unassigned" && item.supervisor_id)
+        return false;
+
+      // Stage completion filter
+      if (filters.stage && filters.stageState) {
+        const stageValue = Boolean(item[filters.stage]);
+        if (filters.stageState === "complete" && !stageValue) return false;
+        if (filters.stageState === "incomplete" && stageValue) return false;
+      }
+
+      return true;
+    });
+  }, [finalLogs, searchQuery, filters]);
+
+  // Counts per stage (useful for quick badge display)
+  const stageCounts = useMemo(() => {
+    const stages = [
+      "file_approved",
+      "file_uploaded",
+      "inspection",
+      "redeem",
+      "disbursal",
+    ];
+    const counts = {};
+    stages.forEach((s) => {
+      counts[s] = finalLogs.filter((i) => i[s]).length;
+    });
+    return counts;
+  }, [finalLogs]);
 
   const InteractiveBadge = ({ id, label, field, active, icon: Icon, item }) => (
     <button
@@ -212,7 +271,9 @@ const FinalStage = () => {
         {label}
       </span>
       <div
-        className={`w-1.5 h-1.5 rounded-full transition-all ${active ? "bg-emerald-500 scale-110" : "bg-slate-200"}`}
+        className={`w-1.5 h-1.5 rounded-full transition-all ${
+          active ? "bg-emerald-500 scale-110" : "bg-slate-200"
+        }`}
       ></div>
     </button>
   );
@@ -255,19 +316,125 @@ const FinalStage = () => {
             </div>
           </div>
 
-          <div className="crm-surface bg-white p-4 rounded-3xl border border-slate-200 mb-6 shadow-sm">
-            <div className="relative">
-              <Search
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-                size={18}
-              />
-              <input
-                type="text"
-                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold placeholder:text-slate-300"
-                placeholder="Search customer..."
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+          {/* ===== SEARCH + FILTER BAR ===== */}
+          <div className="crm-surface bg-white p-4 rounded-3xl border border-slate-200 mb-6 shadow-sm space-y-4">
+            <div className="flex gap-3">
+              <div className="relative flex-1">
+                <Search
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  size={18}
+                />
+                <input
+                  type="text"
+                  className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold placeholder:text-slate-300"
+                  placeholder="Search customer..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <button
+                onClick={() => setShowFilters((s) => !s)}
+                className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${
+                  showFilters || activeFilterCount > 0
+                    ? "bg-[#1a5695] text-white"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                }`}
+              >
+                <Filter size={14} />
+                Filters
+                {activeFilterCount > 0 && (
+                  <span className="bg-white text-[#1a5695] text-[9px] px-1.5 py-0.5 rounded-full">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
             </div>
+
+            {showFilters && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+                {/* Supervisor */}
+                <div>
+                  <label className="block text-[9px] font-black uppercase text-slate-400 mb-1">
+                    Supervisor
+                  </label>
+                  <select
+                    value={filters.supervisor}
+                    onChange={(e) =>
+                      handleFilterChange("supervisor", e.target.value)
+                    }
+                    className="w-full p-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold"
+                  >
+                    <option value="">All</option>
+                    <option value="assigned">Assigned</option>
+                    <option value="unassigned">Unassigned</option>
+                  </select>
+                </div>
+
+                {/* Stage */}
+                <div>
+                  <label className="block text-[9px] font-black uppercase text-slate-400 mb-1">
+                    Workflow Stage
+                  </label>
+                  <select
+                    value={filters.stage}
+                    onChange={(e) =>
+                      handleFilterChange("stage", e.target.value)
+                    }
+                    className="w-full p-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold"
+                  >
+                    <option value="">All stages</option>
+                    <option value="file_approved">
+                      Approved ({stageCounts.file_approved})
+                    </option>
+                    <option value="file_uploaded">
+                      File Uploaded ({stageCounts.file_uploaded})
+                    </option>
+                    <option value="inspection">
+                      Inspection ({stageCounts.inspection})
+                    </option>
+                    <option value="redeem">
+                      Redeem ({stageCounts.redeem})
+                    </option>
+                    <option value="disbursal">
+                      Disbursal ({stageCounts.disbursal})
+                    </option>
+                  </select>
+                </div>
+
+                {/* Stage state */}
+                <div>
+                  <label className="block text-[9px] font-black uppercase text-slate-400 mb-1">
+                    Stage Completion
+                  </label>
+                  <select
+                    value={filters.stageState}
+                    onChange={(e) =>
+                      handleFilterChange("stageState", e.target.value)
+                    }
+                    disabled={!filters.stage}
+                    className="w-full p-2.5 bg-slate-50 border border-slate-100 rounded-xl text-[11px] font-bold disabled:opacity-40"
+                  >
+                    <option value="">Any</option>
+                    <option value="complete">Complete</option>
+                    <option value="incomplete">Incomplete</option>
+                  </select>
+                </div>
+              </div>
+            )}
+
+            {activeFilterCount > 0 && (
+              <div className="flex items-center justify-between pt-2">
+                <span className="text-[10px] font-bold text-slate-500">
+                  Showing {filteredItems.length} of {finalLogs.length} records
+                </span>
+                <button
+                  onClick={resetFilters}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-600 rounded-xl text-[10px] font-black uppercase hover:bg-red-100 transition-all"
+                >
+                  <RotateCcw size={12} /> Reset
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="bg-white rounded-[40px] border border-slate-200 overflow-hidden shadow-sm relative min-h-[450px]">
@@ -330,7 +497,6 @@ const FinalStage = () => {
                             >
                               {item.customer_name}
                             </div>
-
                             <div className="text-[10px] text-slate-400 font-bold flex items-center gap-1.5 mt-1">
                               <span className="text-[#1a5695]">
                                 {item.contact_number}
@@ -339,8 +505,6 @@ const FinalStage = () => {
                               <span className="uppercase truncate max-w-[150px]">
                                 {item.address}
                               </span>
-
-                              {/* Colorful Type Badge */}
                               <span
                                 className={`
                                 text-[9px] px-1 rounded font-bold uppercase border ml-0.5
@@ -359,15 +523,22 @@ const FinalStage = () => {
                               </span>
                             </div>
                           </td>
-
                           <td
                             onClick={() =>
                               !item.file_approved && handleFabClick(item)
                             }
-                            className={`px-6 py-4 group ${item.file_approved ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                            className={`px-6 py-4 group ${
+                              item.file_approved
+                                ? "cursor-not-allowed opacity-50"
+                                : "cursor-pointer"
+                            }`}
                           >
                             <div
-                              className={`flex items-center gap-2 font-black text-[11px] uppercase ${item.file_approved ? "text-gray-400" : "text-[#1a5695] group-hover:underline"}`}
+                              className={`flex items-center gap-2 font-black text-[11px] uppercase ${
+                                item.file_approved
+                                  ? "text-gray-400"
+                                  : "text-[#1a5695] group-hover:underline"
+                              }`}
                             >
                               {item.supervisor_name || "ASSIGN SUPERVISOR"}
                               {!item.file_approved && (
@@ -429,7 +600,11 @@ const FinalStage = () => {
                           </td>
                           <td className="px-6 py-4 text-center">
                             <span
-                              className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${item.status === "done" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}
+                              className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
+                                item.status === "done"
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-yellow-100 text-yellow-700"
+                              }`}
                             >
                               {item.status}
                             </span>
@@ -469,7 +644,7 @@ const FinalStage = () => {
         </main>
       </div>
 
-      {/* Modals remain same but with console.error instead of toast.error */}
+      {/* Assign Supervisor Modal */}
       {isFabModalOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
           <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden">
@@ -519,6 +694,7 @@ const FinalStage = () => {
         </div>
       )}
 
+      {/* Update Status Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm">

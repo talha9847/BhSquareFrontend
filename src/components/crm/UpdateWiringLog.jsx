@@ -117,27 +117,45 @@ const UpdateWiringLog = () => {
       isOverLimit
     )
       return;
-    setActionLoading(true);
-    try {
-      const res = await axios.post(
-        `/api/wiring/createWiringItem`,
-        {
-          wiring_id: wiringId,
-          wire_inventory_id: Number(wireSelection.inventory_id),
-          qty: Number(wireSelection.length),
-        },
-        { withCredentials: true },
-      );
 
-      if (res.status === 200 || res.status === 201) {
-        toast.success("Wire Issued");
-        setWireSelection({ inventory_id: "", length: "" });
-        fetchData();
-      }
-    } catch (e) {
-      toast.error("Save failed");
-    } finally {
-      setActionLoading(false);
+    const result = await Swal.fire({
+      title: "Issue Wire?",
+      text: `Issue ${wireSelection.length}m of ${selectedWire?.brand_name || "wire"} ${selectedWire?.wire_type || ""}? This will deduct it from available stock.`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#1a5695",
+      cancelButtonColor: "#cbd5e1",
+      confirmButtonText: "Yes, Issue",
+      cancelButtonText: "Cancel",
+      showLoaderOnConfirm: true,
+      preConfirm: async () => {
+        setActionLoading(true);
+        try {
+          const response = await axios.post(
+            `/api/wiring/createWiringItem`,
+            {
+              wiring_id: wiringId,
+              wire_inventory_id: Number(wireSelection.inventory_id),
+              qty: Number(wireSelection.length),
+            },
+            { withCredentials: true },
+          );
+          return response.data;
+        } catch (e) {
+          Swal.showValidationMessage(
+            `Save failed: ${e.response?.data?.message || "Server Error"}`,
+          );
+        } finally {
+          setActionLoading(false);
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading(),
+    });
+
+    if (result.isConfirmed) {
+      toast.success("Wire Issued");
+      setWireSelection({ inventory_id: "", length: "" });
+      fetchData();
     }
   };
 
@@ -148,29 +166,48 @@ const UpdateWiringLog = () => {
       isUnusedOverLimit
     )
       return;
-    setActionLoading(true);
 
-    try {
-      const payload = {
-        customer_id: Number(customerId),
-        kit_item_id: Number(unusedSelection.kit_item_id),
-        inventory_id: selectedKitItem?.inventory_id,
-        unused_qty: Number(unusedSelection.qty),
-      };
+    const result = await Swal.fire({
+      title: "Log Unused Material?",
+      text: `Log ${unusedSelection.qty} unit(s) of ${selectedKitItem?.name || "item"} as unused/returned to kit inventory?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#1a5695",
+      cancelButtonColor: "#cbd5e1",
+      confirmButtonText: "Yes, Log",
+      cancelButtonText: "Cancel",
+      showLoaderOnConfirm: true,
+      preConfirm: async () => {
+        setActionLoading(true);
+        try {
+          const payload = {
+            customer_id: Number(customerId),
+            kit_item_id: Number(unusedSelection.kit_item_id),
+            inventory_id: selectedKitItem?.inventory_id,
+            unused_qty: Number(unusedSelection.qty),
+          };
 
-      await axios.post(`/api/kitready/createUnusedInventory`, payload, {
-        withCredentials: true,
-      });
+          const response = await axios.post(
+            `/api/kitready/createUnusedInventory`,
+            payload,
+            { withCredentials: true },
+          );
+          return response.data;
+        } catch (error) {
+          Swal.showValidationMessage(
+            `Save failed: ${error.response?.data?.message || "Server Error"}`,
+          );
+        } finally {
+          setActionLoading(false);
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading(),
+    });
 
+    if (result.isConfirmed) {
       toast.success("Return logged");
       setUnusedSelection({ kit_item_id: "", qty: "" });
       fetchData(); // Refresh the list from DB
-    } catch (error) {
-      toast.error(
-        error.response?.data?.message || "Failed to log unused material",
-      );
-    } finally {
-      setActionLoading(false);
     }
   };
 
@@ -253,6 +290,19 @@ const UpdateWiringLog = () => {
   };
 
   const handleNextStep = async () => {
+    const result = await Swal.fire({
+      title: "Move to Next Step?",
+      text: "This will finalize the wiring inventory. You won't be able to add or delete items afterwards.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#1a5695",
+      cancelButtonColor: "#cbd5e1",
+      confirmButtonText: "Yes, Continue",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       setUL(true);
       // Add your API call here to change status to 'completed' or next phase
