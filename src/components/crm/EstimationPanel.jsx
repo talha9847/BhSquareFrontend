@@ -48,12 +48,17 @@ const isCanvasBlank = (canvas) => {
   try {
     const probe = document.createElement("canvas");
     probe.width = 120;
-    probe.height = Math.max(1, Math.round((canvas.height / canvas.width) * 120));
+    probe.height = Math.max(
+      1,
+      Math.round((canvas.height / canvas.width) * 120),
+    );
     const ctx = probe.getContext("2d", { willReadFrequently: true });
     ctx.drawImage(canvas, 0, 0, probe.width, probe.height);
     const { data } = ctx.getImageData(0, 0, probe.width, probe.height);
     for (let i = 0; i < data.length; i += 4) {
-      const hasInk = data[i + 3] > 10 && (data[i] < 245 || data[i + 1] < 245 || data[i + 2] < 245);
+      const hasInk =
+        data[i + 3] > 10 &&
+        (data[i] < 245 || data[i + 1] < 245 || data[i + 2] < 245);
       if (hasInk) return false;
     }
     return true;
@@ -123,7 +128,9 @@ const EstimationPanel = ({
   const [profitPerKw, setProfitPerKw] = useState(initialProfit);
   const [discountPerKw, setDiscountPerKw] = useState(initialDiscount);
   const [dealerCost, setDealerCost] = useState(initialDealerCost);
-
+  const [profitAfterDis, setProfitAfterDis] = useState(0);
+  const [materialCost, setMaterialCost] = useState(0);
+  const [subsidyAmount, setSubsidyAmount] = useState(0);
   const [inputData, setInputData] = useState({
     panel_qty: 0,
     panel_wattage: 0,
@@ -138,6 +145,7 @@ const EstimationPanel = ({
     dealer_cost: 0,
   });
 
+  const totalKw = (inputData.panel_wattage * inputData.panel_qty) / 1000;
   const [estimationResult, setEstimationResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [sendingWa, setSendingWa] = useState(false);
@@ -220,6 +228,8 @@ const EstimationPanel = ({
         response.data.data.items?.forEach((i) => {
           if (i.name === "INVERTER") setInverterRate(i.price);
         });
+        setSubsidyAmount(response.data.data.subsidy_amount);
+        setMaterialCost(response.data.data.grand_total);
       }
     } catch (error) {
       console.error("API Error:", error);
@@ -490,6 +500,7 @@ const EstimationPanel = ({
               <Field
                 label="Panel Wattage (Wp)"
                 type="text"
+                inputMode="numeric"
                 name="panel_wattage"
                 required
                 value={inputData.panel_wattage}
@@ -498,6 +509,7 @@ const EstimationPanel = ({
               <Field
                 label="Panel Quantity"
                 type="text"
+                inputMode="numeric"
                 name="panel_qty"
                 required
                 value={inputData.panel_qty}
@@ -505,7 +517,8 @@ const EstimationPanel = ({
               />
               <Field
                 label="Rate Per Watt (₹)"
-                type="number"
+                type="text"
+                inputMode="numeric"
                 name="panel_rate_per_watt"
                 required
                 value={inputData.panel_rate_per_watt}
@@ -549,25 +562,112 @@ const EstimationPanel = ({
           <div>
             <SectionTitle>Pricing Details</SectionTitle>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <Field
-                label="Profit Per kW (₹)"
-                type="number"
-                value={profitPerKw}
-                onChange={(e) => setProfitPerKw(e.target.value)}
-              />
-              <Field
-                label="Discount Per kW (₹)"
-                type="number"
-                value={discountPerKw}
-                onChange={(e) => setDiscountPerKw(e.target.value)}
-              />
-              <Field
-                label="Dealer Cost (₹/kW)"
-                className="bg-slate-100"
-                type="number"
-                value={dealerCost}
-                onChange={(e) => setDealerCost(e.target.value)}
-              />
+              <div>
+                <Field
+                  label="Profit Per kW (₹)"
+                  type="text"
+                  inputMode="numeric"
+                  value={profitPerKw}
+                  onChange={(e) => {
+                    const newProfit = Number(e.target.value);
+                    setProfitPerKw(newProfit);
+
+                    const kw = Number(totalKw) || 0;
+                    const disc = Number(discountPerKw) || 0;
+                    setProfitAfterDis(kw * newProfit - kw * disc);
+                  }}
+                />
+                <div>
+                  {profitPerKw} * {totalKw} = {totalKw * profitPerKw}
+                </div>
+              </div>
+              <div>
+                <Field
+                  label="Discount Per kW (₹)"
+                  type="text"
+                  inputMode="numeric"
+                  value={discountPerKw}
+                  onChange={(e) => {
+                    const newDiscount = Number(e.target.value);
+                    setDiscountPerKw(newDiscount);
+
+                    const kw = Number(totalKw) || 0;
+                    const profit = Number(profitPerKw) || 0;
+                    setProfitAfterDis(kw * profit - kw * newDiscount);
+                  }}
+                />
+                <div>
+                  {discountPerKw} * {totalKw} = {totalKw * discountPerKw}
+                </div>
+              </div>
+              <div>
+                <Field
+                  label="Dealer Cost (₹/kW)"
+                  className="bg-slate-100"
+                  type="text"
+                  inputMode="numeric"
+                  value={dealerCost}
+                  onChange={(e) => setDealerCost(e.target.value)}
+                />
+
+                <div>
+                  {dealerCost} * {totalKw} = {dealerCost * totalKw}
+                </div>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div>
+                <Field
+                  label="Total Profit After Discount"
+                  type="text"
+                  value={profitAfterDis}
+                  readOnly
+                />
+              </div>
+              <div>
+                <Field
+                  label="Material Cost"
+                  type="text"
+                  value={materialCost}
+                  readOnly
+                />
+              </div>
+              <div>
+                <Field
+                  label="Total Amount"
+                  type="text"
+                  value={Math.round(
+                    materialCost + profitAfterDis + dealerCost * totalKw,
+                  )}
+                  readOnly
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <Field
+                  label="Subsidy"
+                  type="text"
+                  value={subsidyAmount}
+                  onChange={(e) => {
+                    setSubsidyAmount(e.target.value);
+                  }}
+                />
+                <Field
+                  label="After Subsidy"
+                  type="text"
+                  value={Math.round(
+                    Number(
+                      materialCost +
+                        profitAfterDis +
+                        dealerCost * totalKw -
+                        subsidyAmount,
+                    ),
+                  )}
+                  readOnly
+                />
+              </div>
             </div>
           </div>
 
