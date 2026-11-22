@@ -89,6 +89,10 @@ import SPrepareKit from "./components/site_supervisor/SPrepareKit";
 import SDispatch from "./components/site_supervisor/SDispatch";
 import SFabrication from "./components/site_supervisor/SFabrication";
 import SWiring from "./components/site_supervisor/SWiring";
+import SUpdateWiringLog from "./components/site_supervisor/SUpdateWiringLog";
+import SFinalizeWiring from "./components/site_supervisor/SFinalizeWiring";
+import SInventoryManager from "./components/site_supervisor/SInventoryManager";
+import SWiringInventory from "./components/site_supervisor/SWiringInventory";
 // import Test from "./components/crm/Test";
 function App() {
   const [count, setCount] = useState(0);
@@ -264,6 +268,38 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["site_supervisor"]}>
                 <SWiring />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/site-supervisor/updatewiring"
+            element={
+              <ProtectedRoute allowedRoles={["site_supervisor"]}>
+                <SUpdateWiringLog />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/site-supervisor/finalizewiring"
+            element={
+              <ProtectedRoute allowedRoles={["site_supervisor"]}>
+                <SFinalizeWiring />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/site-supervisor/inventory"
+            element={
+              <ProtectedRoute allowedRoles={["site_supervisor"]}>
+                <SInventoryManager />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/site-supervisor/winventory"
+            element={
+              <ProtectedRoute allowedRoles={["site_supervisor"]}>
+                <SWiringInventory />
               </ProtectedRoute>
             }
           />

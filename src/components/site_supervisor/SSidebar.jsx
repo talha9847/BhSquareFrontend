@@ -8,6 +8,8 @@ import {
   Truck,
   Hammer,
   Zap,
+  Warehouse,
+  Cable,
 } from "lucide-react";
 const MENU_ITEMS = [
   {
@@ -23,13 +25,13 @@ const MENU_ITEMS = [
       "/allkitready",
     ],
   },
-  {
-    name: "File Generation",
-    icon: <ClipboardEdit size={18} />,
-    type: "Project Lifecycle",
-    path: "allregistration",
-    // activePaths: ["/registration", "/allregistration"],
-  },
+  // {
+  //   name: "File Generation",
+  //   icon: <ClipboardEdit size={18} />,
+  //   type: "Project Lifecycle",
+  //   path: "allregistration",
+  //   // activePaths: ["/registration", "/allregistration"],
+  // },
   {
     name: "Dispatch",
     icon: <Truck size={18} />,
@@ -60,6 +62,21 @@ const MENU_ITEMS = [
       "/site-supervisor/updatewiring",
       "/site-supervisor/finalizewiring",
     ],
+  },
+
+  {
+    name: "Inventory",
+    icon: <Warehouse size={18} />,
+    type: "Logistics & Stores",
+    path: "site-supervisor/inventory",
+    activePaths: ["/site-supervisor/inventory"],
+  },
+  {
+    name: "Wiring Inventory",
+    icon: <Cable size={18} />,
+    type: "Logistics & Stores",
+    path: "site-supervisor/winventory",
+    activePaths: ["/site-supervisor/winventory"],
   },
 ];
 

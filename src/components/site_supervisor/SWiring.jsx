@@ -274,7 +274,7 @@ const SWiring = () => {
                             {!isLocked ? (
                               <button
                                 onClick={() =>
-                                  navigate("/updatewiring", {
+                                  navigate("/site-supervisor/updatewiring", {
                                     state: {
                                       wiring_id: item.wiring_id,
                                       customer_id: item.customer_id,
@@ -293,7 +293,7 @@ const SWiring = () => {
                                   //   state: { selectedWiring: item },
                                   // });
 
-                                  navigate("/updatewiring", {
+                                  navigate("/site-supervisor/updatewiring", {
                                     state: {
                                       wiring_id: item.wiring_id,
                                       customer_id: item.customer_id,
