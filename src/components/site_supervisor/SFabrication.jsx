@@ -1,0 +1,416 @@
+import React, { useEffect, useState } from "react";
+import {
+  Search,
+  Edit3,
+  X,
+  Loader2,
+  Eye,
+  Save,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  Zap,
+  UserPlus,
+  ChevronRight,
+  Inbox,
+} from "lucide-react";
+import Navbar from "../crm/Navbar";
+import Sidebar from "./SSidebar";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const SFabrication = () => {
+  const navigate = useNavigate();
+  const apiUrl = import.meta.env.VITE_API_URL;
+
+  // UI States
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isFabModalOpen, setIsFabModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [tableLoading, setTableLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Data States
+  const [fabricators, setFabricators] = useState([]);
+  const [fabrications, setFabrications] = useState([]);
+  const [activeItem, setActiveItem] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    customer_id: null,
+    fabricator_id: "",
+  });
+
+  const getFabricators = async () => {
+    try {
+      const res = await axios.get(`/api/dispatch/fetchFabricators`, {
+        withCredentials: true,
+      });
+      if (res.status === 200) setFabricators(res.data.data || []);
+    } catch (error) {}
+  };
+
+  const fetchFabrications = async () => {
+    setTableLoading(true);
+    try {
+      const res = await axios.get(`/api/dispatch/fetchFabrications`, {
+        withCredentials: true,
+      });
+      if (res.status === 200) setFabrications(res.data.data || []);
+    } catch (error) {
+      toast.error("Failed to load fabrication logs");
+    } finally {
+      setTableLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFabrications();
+    getFabricators();
+  }, []);
+
+  const handleFabClick = (item) => {
+    if (item.status !== "pending") return;
+    setActiveItem(item);
+    setEditFormData({
+      ...editFormData,
+      customer_id: item.customer_id,
+      fabricator_id: item.fabricator_id || "",
+    });
+    setIsFabModalOpen(true);
+  };
+
+  const handleEditClick = (item) => {
+    setActiveItem(item);
+    setEditFormData({
+      ...editFormData,
+      customer_id: item.customer_id,
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdate = async (e, type) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const payload = {
+        customer_id: editFormData.customer_id,
+        fabricator_id: editFormData.fabricator_id,
+        status: type === "finalize" ? "done" : "pending",
+      };
+
+      const endpoint =
+        type === "fab"
+          ? `/api/dispatch/updateFabricatorViaId`
+          : `/api/dispatch/updateFabrication`;
+
+      const res = await axios.put(endpoint, payload, { withCredentials: true });
+
+      if (res.status === 200) {
+        toast.success(
+          type === "finalize" ? "Project Finalized!" : "Fabricator Updated!",
+        );
+        setIsEditModalOpen(false);
+        setIsFabModalOpen(false);
+        fetchFabrications();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Update failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredItems = fabrications.filter((item) =>
+    item.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  return (
+    <div className="crm-shell min-h-screen bg-slate-50 flex">
+      <Sidebar
+        isOpen={sidebarOpen}
+        toggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+        activePage="Fabrication"
+      />
+
+      <div className="crm-workspace flex-1 lg:ml-64 flex flex-col min-w-0">
+        <Navbar toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+
+        <main className="crm-main p-4 lg:p-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <h1 className="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight uppercase flex flex-wrap items-center gap-3">
+              Fabrication Status
+              <button
+                onClick={() => navigate("/allfabrication")}
+                className="flex items-center gap-1 bg-slate-200 text-slate-600 text-[10px] px-2 py-1 rounded-full hover:bg-slate-300 transition-all cursor-pointer"
+              >
+                SHOW ALL CUSTOMERS <ChevronRight size={12} />
+              </button>
+            </h1>
+            <button
+              onClick={() => navigate("/fabricators")}
+              className="flex items-center gap-2 px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
+            >
+              <Eye size={16} /> View Fabricators
+            </button>
+          </div>
+
+          {/* Search Bar */}
+          <div className="crm-surface bg-white p-4 rounded-3xl border border-slate-200 mb-6 flex items-center gap-3 shadow-sm">
+            <div className="flex-1 relative">
+              <Search
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                size={18}
+              />
+              <input
+                type="text"
+                className="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl outline-none text-sm font-bold"
+                placeholder="Search projects..."
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="crm-surface bg-white rounded-[32px] border border-slate-200 overflow-hidden shadow-sm min-h-[400px] relative">
+            {tableLoading ? (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 backdrop-blur-[2px] z-10">
+                <Loader2
+                  className="animate-spin text-[#1a5695] mb-2"
+                  size={32}
+                />
+                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  Loading...
+                </span>
+              </div>
+            ) : filteredItems.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-separate border-spacing-0">
+                  <thead className="bg-slate-50/50">
+                    <tr>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Customer
+                      </th>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        Fabricator
+                      </th>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">
+                        Status
+                      </th>
+                      <th className="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {filteredItems.map((item) => (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-slate-50/80 transition-colors"
+                      >
+                        <td className="px-6 py-4">
+                          <div
+                            onClick={() =>
+                              navigate("/master", {
+                                state: {
+                                  customerId: item.customer_id,
+                                  leadId: item.lead_id,
+                                },
+                              })
+                            }
+                            className="font-bold text-slate-800 text-sm uppercase cursor-pointer hover:text-[#1a5695] transition-colors"
+                          >
+                            {item.customer_name}
+                          </div>
+
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <div className="text-[10px] text-slate-400 font-bold">
+                              {item.contact_number}
+                            </div>
+
+                            {/* Colorful Short-form Badge */}
+                            <span
+                              className={`
+        text-[9px] px-1 rounded font-bold uppercase border
+        ${
+          item.installation_type === "Residential"
+            ? "bg-blue-50 text-blue-600 border-blue-100"
+            : item.installation_type === "Commercial"
+              ? "bg-purple-50 text-purple-600 border-purple-100"
+              : item.installation_type === "Industrial"
+                ? "bg-amber-50 text-amber-700 border-amber-100"
+                : "bg-slate-50 text-slate-400 border-slate-100"
+        }
+      `}
+                            >
+                              {item.installation_type?.substring(0, 3)}
+                            </span>
+                          </div>
+                        </td>
+                        <td
+                          onClick={() => handleFabClick(item)}
+                          className={`px-6 py-4 font-black text-[11px] cursor-pointer transition-all ${item.status === "pending" ? "text-[#1a5695] hover:underline" : "text-slate-500"}`}
+                        >
+                          <div className="flex items-center gap-2">
+                            {item.fabricator_name || "ASSIGN FABRICATOR"}
+                            {item.status === "pending" && (
+                              <UserPlus size={12} />
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-black text-[9px] uppercase tracking-wider ${item.status === "pending" ? "bg-amber-50 text-amber-600" : "bg-emerald-50 text-emerald-600"}`}
+                          >
+                            {item.status === "pending" ? (
+                              <Clock size={12} />
+                            ) : (
+                              <CheckCircle2 size={12} />
+                            )}
+                            {item.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          {item.status === "pending" && (
+                            <button
+                              onClick={() => handleEditClick(item)}
+                              className="p-2.5 bg-slate-50 text-slate-400 hover:text-[#1a5695] hover:bg-blue-50 rounded-xl transition-all border border-slate-100 shadow-sm"
+                            >
+                              <Edit3 size={16} />
+                            </button>
+                          )}
+                          {item.status === "done" && (
+                            <button
+                              onClick={() => navigate(`/wiring`)}
+                              className="flex items-center gap-2 px-4 py-2.5 bg-[#1a5695] text-white rounded-xl font-black text-[9px] uppercase tracking-widest shadow-md active:scale-95 ml-auto"
+                            >
+                              <Zap size={14} /> Go to Wiring
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              /* NO DATA FOUND VIEW */
+              <div className="flex flex-col items-center justify-center py-32">
+                <div className="p-6 bg-slate-50 rounded-full mb-4">
+                  <Inbox size={48} className="text-slate-300" />
+                </div>
+                <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">
+                  No Data Found
+                </h3>
+                <p className="text-[10px] text-slate-300 font-bold uppercase mt-1 tracking-tighter">
+                  We couldn't find any fabrication records matching your search.
+                </p>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+
+      {/* MODAL 1: ASSIGN FABRICATOR */}
+      {isFabModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden">
+            <div className="bg-[#1a5695] p-8 text-white flex justify-between items-center">
+              <h2 className="text-xl font-black uppercase tracking-tight">
+                Assign Fabricator
+              </h2>
+              <button
+                onClick={() => setIsFabModalOpen(false)}
+                className="p-2 hover:bg-white/10 rounded-full transition-all"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => handleUpdate(e, "fab")}
+              className="p-8 space-y-6"
+            >
+              <div>
+                <label className="text-[10px] font-black uppercase text-slate-400 ml-2">
+                  Select Fabricator
+                </label>
+                <select
+                  required
+                  className="w-full mt-1 p-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold outline-none focus:border-[#1a5695]"
+                  value={editFormData.fabricator_id}
+                  onChange={(e) =>
+                    setEditFormData({
+                      ...editFormData,
+                      fabricator_id: e.target.value,
+                    })
+                  }
+                >
+                  <option value="">Select a Fabricator</option>
+                  {fabricators.map((fab) => (
+                    <option key={fab.id} value={fab.id}>
+                      {fab.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <button
+                disabled={loading}
+                type="submit"
+                className="w-full py-4 bg-[#1a5695] text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95"
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  <>
+                    <Save size={18} /> Update Assignment
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: FINALIZE */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden">
+            <div className="bg-emerald-600 p-8 text-white flex justify-between items-center">
+              <h2 className="text-xl font-black uppercase tracking-tight">
+                Finalize Project
+              </h2>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="p-2 hover:bg-white/10 rounded-full transition-all"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            <form
+              onSubmit={(e) => handleUpdate(e, "finalize")}
+              className="p-8 space-y-6 text-center"
+            >
+              <p className="text-sm font-bold text-slate-500 uppercase tracking-tight px-4">
+                Confirm completion of fabrication for this project?
+              </p>
+              <button
+                disabled={loading}
+                type="submit"
+                className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 transition-all active:scale-95"
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin" size={18} />
+                ) : (
+                  <>
+                    <CheckCircle2 size={18} /> Save & Finalize
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default SFabrication;

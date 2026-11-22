@@ -29,6 +29,7 @@ const ROLE_HOME = {
   fabricator: "/fabricator/fabrication",
   source: "/source/leads",
   supervisor: "/supervisor/commission",
+  site_supervisor: "/site-supervisor/kitready",
 };
 
 const FEATURES = [
@@ -272,7 +273,10 @@ export default function Login() {
               style={{ animationDelay: "180ms" }}
             >
               {FEATURES.map(({ icon, title, description }, index) => (
-                <li key={title} className="group flex items-start gap-4 py-[18px]">
+                <li
+                  key={title}
+                  className="group flex items-start gap-4 py-[18px]"
+                >
                   <span className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#F5C518]/15 bg-gradient-to-br from-[#F5C518]/[0.14] via-[#F5C518]/[0.04] to-transparent text-[#F5C518] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-colors duration-300 group-hover:border-[#F5C518]/30 group-hover:text-[#FFE58A]">
                     {icon}
                   </span>
@@ -381,7 +385,11 @@ export default function Login() {
                   </div>
 
                   <div className="inline-flex items-center gap-2 rounded-full border border-[#F5C518]/20 bg-[#F5C518]/[0.06] px-3 py-1.5 text-[9.5px] font-bold uppercase tracking-[0.18em] text-[#F5C518]">
-                    <ShieldCheck size={12} strokeWidth={2.5} aria-hidden="true" />
+                    <ShieldCheck
+                      size={12}
+                      strokeWidth={2.5}
+                      aria-hidden="true"
+                    />
                     Secure sign-in
                   </div>
 

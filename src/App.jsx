@@ -83,6 +83,12 @@ import AgencyManager from "./components/crm/AgencyManager";
 import AgencyInventoryManager from "./components/crm/AgencyInventoryManager";
 import Maintenance from "./Guards/Maintaince";
 import FollowUp from "./components/crm/FollowUp";
+import SiteSupervisors from "./components/crm/SiteSupervisor";
+import SKitReady from "./components/site_supervisor/SKitReady";
+import SPrepareKit from "./components/site_supervisor/SPrepareKit";
+import SDispatch from "./components/site_supervisor/SDispatch";
+import SFabrication from "./components/site_supervisor/SFabrication";
+import SWiring from "./components/site_supervisor/SWiring";
 // import Test from "./components/crm/Test";
 function App() {
   const [count, setCount] = useState(0);
@@ -166,6 +172,14 @@ function App() {
             }
           />
           <Route
+            path="/site-supervisors"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <SiteSupervisors />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/customers"
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
@@ -210,6 +224,46 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <KitReady />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/site-supervisor/kitready"
+            element={
+              <ProtectedRoute allowedRoles={["site_supervisor"]}>
+                <SKitReady />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/site-supervisor/preparekit"
+            element={
+              <ProtectedRoute allowedRoles={["site_supervisor"]}>
+                <SPrepareKit />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/site-supervisor/dispatch"
+            element={
+              <ProtectedRoute allowedRoles={["site_supervisor"]}>
+                <SDispatch />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/site-supervisor/fabrication"
+            element={
+              <ProtectedRoute allowedRoles={["site_supervisor"]}>
+                <SFabrication />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/site-supervisor/wiring"
+            element={
+              <ProtectedRoute allowedRoles={["site_supervisor"]}>
+                <SWiring />
               </ProtectedRoute>
             }
           />

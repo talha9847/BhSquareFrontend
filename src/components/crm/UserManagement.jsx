@@ -34,6 +34,7 @@ const UserManagement = () => {
     fabricators: [],
     sources: [],
     supervisor: [],
+    site_supervisor: [],
   });
 
   // Modal States
@@ -48,7 +49,14 @@ const UserManagement = () => {
   const [modalLoading, setModalLoading] = useState(false);
 
   // Updated roles to match your master data keys
-  const roles = ["admin", "technician", "fabricator", "source", "supervisor"];
+  const roles = [
+    "admin",
+    "technician",
+    "fabricator",
+    "source",
+    "supervisor",
+    "Site Supervisor",
+  ];
 
   const getUsers = async () => {
     setTableLoading(true);
@@ -78,6 +86,7 @@ const UserManagement = () => {
           fabricators: res.data.data.fabricators || [],
           sources: res.data.data.sources || [],
           supervisor: res.data.data.supervisor || [],
+          site_supervisor: res.data.data.site_supervisor || [],
         });
       }
     } catch (error) {}
@@ -168,6 +177,7 @@ const UserManagement = () => {
     if (formData.role === "fabricator") return masterData.fabricators;
     if (formData.role === "source") return masterData.sources;
     if (formData.role === "supervisor") return masterData.supervisor;
+    if (formData.role === "Site Supervisor") return masterData.site_supervisor;
     return [];
   };
 

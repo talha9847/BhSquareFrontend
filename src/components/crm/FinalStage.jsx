@@ -238,12 +238,21 @@ const FinalStage = () => {
                 SHOW ALL <ChevronRight size={12} />
               </button>
             </h1>
-            <button
-              onClick={() => navigate("/supervisors")}
-              className="flex items-center gap-2 px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
-            >
-              <Eye size={16} /> Supervisors
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => navigate("/supervisors")}
+                className="flex items-center gap-2 px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
+              >
+                <Eye size={16} /> Supervisors
+              </button>
+              <button
+                onClick={() => navigate("/site-supervisors")}
+                className="flex items-center gap-2 px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all shadow-sm"
+              >
+                <Eye size={16} />
+                Site Supervisors
+              </button>
+            </div>
           </div>
 
           <div className="crm-surface bg-white p-4 rounded-3xl border border-slate-200 mb-6 shadow-sm">
