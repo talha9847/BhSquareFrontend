@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Sun } from "lucide-react";
+import { Menu, X, Sun, BookOpen } from "lucide-react";
 import { Magnetic } from "../../lib/motion";
 import logo from "../../assets/logo2.png";
+import { useNavigate } from "react-router-dom";
 
 const LINKS = [
   { id: "sun", label: "The Sun" },
@@ -18,7 +19,7 @@ const LINKS = [
 export default function TryNav({ active }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-
+  const navigate = useNavigate();
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", onScroll);
@@ -113,14 +114,28 @@ export default function TryNav({ active }) {
         {/* Action Controls */}
         <div className="flex items-center gap-3">
           <Magnetic className="hidden sm:block">
-            <button
-              data-testid="nav-cta-btn"
-              onClick={() => go("contact")}
-              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#FF8A00] to-[#FFD54A] px-5 py-2 text-sm font-semibold text-[#0B1220] transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#FF8A00]/20 active:scale-95"
-            >
-              <Sun size={16} strokeWidth={2.5} className="animate-spin-slow" />
-              <span>Free Site Visit</span>
-            </button>
+            <div className="flex gap-4">
+              <button
+                data-testid="nav-cta-btn"
+                onClick={() => go("contact")}
+                className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#FF8A00] to-[#FFD54A] px-5 py-2 text-sm font-semibold text-[#0B1220] transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-[#FF8A00]/20 active:scale-95"
+              >
+                <Sun
+                  size={16}
+                  strokeWidth={2.5}
+                  className="animate-spin-slow"
+                />
+                <span>Free Site Visit</span>
+              </button>
+              <button
+                data-testid="nav-cta-btn"
+                onClick={() => navigate("/blogs")}
+                className="flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-5 py-2 text-sm font-semibold text-white/80 transition-all duration-300 hover:border-[#FFD54A]/40 hover:bg-white/[0.08] hover:text-white active:scale-95"
+              >
+                <BookOpen size={15} strokeWidth={2.2} />
+                <span>Journal</span>
+              </button>
+            </div>
           </Magnetic>
 
           {/* Mobile Menu Toggle Button */}
@@ -165,7 +180,15 @@ export default function TryNav({ active }) {
                 </button>
               ))}
 
-              <div className="pt-4">
+              <div className="space-y-2.5 pt-4">
+                <button
+                  data-testid="nav-mobile-journal"
+                  onClick={() => navigate("/blogs")}
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.04] py-3 text-center text-base font-semibold text-white/85 transition-colors active:scale-[0.98]"
+                >
+                  <BookOpen size={17} strokeWidth={2.2} />
+                  Read the Solar Journal
+                </button>
                 <button
                   data-testid="nav-mobile-cta"
                   onClick={() => go("contact")}

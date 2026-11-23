@@ -93,6 +93,7 @@ import SUpdateWiringLog from "./components/site_supervisor/SUpdateWiringLog";
 import SFinalizeWiring from "./components/site_supervisor/SFinalizeWiring";
 import SInventoryManager from "./components/site_supervisor/SInventoryManager";
 import SWiringInventory from "./components/site_supervisor/SWiringInventory";
+import Blog from "./components/frontweb/Blog";
 // import Test from "./components/crm/Test";
 function App() {
   const [count, setCount] = useState(0);
@@ -125,6 +126,7 @@ function App() {
 
           {/* <Route path="*" element={<Maintenance />} /> */}
 
+          <Route path="/blogs" element={<Blog />} />
           <Route path="/login" element={<Login />} />
 
           <Route
