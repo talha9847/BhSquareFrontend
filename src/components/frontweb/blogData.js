@@ -488,6 +488,8 @@ export const RECOMMENDED_POSTS = [
   },
 ];
 
+export const FEATURED_POST = BLOG_POSTS ? (BLOG_POSTS.find((p) => p.id === FEATURED_ID) || BLOG_POSTS[0]) : null;
+
 export const ALL_POSTS = [...BLOG_POSTS, ...RECOMMENDED_POSTS];
 
 export const getPostsByCategory = (posts, category) =>

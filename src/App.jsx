@@ -39,6 +39,7 @@ import RegistrationsManager from "./components/crm/RegistrationsManager";
 import AllKitReady from "./components/crm/AllKitReady";
 import AllDispatch from "./components/crm/AllDispatch";
 import CategoryManager from "./components/crm/CategoryManager";
+import BlogManager from "./components/crm/BlogManager";
 import FinalizeWiring from "./components/crm/FinalizeWiring";
 import UserManagement from "./components/crm/UserManagement";
 import ProtectedRoute from "./Guards/ProtectedRoute";
@@ -127,6 +128,14 @@ function App() {
           {/* <Route path="*" element={<Maintenance />} /> */}
 
           <Route path="/blogs" element={<Blog />} />
+          <Route
+            path="/admin/blogs"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <BlogManager />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/login" element={<Login />} />
 
           <Route

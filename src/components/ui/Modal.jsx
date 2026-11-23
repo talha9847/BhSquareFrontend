@@ -70,6 +70,12 @@ export default function Modal({
   const titleId = useId();
   const subtitleId = useId();
 
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  const initialFocusRefRef = useRef(initialFocusRef);
+  initialFocusRefRef.current = initialFocusRef;
+
   useEffect(() => {
     if (!open) return undefined;
 
@@ -87,14 +93,14 @@ export default function Modal({
 
     const focusTimer = window.requestAnimationFrame(() => {
       if (!panel) return;
-      const target = initialFocusRef?.current || getFocusable()[0] || panel;
+      const target = initialFocusRefRef.current?.current || getFocusable()[0] || panel;
       target?.focus?.({ preventScroll: true });
     });
 
     const handleKeyDown = (event) => {
       if (event.key === "Escape" && closeOnEsc && !preventClose) {
         event.stopPropagation();
-        onClose?.();
+        onCloseRef.current?.();
         return;
       }
 
@@ -131,12 +137,12 @@ export default function Modal({
       }
       previouslyFocused?.focus?.({ preventScroll: true });
     };
-  }, [open, closeOnEsc, preventClose, onClose, initialFocusRef]);
+  }, [open, closeOnEsc, preventClose]);
 
   if (!open) return null;
 
   const requestClose = () => {
-    if (!preventClose) onClose?.();
+    if (!preventClose) onCloseRef.current?.();
   };
 
   return createPortal(

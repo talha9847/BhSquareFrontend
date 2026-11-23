@@ -21,6 +21,7 @@ import {
   Database,
   BanknoteIcon,
   Package2Icon,
+  BookOpen,
 } from "lucide-react";
 import axios from "axios";
 import CrmSidebar from "./CrmSidebar";
@@ -186,6 +187,13 @@ const MENU_ITEMS = [
     type: "After Sales",
     path: "completed",
     activePaths: ["/completed"],
+  },
+  {
+    name: "Blog",
+    icon: <BookOpen size={18} />,
+    type: "Website",
+    path: "admin/blogs",
+    activePaths: ["/admin/blogs"],
   },
   {
     name: "Backup",

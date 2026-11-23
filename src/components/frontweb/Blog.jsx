@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   ArrowRight,
@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Clock,
   Copy,
+  Loader2,
   Phone,
   Search,
   Sparkles,
@@ -23,19 +24,24 @@ import { FaWhatsapp } from "react-icons/fa";
 import { EASE, useSpotlight } from "../../lib/motion";
 import logo from "../../assets/bhsquare-logo-white.png";
 import {
-  ALL_POSTS,
-  BLOG_POSTS,
-  CATEGORIES,
-  FEATURED_ID,
+  fetchPublishedPosts,
+  fetchBlogPost,
+  fetchBlogCategories,
+} from "../../lib/blogApi";
+import {
+  ALL_POSTS as FALLBACK_ALL_POSTS,
+  BLOG_POSTS as FALLBACK_BLOG_POSTS,
+  CATEGORIES as FALLBACK_CATEGORIES,
+  FEATURED_ID as FALLBACK_FEATURED_ID,
+  FEATURED_POST as FALLBACK_FEATURED_POST,
   PHONE_DISPLAY,
   PHONE_LINK,
-  RECOMMENDED_POSTS,
+  RECOMMENDED_POSTS as FALLBACK_RECOMMENDED_POSTS,
   WHATSAPP_LINK,
   getPostsByCategory,
   searchPosts,
 } from "./blogData";
 
-const FEATURED_POST = BLOG_POSTS.find((post) => post.id === FEATURED_ID);
 const JOURNAL_PATH = "/blogs";
 
 /* ---------------------------------------------------------------- helpers */
@@ -100,7 +106,7 @@ function Meta({ post, className = "" }) {
 
 /* ------------------------------------------------------------------- nav */
 
-function JournalNav({ onBrowse, onCategory }) {
+function JournalNav({ onBrowse, onCategory, categories = [] }) {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0B1220]/85 backdrop-blur-xl">
       <div className="mx-auto flex h-[72px] w-full max-w-[1400px] items-center justify-between gap-4 px-5 md:px-10">
@@ -126,30 +132,15 @@ function JournalNav({ onBrowse, onCategory }) {
           >
             All stories
           </button>
-          <button
-            onClick={() => onCategory("Government Subsidy")}
-            className="rounded-full px-4 py-2 font-display text-xs font-semibold text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white"
-          >
-            Subsidy
-          </button>
-          <button
-            onClick={() => onCategory("Solar Tech")}
-            className="rounded-full px-4 py-2 font-display text-xs font-semibold text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white"
-          >
-            Technology
-          </button>
-          <button
-            onClick={() => onCategory("Savings & ROI")}
-            className="rounded-full px-4 py-2 font-display text-xs font-semibold text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white"
-          >
-            Savings
-          </button>
-          <button
-            onClick={() => onCategory("Maintenance")}
-            className="rounded-full px-4 py-2 font-display text-xs font-semibold text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white"
-          >
-            Care
-          </button>
+          {categories.slice(0, 4).map((category) => (
+            <button
+              key={category}
+              onClick={() => onCategory(category)}
+              className="rounded-full px-4 py-2 font-display text-xs font-semibold text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white"
+            >
+              {category}
+            </button>
+          ))}
         </nav>
 
         <div className="flex items-center gap-2.5">
@@ -181,6 +172,11 @@ function JournalNav({ onBrowse, onCategory }) {
 /* ---------------------------------------------------------------- masthead */
 
 function Masthead() {
+  const issueLabel = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
+
   const stats = [
     { value: "₹78,000", label: "max central subsidy" },
     { value: "25 years", label: "panel warranty" },
@@ -201,7 +197,7 @@ function Masthead() {
             <BookOpen size={13} /> The BHsquare Journal
           </span>
           <span className="hidden md:block">Practical solar intelligence</span>
-          <span>Issue 04 · November 2026</span>
+          <span>Issue 04 · {issueLabel}</span>
         </motion.div>
 
         <div className="mt-10 grid gap-10 lg:grid-cols-[1.4fr_0.6fr] lg:items-end lg:gap-16">
@@ -259,7 +255,7 @@ function FeaturedStory({ post, onOpen }) {
           </span>
           <span className="h-px flex-1 bg-gradient-to-r from-[#FF8A00]/40 via-white/10 to-transparent" />
           <span className="font-display text-[10px] uppercase tracking-[0.2em] text-white/30">
-            Guide 01 / 05
+            Featured guide
           </span>
         </div>
 
@@ -287,7 +283,7 @@ function FeaturedStory({ post, onOpen }) {
               <div className="flex flex-wrap items-center gap-3">
                 <CategoryPill>{post.category}</CategoryPill>
                 <span className="inline-flex items-center gap-1.5 rounded-full border border-[#25D366]/20 bg-[#25D366]/10 px-3 py-1 font-display text-[10px] font-semibold uppercase tracking-[0.12em] text-[#7CFFB2]">
-                  Updated for 2026
+                  {post.readTime}
                 </span>
               </div>
 
@@ -361,13 +357,13 @@ function FeaturedStory({ post, onOpen }) {
 
             <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/15 bg-[#0B1220]/70 p-4 backdrop-blur-xl sm:right-auto sm:min-w-[230px]">
               <div className="text-[9px] font-semibold uppercase tracking-[0.22em] text-white/45">
-                Maximum central subsidy
+                Category
               </div>
-              <div className="mt-1 font-display text-3xl font-extrabold tracking-tight text-white">
-                ₹78,000
+              <div className="mt-1 font-display text-xl font-extrabold tracking-tight text-white">
+                {post.category}
               </div>
               <div className="mt-1 text-[11px] text-white/50">
-                for a 3 kW+ residential system
+                {post.date}
               </div>
             </div>
           </div>
@@ -719,16 +715,24 @@ function JournalFooter() {
 
 /* ----------------------------------------------------------------- reader */
 
-function Reader({ post, onClose, onChangePost }) {
+function Reader({ post, onClose, onChangePost, allPosts = [] }) {
   const readerRef = useRef(null);
   const [progress, setProgress] = useState(0);
   const [copied, setCopied] = useState(false);
 
-  const postIndex = ALL_POSTS.findIndex((item) => item.id === post.id);
-  const upNext = ALL_POSTS[(postIndex + 1) % ALL_POSTS.length];
-  const morePosts = [2, 3]
-    .map((offset) => ALL_POSTS[(postIndex + offset) % ALL_POSTS.length])
-    .filter((item) => item.id !== post.id && item.id !== upNext.id);
+  const postList = allPosts.length ? allPosts : [post];
+  const foundIndex = postList.findIndex((item) => item.id === post.id);
+  const postIndex = foundIndex >= 0 ? foundIndex : 0;
+  const upNext =
+    postList.length > 1 ? postList[(postIndex + 1) % postList.length] : null;
+  const morePosts =
+    postList.length > 3
+      ? [2, 3]
+          .map((offset) => postList[(postIndex + offset) % postList.length])
+          .filter(
+            (item) => item.id !== post.id && item.id !== upNext?.id,
+          )
+      : [];
 
   const articleUrl =
     typeof window !== "undefined"
@@ -884,25 +888,27 @@ function Reader({ post, onClose, onChangePost }) {
               {post.intro}
             </p>
 
-            <div className="mt-8 rounded-2xl border border-[#FFD54A]/20 bg-[#FF8A00]/[0.055] p-5 sm:p-6">
-              <div className="flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
-                <Sparkles size={13} /> Key takeaways
+            {post.takeaways.length > 0 && (
+              <div className="mt-8 rounded-2xl border border-[#FFD54A]/20 bg-[#FF8A00]/[0.055] p-5 sm:p-6">
+                <div className="flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
+                  <Sparkles size={13} /> Key takeaways
+                </div>
+                <ul className="mt-4 space-y-3">
+                  {post.takeaways.map((takeaway) => (
+                    <li
+                      key={takeaway}
+                      className="flex items-start gap-3 text-[14px] leading-relaxed text-white/70"
+                    >
+                      <CheckCircle2
+                        size={16}
+                        className="mt-0.5 shrink-0 text-[#FFD54A]"
+                      />
+                      {takeaway}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="mt-4 space-y-3">
-                {post.takeaways.map((takeaway) => (
-                  <li
-                    key={takeaway}
-                    className="flex items-start gap-3 text-[14px] leading-relaxed text-white/70"
-                  >
-                    <CheckCircle2
-                      size={16}
-                      className="mt-0.5 shrink-0 text-[#FFD54A]"
-                    />
-                    {takeaway}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            )}
 
             <a
               href={WHATSAPP_LINK}
@@ -1179,14 +1185,75 @@ function Reader({ post, onClose, onChangePost }) {
 export default function Blog() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [query, setQuery] = useState("");
-  const [activePost, setActivePost] = useState(() => {
-    if (typeof window === "undefined") return null;
-    const slug = new URLSearchParams(window.location.search).get("post");
-    if (!slug) return null;
-    return ALL_POSTS.find((post) => post.slug === slug) ?? null;
-  });
+  const [posts, setPosts] = useState(FALLBACK_BLOG_POSTS);
+  const [recommendedPosts, setRecommendedPosts] = useState(FALLBACK_RECOMMENDED_POSTS);
+  const [featuredPost, setFeaturedPost] = useState(FALLBACK_FEATURED_POST);
+  const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
+  const [allPosts, setAllPosts] = useState(FALLBACK_ALL_POSTS);
+  const [activePost, setActivePost] = useState(null);
   const [showFloatingWa, setShowFloatingWa] = useState(false);
   const archiveRef = useRef(null);
+
+  useEffect(() => {
+    let mounted = true;
+    async function loadBlogData() {
+      try {
+        const [published, fetchedCategories] = await Promise.all([
+          fetchPublishedPosts({ limit: 200 }).catch(() => []),
+          fetchBlogCategories().catch(() => []),
+        ]);
+
+        if (!mounted) return;
+
+        if (published && published.length > 0) {
+          const featured =
+            published.find((p) => p.isFeatured) || published[0];
+          const recommended =
+            published.filter((p) => p.isRecommended && p.id !== featured.id).slice(0, 3);
+          const remaining = published.filter(
+            (p) => p.id !== featured.id && !recommended.some((r) => r.id === p.id)
+          );
+          const finalRecommended = [
+            ...recommended,
+            ...remaining,
+          ].slice(0, 3);
+
+          setPosts(published);
+          setAllPosts(published);
+          setFeaturedPost(featured);
+          if (finalRecommended.length > 0) {
+            setRecommendedPosts(finalRecommended);
+          }
+        }
+
+        if (fetchedCategories && fetchedCategories.length > 0) {
+          setCategories(["All", ...fetchedCategories.map((c) => c.name)]);
+        }
+      } catch {
+        // Fallbacks remain in state
+      }
+    }
+
+    loadBlogData();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const slug = new URLSearchParams(window.location.search).get("post");
+    if (!slug) return;
+
+    fetchBlogPost(slug)
+      .then((post) => {
+        if (post) setActivePost(post);
+      })
+      .catch(() => {
+        const found = allPosts.find((p) => p.slug === slug || String(p.id) === slug);
+        if (found) setActivePost(found);
+      });
+  }, [allPosts]);
 
   useEffect(() => {
     if (!activePost) return undefined;
@@ -1238,24 +1305,34 @@ export default function Blog() {
   }, []);
 
   const filteredPosts = useMemo(() => {
-    const categoryPosts = getPostsByCategory(BLOG_POSTS, selectedCategory);
+    const categoryPosts = getPostsByCategory(posts, selectedCategory);
     const matchedPosts = searchPosts(categoryPosts, query);
-    if (selectedCategory === "All" && !query.trim()) {
-      return matchedPosts.filter((post) => post.id !== FEATURED_ID);
+    if (selectedCategory === "All" && !query.trim() && featuredPost) {
+      return matchedPosts.filter((post) => post.id !== featuredPost.id);
     }
     return matchedPosts;
-  }, [selectedCategory, query]);
+  }, [posts, selectedCategory, query, featuredPost]);
 
-  const showFeatured = selectedCategory === "All" && !query.trim();
+  const showFeatured = selectedCategory === "All" && !query.trim() && featuredPost;
 
-  const openPost = (post) => {
+  const openPost = async (post) => {
     openPostUrl(post);
-    setActivePost(post);
+    try {
+      const detailed = await fetchBlogPost(post.slug || post.id);
+      setActivePost(detailed || post);
+    } catch {
+      setActivePost(post);
+    }
   };
 
-  const changePost = (post) => {
+  const changePost = async (post) => {
     openPostUrl(post);
-    setActivePost(post);
+    try {
+      const detailed = await fetchBlogPost(post.slug || post.id);
+      setActivePost(detailed || post);
+    } catch {
+      setActivePost(post);
+    }
   };
 
   const closePost = () => {
@@ -1304,13 +1381,13 @@ export default function Blog() {
       </div>
 
       <div className="relative z-10">
-        <JournalNav onBrowse={browseJournal} onCategory={browseJournal} />
+        <JournalNav onBrowse={browseJournal} onCategory={browseJournal} categories={categories} />
 
         <main>
           <Masthead />
 
-          {showFeatured && FEATURED_POST && (
-            <FeaturedStory post={FEATURED_POST} onOpen={openPost} />
+          {showFeatured && featuredPost && (
+            <FeaturedStory post={featuredPost} onOpen={openPost} />
           )}
 
           <section
@@ -1359,7 +1436,7 @@ export default function Blog() {
 
               <div className="mt-8 flex flex-col justify-between gap-4 border-b border-white/10 pb-5 sm:flex-row sm:items-center">
                 <div className="flex flex-wrap items-center gap-2">
-                  {CATEGORIES.map((category) => {
+                  {categories.map((category) => {
                     const isActive = selectedCategory === category;
                     return (
                       <button
@@ -1415,7 +1492,7 @@ export default function Blog() {
             </div>
           </section>
 
-          <RecommendedReads posts={RECOMMENDED_POSTS} onOpen={openPost} />
+          <RecommendedReads posts={recommendedPosts} onOpen={openPost} />
 
           <WhatsAppPanel />
         </main>
@@ -1432,6 +1509,7 @@ export default function Blog() {
             post={activePost}
             onClose={closePost}
             onChangePost={changePost}
+            allPosts={allPosts}
           />
         )}
       </AnimatePresence>
