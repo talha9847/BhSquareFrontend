@@ -32,6 +32,10 @@ const formatCurrency = (val) =>
     Number(val) || 0,
   );
 
+const isMobile = () =>
+  /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+  (navigator.maxTouchPoints > 1 && window.innerWidth < 1024);
+
 const groupItemsByCategory = (items = []) =>
   items.reduce((groups, item) => {
     const category = item.type || "OTHER";
@@ -238,12 +242,43 @@ const EstimationPanel = ({
     }
   };
 
-  // ---------- Browser print (Download button) ----------
-  const handleDownloadPDF = useCallback(() => {
+  const handleDownloadPDF = useCallback(async () => {
     if (!printRef.current) return;
-    const previousTitle = document.title;
-    document.title = `${inputData.customer_name} ${inputData.panel_brand} ${kw} KW`;
 
+    const fileName =
+      `${inputData.customer_name} ${inputData.panel_brand} ${kw} KW`
+        .replace(/[\\/:*?"<>|]/g, "_")
+        .trim() + ".pdf";
+
+    // Mobile: use the html2canvas/jsPDF blob instead of window.print()
+    if (isMobile()) {
+      try {
+        const blob = await buildPdfBlob();
+        const file = new File([blob], fileName, { type: "application/pdf" });
+
+        if (navigator.canShare?.({ files: [file] })) {
+          await navigator.share({ files: [file], title: fileName });
+          return;
+        }
+
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 10000);
+      } catch (err) {
+        if (err?.name !== "AbortError")
+          toast.error(err.message || "Failed to create PDF");
+      }
+      return;
+    }
+
+    // Desktop: keep the existing print flow
+    const previousTitle = document.title;
+    document.title = fileName.replace(/\.pdf$/, "");
     document.body.classList.add("printing");
     const handleAfterPrint = () => {
       document.body.classList.remove("printing");
@@ -253,6 +288,8 @@ const EstimationPanel = ({
     window.addEventListener("afterprint", handleAfterPrint);
     window.print();
   }, [inputData.customer_name, inputData.panel_brand, kw]);
+
+  // ---------- Browser print (Download button) ----------
 
   useEffect(() => {
     onRegisterActions?.({ downloadPdf: handleDownloadPDF });
@@ -445,7 +482,6 @@ const EstimationPanel = ({
                 label="Customer Name"
                 type="text"
                 name="customer_name"
-                required
                 value={inputData.customer_name}
                 onChange={handleInputChange}
               />
@@ -453,7 +489,6 @@ const EstimationPanel = ({
                 label="Customer Address"
                 type="text"
                 name="customer_address"
-                required
                 value={inputData.customer_address}
                 onChange={handleInputChange}
               />
@@ -461,7 +496,6 @@ const EstimationPanel = ({
                 label="Customer Mobile"
                 type="text"
                 name="customer_mobile"
-                required
                 value={inputData.customer_mobile}
                 onChange={handleInputChange}
               />
