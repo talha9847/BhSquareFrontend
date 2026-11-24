@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -24,6 +24,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import { EASE, useSpotlight } from "../../lib/motion";
 import logo from "../../assets/bhsquare-logo-white.png";
 import {
+  FALLBACK_BLOG_IMAGE,
   fetchPublishedPosts,
   fetchBlogPost,
   fetchBlogCategories,
@@ -32,7 +33,6 @@ import {
   ALL_POSTS as FALLBACK_ALL_POSTS,
   BLOG_POSTS as FALLBACK_BLOG_POSTS,
   CATEGORIES as FALLBACK_CATEGORIES,
-  FEATURED_ID as FALLBACK_FEATURED_ID,
   FEATURED_POST as FALLBACK_FEATURED_POST,
   PHONE_DISPLAY,
   PHONE_LINK,
@@ -46,18 +46,54 @@ const JOURNAL_PATH = "/blogs";
 
 /* ---------------------------------------------------------------- helpers */
 
+function getPostSlugFromUrl() {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get("post");
+}
+
 function openPostUrl(post) {
   if (typeof window === "undefined") return;
   const url = new URL(window.location.href);
   url.pathname = JOURNAL_PATH;
   url.search = "";
   url.searchParams.set("post", post.slug);
-  window.history.replaceState({}, "", url.toString());
+  // First open adds a history entry so the browser Back button closes the
+  // reader; switching stories inside the reader just updates the same entry.
+  const method = getPostSlugFromUrl() ? "replaceState" : "pushState";
+  const state = { ...(window.history.state || {}), journalPost: true };
+  window.history[method](state, "", url.toString());
 }
 
 function closePostUrl() {
   if (typeof window === "undefined") return;
-  window.history.replaceState({}, "", JOURNAL_PATH);
+  const state = { ...(window.history.state || {}), journalPost: false };
+  window.history.replaceState(state, "", JOURNAL_PATH);
+}
+
+/** Broken cover URLs are common with externally hosted images — swap in a safe default. */
+function handleImageError(event) {
+  const image = event.currentTarget;
+  if (image.src === FALLBACK_BLOG_IMAGE) return;
+  image.src = FALLBACK_BLOG_IMAGE;
+}
+
+function splitParagraphs(value) {
+  return String(value || "")
+    .split(/\r?\n+/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+}
+
+/** Keep only categories that actually have a published story. */
+function buildCategoryList(posts = [], apiCategories = []) {
+  const usedNames = [
+    ...new Set(posts.map((post) => post.category).filter(Boolean)),
+  ];
+  const orderedNames = apiCategories
+    .map((category) => category?.name)
+    .filter((name) => usedNames.includes(name));
+
+  return ["All", ...new Set([...orderedNames, ...usedNames])];
 }
 
 function Avatar({ initials, size = "md" }) {
@@ -132,15 +168,18 @@ function JournalNav({ onBrowse, onCategory, categories = [] }) {
           >
             All stories
           </button>
-          {categories.slice(0, 4).map((category) => (
-            <button
-              key={category}
-              onClick={() => onCategory(category)}
-              className="rounded-full px-4 py-2 font-display text-xs font-semibold text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white"
-            >
-              {category}
-            </button>
-          ))}
+          {categories
+            .filter((category) => category !== "All")
+            .slice(0, 4)
+            .map((category) => (
+              <button
+                key={category}
+                onClick={() => onCategory(category)}
+                className="rounded-full px-4 py-2 font-display text-xs font-semibold text-white/55 transition-colors hover:bg-white/[0.06] hover:text-white"
+              >
+                {category}
+              </button>
+            ))}
         </nav>
 
         <div className="flex items-center gap-2.5">
@@ -333,6 +372,8 @@ function FeaturedStory({ post, onOpen }) {
             <img
               src={post.image}
               alt={post.imageAlt}
+              referrerPolicy="no-referrer"
+              onError={handleImageError}
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1.2s] ease-out group-hover:scale-[1.04]"
             />
             <div
@@ -410,6 +451,8 @@ function PostCard({ post, index, onOpen }) {
           src={post.image}
           alt={post.imageAlt}
           loading="lazy"
+          referrerPolicy="no-referrer"
+          onError={handleImageError}
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
         <div
@@ -464,7 +507,16 @@ function PostCard({ post, index, onOpen }) {
 
 /* ------------------------------------------------------------ recommendations */
 
-function RecommendedReads({ posts, onOpen }) {
+function RecommendedReads({ posts = [], onOpen }) {
+  if (!posts.length) return null;
+
+  const gridColumns =
+    posts.length === 1
+      ? "md:grid-cols-1"
+      : posts.length === 2
+        ? "md:grid-cols-2"
+        : "md:grid-cols-3";
+
   return (
     <section className="relative z-10 mt-20 md:mt-28">
       <div className="mx-auto w-full max-w-[1400px] px-5 md:px-10">
@@ -478,13 +530,15 @@ function RecommendedReads({ posts, onOpen }) {
             </h2>
           </div>
           <p className="max-w-sm text-sm leading-relaxed text-[var(--muted)]">
-            Three short reads our engineers send to homeowners before the first
-            site visit.
+            Short reads our engineers send to homeowners before the first site
+            visit.
           </p>
         </div>
 
         <div className="mt-9 overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/[0.025]">
-          <div className="grid divide-y divide-white/10 md:grid-cols-3 md:divide-x md:divide-y-0">
+          <div
+            className={`grid divide-y divide-white/10 ${gridColumns} md:divide-x md:divide-y-0`}
+          >
             {posts.map((post, index) => (
               <motion.article
                 key={post.id}
@@ -715,12 +769,23 @@ function JournalFooter() {
 
 /* ----------------------------------------------------------------- reader */
 
-function Reader({ post, onClose, onChangePost, allPosts = [] }) {
+function Reader({
+  post,
+  onClose,
+  onChangePost,
+  allPosts = [],
+  loading = false,
+  error = "",
+  onRetry,
+}) {
   const readerRef = useRef(null);
   const [progress, setProgress] = useState(0);
   const [copied, setCopied] = useState(false);
 
-  const postList = allPosts.length ? allPosts : [post];
+  const sourceList = allPosts.length ? allPosts : [post];
+  const postList = sourceList.some((item) => item.id === post.id)
+    ? sourceList
+    : [post, ...sourceList];
   const foundIndex = postList.findIndex((item) => item.id === post.id);
   const postIndex = foundIndex >= 0 ? foundIndex : 0;
   const upNext =
@@ -733,6 +798,11 @@ function Reader({ post, onClose, onChangePost, allPosts = [] }) {
             (item) => item.id !== post.id && item.id !== upNext?.id,
           )
       : [];
+
+  const sections = Array.isArray(post.sections) ? post.sections : [];
+  const takeaways = Array.isArray(post.takeaways) ? post.takeaways : [];
+  const tags = Array.isArray(post.tags) ? post.tags : [];
+  const introParagraphs = splitParagraphs(post.intro);
 
   const articleUrl =
     typeof window !== "undefined"
@@ -868,6 +938,8 @@ function Reader({ post, onClose, onChangePost, allPosts = [] }) {
           <img
             src={post.image}
             alt={post.imageAlt}
+            referrerPolicy="no-referrer"
+            onError={handleImageError}
             className="h-[240px] w-full object-cover sm:h-[360px] lg:h-[420px]"
           />
           <div
@@ -884,19 +956,28 @@ function Reader({ post, onClose, onChangePost, allPosts = [] }) {
 
         <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,1fr)_250px] lg:gap-14">
           <div className="min-w-0">
-            <p className="text-[18px] leading-[1.85] text-white/80 first-letter:float-left first-letter:mr-3 first-letter:mt-1 first-letter:font-display first-letter:text-6xl first-letter:font-extrabold first-letter:leading-[0.8] first-letter:text-[#FFD54A] sm:text-[19px]">
-              {post.intro}
-            </p>
+            {introParagraphs.map((paragraph, index) => (
+              <p
+                key={`${index}-${paragraph.slice(0, 24)}`}
+                className={
+                  index === 0
+                    ? "text-[18px] leading-[1.85] text-white/80 first-letter:float-left first-letter:mr-3 first-letter:mt-1 first-letter:font-display first-letter:text-6xl first-letter:font-extrabold first-letter:leading-[0.8] first-letter:text-[#FFD54A] sm:text-[19px]"
+                    : "mt-5 text-[18px] leading-[1.85] text-white/80 sm:text-[19px]"
+                }
+              >
+                {paragraph}
+              </p>
+            ))}
 
-            {post.takeaways.length > 0 && (
+            {takeaways.length > 0 && (
               <div className="mt-8 rounded-2xl border border-[#FFD54A]/20 bg-[#FF8A00]/[0.055] p-5 sm:p-6">
                 <div className="flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.2em] text-[var(--gold)]">
                   <Sparkles size={13} /> Key takeaways
                 </div>
                 <ul className="mt-4 space-y-3">
-                  {post.takeaways.map((takeaway) => (
+                  {takeaways.map((takeaway, index) => (
                     <li
-                      key={takeaway}
+                      key={`${index}-${takeaway.slice(0, 24)}`}
                       className="flex items-start gap-3 text-[14px] leading-relaxed text-white/70"
                     >
                       <CheckCircle2
@@ -932,7 +1013,28 @@ function Reader({ post, onClose, onChangePost, allPosts = [] }) {
               <ArrowUpRight size={16} className="shrink-0 text-[#7CFFB2]" />
             </a>
 
-            {post.sections.map((section, index) => (
+            {loading && sections.length === 0 && (
+              <div className="mt-10 flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-sm text-white/55">
+                <Loader2 size={18} className="animate-spin text-[#FF8A00]" />
+                Loading the full guide…
+              </div>
+            )}
+
+            {!loading && error && sections.length === 0 && (
+              <div className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#FF8A00]/25 bg-[#FF8A00]/[0.06] p-5 text-sm text-white/60">
+                <span>{error}</span>
+                {onRetry && (
+                  <button
+                    onClick={onRetry}
+                    className="rounded-full border border-white/15 bg-white/[0.05] px-4 py-2 font-display text-[11px] font-semibold text-white/75 transition-colors hover:bg-white/[0.1] hover:text-white"
+                  >
+                    Try again
+                  </button>
+                )}
+              </div>
+            )}
+
+            {sections.map((section, index) => (
               <section
                 key={section.heading}
                 id={`article-section-${post.id}-${index}`}
@@ -980,16 +1082,18 @@ function Reader({ post, onClose, onChangePost, allPosts = [] }) {
               </section>
             ))}
 
-            <div className="mt-10 flex flex-wrap gap-2">
-              {post.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[10px] font-medium text-white/45"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
+            {tags.length > 0 && (
+              <div className="mt-10 flex flex-wrap gap-2">
+                {tags.map((tag, index) => (
+                  <span
+                    key={`${index}-${tag}`}
+                    className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-[10px] font-medium text-white/45"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div className="mt-8 flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/[0.03] p-5 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
@@ -1017,92 +1121,100 @@ function Reader({ post, onClose, onChangePost, allPosts = [] }) {
             </div>
 
             <div className="mt-14">
-              <div className="flex items-center gap-3">
-                <span className="inline-flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.22em] text-[#FF8A00]">
-                  <Sparkles size={12} /> Up next
-                </span>
-                <span className="h-px flex-1 bg-gradient-to-r from-[#FF8A00]/35 to-transparent" />
-              </div>
-
-              <article
-                role="button"
-                tabIndex={0}
-                aria-label={`Read next: ${upNext.title}`}
-                onClick={() => onChangePost(upNext)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    onChangePost(upNext);
-                  }
-                }}
-                className="group mt-5 grid cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-[#0F172A] transition-colors hover:border-[#FF8A00]/40 sm:grid-cols-[210px_1fr]"
-              >
-                <div className="relative h-44 overflow-hidden sm:h-full sm:min-h-[190px]">
-                  <img
-                    src={upNext.image}
-                    alt={upNext.imageAlt}
-                    loading="lazy"
-                    className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0F172A]/50" />
-                </div>
-                <div className="p-5 md:p-6">
-                  <div className="flex flex-wrap items-center gap-3 text-[9px] uppercase tracking-[0.16em]">
-                    <span className="font-semibold text-[var(--gold)]">
-                      {upNext.category}
+              {upNext && (
+                <>
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.22em] text-[#FF8A00]">
+                      <Sparkles size={12} /> Up next
                     </span>
-                    <span className="h-1 w-1 rounded-full bg-white/20" />
-                    <span className="text-white/35">{upNext.readTime}</span>
+                    <span className="h-px flex-1 bg-gradient-to-r from-[#FF8A00]/35 to-transparent" />
                   </div>
-                  <h3 className="mt-2 font-display text-xl font-bold leading-snug text-white transition-colors group-hover:text-[var(--gold)]">
-                    {upNext.title}
-                  </h3>
-                  <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-white/45">
-                    {upNext.excerpt}
-                  </p>
-                  <span className="mt-4 inline-flex items-center gap-2 font-display text-[11px] font-bold text-[#FFD54A]">
-                    Continue reading
-                    <ArrowRight
-                      size={13}
-                      className="transition-transform duration-300 group-hover:translate-x-1"
-                    />
-                  </span>
-                </div>
-              </article>
 
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {morePosts.map((nextPost) => (
                   <article
-                    key={nextPost.id}
                     role="button"
                     tabIndex={0}
-                    aria-label={`Read ${nextPost.title}`}
-                    onClick={() => onChangePost(nextPost)}
+                    aria-label={`Read next: ${upNext.title}`}
+                    onClick={() => onChangePost(upNext)}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault();
-                        onChangePost(nextPost);
+                        onChangePost(upNext);
                       }
                     }}
-                    className="group cursor-pointer rounded-xl border border-white/10 bg-white/[0.025] p-4 transition-colors hover:border-white/20 hover:bg-white/[0.045]"
+                    className="group mt-5 grid cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-[#0F172A] transition-colors hover:border-[#FF8A00]/40 sm:grid-cols-[210px_1fr]"
                   >
-                    <div className="flex items-center justify-between gap-2 text-[9px] uppercase tracking-[0.14em]">
-                      <span className="truncate font-semibold text-white/35">
-                        {nextPost.category}
-                      </span>
-                      <span className="shrink-0 text-white/25">
-                        {nextPost.readTime}
+                    <div className="relative h-44 overflow-hidden sm:h-full sm:min-h-[190px]">
+                      <img
+                        src={upNext.image}
+                        alt={upNext.imageAlt}
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        onError={handleImageError}
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0F172A]/50" />
+                    </div>
+                    <div className="p-5 md:p-6">
+                      <div className="flex flex-wrap items-center gap-3 text-[9px] uppercase tracking-[0.16em]">
+                        <span className="font-semibold text-[var(--gold)]">
+                          {upNext.category}
+                        </span>
+                        <span className="h-1 w-1 rounded-full bg-white/20" />
+                        <span className="text-white/35">{upNext.readTime}</span>
+                      </div>
+                      <h3 className="mt-2 font-display text-xl font-bold leading-snug text-white transition-colors group-hover:text-[var(--gold)]">
+                        {upNext.title}
+                      </h3>
+                      <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-white/45">
+                        {upNext.excerpt}
+                      </p>
+                      <span className="mt-4 inline-flex items-center gap-2 font-display text-[11px] font-bold text-[#FFD54A]">
+                        Continue reading
+                        <ArrowRight
+                          size={13}
+                          className="transition-transform duration-300 group-hover:translate-x-1"
+                        />
                       </span>
                     </div>
-                    <h4 className="mt-2 font-display text-sm font-bold leading-snug text-white/85 transition-colors group-hover:text-[var(--gold)]">
-                      {nextPost.title}
-                    </h4>
-                    <span className="mt-3 inline-flex items-center gap-1.5 font-display text-[10px] font-semibold text-white/40 transition-colors group-hover:text-[#FFD54A]">
-                      Read story <ArrowUpRight size={12} />
-                    </span>
                   </article>
-                ))}
-              </div>
+
+                  {morePosts.length > 0 && (
+                    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                      {morePosts.map((nextPost) => (
+                        <article
+                          key={nextPost.id}
+                          role="button"
+                          tabIndex={0}
+                          aria-label={`Read ${nextPost.title}`}
+                          onClick={() => onChangePost(nextPost)}
+                          onKeyDown={(event) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              onChangePost(nextPost);
+                            }
+                          }}
+                          className="group cursor-pointer rounded-xl border border-white/10 bg-white/[0.025] p-4 transition-colors hover:border-white/20 hover:bg-white/[0.045]"
+                        >
+                          <div className="flex items-center justify-between gap-2 text-[9px] uppercase tracking-[0.14em]">
+                            <span className="truncate font-semibold text-white/35">
+                              {nextPost.category}
+                            </span>
+                            <span className="shrink-0 text-white/25">
+                              {nextPost.readTime}
+                            </span>
+                          </div>
+                          <h4 className="mt-2 font-display text-sm font-bold leading-snug text-white/85 transition-colors group-hover:text-[var(--gold)]">
+                            {nextPost.title}
+                          </h4>
+                          <span className="mt-3 inline-flex items-center gap-1.5 font-display text-[10px] font-semibold text-white/40 transition-colors group-hover:text-[#FFD54A]">
+                            Read story <ArrowUpRight size={12} />
+                          </span>
+                        </article>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
 
               <div className="mt-10 flex justify-center border-t border-white/10 pt-8">
                 <button
@@ -1117,25 +1229,27 @@ function Reader({ post, onClose, onChangePost, allPosts = [] }) {
 
           <aside className="hidden lg:block">
             <div className="sticky top-24 space-y-4">
-              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                <div className="flex items-center gap-2 font-display text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
-                  <BookOpen size={12} /> In this guide
+              {sections.length > 0 && (
+                <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                  <div className="flex items-center gap-2 font-display text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">
+                    <BookOpen size={12} /> In this guide
+                  </div>
+                  <nav className="mt-4 space-y-3">
+                    {sections.map((section, index) => (
+                      <button
+                        key={section.heading}
+                        onClick={() => jumpToSection(index)}
+                        className="group flex w-full items-start gap-2.5 text-left text-[11px] leading-relaxed text-white/45 transition-colors hover:text-white"
+                      >
+                        <span className="mt-0.5 font-display text-[9px] font-bold text-[#FF8A00]/60 group-hover:text-[#FF8A00]">
+                          0{index + 1}
+                        </span>
+                        {section.heading}
+                      </button>
+                    ))}
+                  </nav>
                 </div>
-                <nav className="mt-4 space-y-3">
-                  {post.sections.map((section, index) => (
-                    <button
-                      key={section.heading}
-                      onClick={() => jumpToSection(index)}
-                      className="group flex w-full items-start gap-2.5 text-left text-[11px] leading-relaxed text-white/45 transition-colors hover:text-white"
-                    >
-                      <span className="mt-0.5 font-display text-[9px] font-bold text-[#FF8A00]/60 group-hover:text-[#FF8A00]">
-                        0{index + 1}
-                      </span>
-                      {section.heading}
-                    </button>
-                  ))}
-                </nav>
-              </div>
+              )}
 
               <div className="rounded-2xl border border-[#25D366]/20 bg-[#25D366]/[0.045] p-5">
                 <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#25D366] text-white">
@@ -1191,8 +1305,43 @@ export default function Blog() {
   const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
   const [allPosts, setAllPosts] = useState(FALLBACK_ALL_POSTS);
   const [activePost, setActivePost] = useState(null);
+  const [postLoading, setPostLoading] = useState(false);
+  const [postError, setPostError] = useState("");
   const [showFloatingWa, setShowFloatingWa] = useState(false);
   const archiveRef = useRef(null);
+  const postRequestRef = useRef(0);
+  const readerPushedRef = useRef(false);
+  const initialSlugRef = useRef(getPostSlugFromUrl());
+
+  const loadPostDetails = useCallback(async (post, requestId) => {
+    setPostLoading(true);
+    setPostError("");
+    try {
+      const detailed = await fetchBlogPost(post.slug || post.id);
+      if (postRequestRef.current !== requestId) return;
+      if (detailed) setActivePost(detailed);
+    } catch {
+      if (postRequestRef.current !== requestId) return;
+      setPostError(
+        "We couldn't load the full guide. Check your connection and try again.",
+      );
+    } finally {
+      if (postRequestRef.current === requestId) setPostLoading(false);
+    }
+  }, []);
+
+  const closePost = useCallback(() => {
+    postRequestRef.current += 1;
+    setActivePost(null);
+    setPostLoading(false);
+    setPostError("");
+    if (readerPushedRef.current) {
+      readerPushedRef.current = false;
+      window.history.back();
+    } else {
+      closePostUrl();
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -1208,26 +1357,34 @@ export default function Blog() {
         if (published && published.length > 0) {
           const featured =
             published.find((p) => p.isFeatured) || published[0];
-          const recommended =
-            published.filter((p) => p.isRecommended && p.id !== featured.id).slice(0, 3);
-          const remaining = published.filter(
-            (p) => p.id !== featured.id && !recommended.some((r) => r.id === p.id)
-          );
-          const finalRecommended = [
-            ...recommended,
-            ...remaining,
-          ].slice(0, 3);
+          const finalRecommended = published
+            .filter((p) => p.isRecommended && p.id !== featured.id)
+            .slice(0, 3);
+          const nextCategories = buildCategoryList(published, fetchedCategories);
 
           setPosts(published);
           setAllPosts(published);
           setFeaturedPost(featured);
-          if (finalRecommended.length > 0) {
-            setRecommendedPosts(finalRecommended);
-          }
-        }
+          setRecommendedPosts(finalRecommended);
+          setCategories(nextCategories);
+          setSelectedCategory((current) =>
+            current === "All" || nextCategories.includes(current)
+              ? current
+              : "All",
+          );
 
-        if (fetchedCategories && fetchedCategories.length > 0) {
-          setCategories(["All", ...fetchedCategories.map((c) => c.name)]);
+          // The detail request may still be running — show the list summary
+          // immediately if the deep-linked story is in the published list.
+          const slug = initialSlugRef.current;
+          if (slug) {
+            const found = published.find(
+              (post) => post.slug === slug || String(post.id) === slug,
+            );
+            if (found) {
+              initialSlugRef.current = null;
+              setActivePost((current) => current ?? found);
+            }
+          }
         }
       } catch {
         // Fallbacks remain in state
@@ -1241,19 +1398,74 @@ export default function Blog() {
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const slug = new URLSearchParams(window.location.search).get("post");
-    if (!slug) return;
+    const slug = initialSlugRef.current;
+    if (!slug) return undefined;
+
+    let cancelled = false;
+    const requestId = ++postRequestRef.current;
+    setPostLoading(true);
+    setPostError("");
 
     fetchBlogPost(slug)
       .then((post) => {
-        if (post) setActivePost(post);
+        if (cancelled || postRequestRef.current !== requestId) return;
+        if (post) {
+          initialSlugRef.current = null;
+          setActivePost(post);
+        }
       })
       .catch(() => {
-        const found = allPosts.find((p) => p.slug === slug || String(p.id) === slug);
-        if (found) setActivePost(found);
+        if (cancelled || postRequestRef.current !== requestId) return;
+        const found = FALLBACK_ALL_POSTS.find(
+          (post) => post.slug === slug || String(post.id) === slug,
+        );
+        if (found) {
+          initialSlugRef.current = null;
+          setActivePost(found);
+          setPostError("");
+        } else {
+          setPostError(
+            "We couldn't load that story. It may have been removed or unpublished.",
+          );
+        }
+      })
+      .finally(() => {
+        if (!cancelled && postRequestRef.current === requestId) {
+          setPostLoading(false);
+        }
       });
-  }, [allPosts]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const slug = getPostSlugFromUrl();
+      if (!slug) {
+        readerPushedRef.current = false;
+        postRequestRef.current += 1;
+        setActivePost(null);
+        setPostLoading(false);
+        setPostError("");
+        return;
+      }
+
+      // Forward navigation back into a story.
+      readerPushedRef.current = true;
+      const found = allPosts.find(
+        (post) => post.slug === slug || String(post.id) === slug,
+      );
+      const requestId = ++postRequestRef.current;
+      if (found) setActivePost(found);
+      setPostError("");
+      loadPostDetails(found || { slug }, requestId);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [allPosts, loadPostDetails]);
 
   useEffect(() => {
     if (!activePost) return undefined;
@@ -1261,10 +1473,7 @@ export default function Blog() {
     document.body.style.overflow = "hidden";
 
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") {
-        setActivePost(null);
-        closePostUrl();
-      }
+      if (event.key === "Escape") closePost();
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -1272,7 +1481,7 @@ export default function Blog() {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [activePost]);
+  }, [activePost, closePost]);
 
   useEffect(() => {
     const panel = document.getElementById("journal-whatsapp-panel");
@@ -1314,31 +1523,22 @@ export default function Blog() {
   }, [posts, selectedCategory, query, featuredPost]);
 
   const showFeatured = selectedCategory === "All" && !query.trim() && featuredPost;
+  const hasActiveFilters = selectedCategory !== "All" || Boolean(query.trim());
+  const onlyFeaturedStory = showFeatured && posts.length === 1;
+  const storyCount = showFeatured ? posts.length : filteredPosts.length;
 
-  const openPost = async (post) => {
+  const openPost = (post) => {
+    if (!post) return;
+    const requestId = ++postRequestRef.current;
+    initialSlugRef.current = null;
+    if (!activePost && !getPostSlugFromUrl()) readerPushedRef.current = true;
     openPostUrl(post);
-    try {
-      const detailed = await fetchBlogPost(post.slug || post.id);
-      setActivePost(detailed || post);
-    } catch {
-      setActivePost(post);
-    }
+    setActivePost(post);
+    setPostError("");
+    loadPostDetails(post, requestId);
   };
 
-  const changePost = async (post) => {
-    openPostUrl(post);
-    try {
-      const detailed = await fetchBlogPost(post.slug || post.id);
-      setActivePost(detailed || post);
-    } catch {
-      setActivePost(post);
-    }
-  };
-
-  const closePost = () => {
-    setActivePost(null);
-    closePostUrl();
-  };
+  const changePost = openPost;
 
   const browseJournal = (category = "All") => {
     setSelectedCategory(category);
@@ -1455,8 +1655,8 @@ export default function Blog() {
                   })}
                 </div>
                 <span className="text-[10px] uppercase tracking-[0.16em] text-white/30">
-                  {filteredPosts.length}{" "}
-                  {filteredPosts.length === 1 ? "story" : "stories"}
+                  {storyCount} {storyCount === 1 ? "story" : "stories"}
+                  {showFeatured ? " in this issue" : ""}
                 </span>
               </div>
 
@@ -1475,18 +1675,27 @@ export default function Blog() {
                 <div className="mt-8 flex flex-col items-center justify-center rounded-3xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-16 text-center">
                   <BookOpen size={30} className="text-white/20" />
                   <h3 className="mt-4 font-display text-xl font-bold text-white">
-                    No stories match that search.
+                    {hasActiveFilters
+                      ? "No stories match that search."
+                      : onlyFeaturedStory
+                        ? "That's the only story in this issue."
+                        : "Fresh field notes are on the way."}
                   </h3>
                   <p className="mt-2 max-w-sm text-sm text-[var(--muted)]">
-                    Try a broader topic, or clear the filters to browse every
-                    guide in the journal.
+                    {hasActiveFilters
+                      ? "Try a broader topic, or clear the filters to browse every guide in the journal."
+                      : onlyFeaturedStory
+                        ? "Open the featured guide above, or check back soon for the next one."
+                        : "We publish practical solar guides regularly. Check back soon for the next one."}
                   </p>
-                  <button
-                    onClick={resetFilters}
-                    className="mt-6 rounded-full bg-gradient-to-r from-[#FF8A00] to-[#FFD54A] px-5 py-2.5 font-display text-xs font-bold text-[#0B1220] transition-transform hover:scale-[1.03]"
-                  >
-                    Clear filters
-                  </button>
+                  {hasActiveFilters && (
+                    <button
+                      onClick={resetFilters}
+                      className="mt-6 rounded-full bg-gradient-to-r from-[#FF8A00] to-[#FFD54A] px-5 py-2.5 font-display text-xs font-bold text-[#0B1220] transition-transform hover:scale-[1.03]"
+                    >
+                      Clear filters
+                    </button>
+                  )}
                 </div>
               )}
             </div>
@@ -1510,6 +1719,13 @@ export default function Blog() {
             onClose={closePost}
             onChangePost={changePost}
             allPosts={allPosts}
+            loading={postLoading}
+            error={postError}
+            onRetry={() => {
+              if (!activePost) return;
+              const requestId = ++postRequestRef.current;
+              loadPostDetails(activePost, requestId);
+            }}
           />
         )}
       </AnimatePresence>
