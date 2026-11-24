@@ -551,7 +551,7 @@ const EstimationPanel = ({
               />
               <Field
                 label="Rate Per Watt (₹)"
-                type="text"
+                type="number"
                 inputMode="numeric"
                 name="panel_rate_per_watt"
                 required
@@ -654,7 +654,7 @@ const EstimationPanel = ({
                 <Field
                   label="Total Profit After Discount"
                   type="text"
-                  value={profitAfterDis}
+                  value={formatCurrency(profitAfterDis)}
                   readOnly
                 />
               </div>
@@ -662,7 +662,7 @@ const EstimationPanel = ({
                 <Field
                   label="Material Cost"
                   type="text"
-                  value={materialCost}
+                  value={formatCurrency(materialCost)}
                   readOnly
                 />
               </div>
@@ -670,7 +670,7 @@ const EstimationPanel = ({
                 <Field
                   label="Total Amount"
                   type="text"
-                  value={Math.round(
+                  value={formatCurrency(
                     materialCost + profitAfterDis + dealerCost * totalKw,
                   )}
                   readOnly
@@ -691,7 +691,7 @@ const EstimationPanel = ({
                 <Field
                   label="After Subsidy"
                   type="text"
-                  value={Math.round(
+                  value={formatCurrency(
                     Number(
                       materialCost +
                         profitAfterDis +
