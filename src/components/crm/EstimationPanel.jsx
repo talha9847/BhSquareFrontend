@@ -552,7 +552,6 @@ const EstimationPanel = ({
               <Field
                 label="Rate Per Watt (₹)"
                 type="number"
-                inputMode="numeric"
                 name="panel_rate_per_watt"
                 required
                 value={inputData.panel_rate_per_watt}
