@@ -611,7 +611,8 @@ const EstimationPanel = ({
                   }}
                 />
                 <div>
-                  {profitPerKw} * {totalKw} = {totalKw * profitPerKw}
+                  {formatCurrency(profitPerKw)} * {totalKw} ={" "}
+                  {totalKw * profitPerKw}
                 </div>
               </div>
               <div>
@@ -630,7 +631,8 @@ const EstimationPanel = ({
                   }}
                 />
                 <div>
-                  {discountPerKw} * {totalKw} = {totalKw * discountPerKw}
+                  {formatCurrency(discountPerKw)} * {totalKw} ={" "}
+                  {totalKw * discountPerKw}
                 </div>
               </div>
               <div>
@@ -644,7 +646,8 @@ const EstimationPanel = ({
                 />
 
                 <div>
-                  {dealerCost} * {totalKw} = {dealerCost * totalKw}
+                  {formatCurrency(dealerCost)} * {totalKw} ={" "}
+                  {dealerCost * totalKw}
                 </div>
               </div>
             </div>
@@ -656,7 +659,12 @@ const EstimationPanel = ({
                   value={formatCurrency(profitAfterDis)}
                   readOnly
                 />
+                <div>
+                  {formatCurrency(profitAfterDis / totalKw)} * {totalKw} ={" "}
+                  {formatCurrency(profitAfterDis)}
+                </div>
               </div>
+
               <div>
                 <Field
                   label="Material Cost"
@@ -664,6 +672,11 @@ const EstimationPanel = ({
                   value={formatCurrency(materialCost)}
                   readOnly
                 />
+
+                <div>
+                  {formatCurrency(materialCost / totalKw)} * {totalKw} ={" "}
+                  {formatCurrency(materialCost)}
+                </div>
               </div>
               <div>
                 <Field
@@ -674,32 +687,70 @@ const EstimationPanel = ({
                   )}
                   readOnly
                 />
+
+                <div>
+                  {formatCurrency(
+                    (materialCost + profitAfterDis + dealerCost * totalKw) /
+                      totalKw,
+                  )}{" "}
+                  * {totalKw} ={" "}
+                  {formatCurrency(
+                    materialCost + profitAfterDis + dealerCost * totalKw,
+                  )}
+                </div>
               </div>
             </div>
 
             <div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <Field
-                  label="Subsidy"
-                  type="text"
-                  value={subsidyAmount}
-                  onChange={(e) => {
-                    setSubsidyAmount(e.target.value);
-                  }}
-                />
-                <Field
-                  label="After Subsidy"
-                  type="text"
-                  value={formatCurrency(
-                    Number(
+                <div>
+                  <Field
+                    label="Subsidy"
+                    type="text"
+                    value={subsidyAmount}
+                    onChange={(e) => {
+                      setSubsidyAmount(e.target.value);
+                    }}
+                  />
+
+                  <div>
+                    {formatCurrency(subsidyAmount / totalKw)} * {totalKw} ={" "}
+                    {formatCurrency(subsidyAmount)}
+                  </div>
+                </div>
+
+                <div>
+                  <Field
+                    label="After Subsidy"
+                    type="text"
+                    value={formatCurrency(
+                      Number(
+                        materialCost +
+                          profitAfterDis +
+                          dealerCost * totalKw -
+                          subsidyAmount,
+                      ),
+                    )}
+                    readOnly
+                  />
+
+                  <div>
+                    {formatCurrency(
+                      (materialCost +
+                        profitAfterDis +
+                        dealerCost * totalKw -
+                        subsidyAmount) /
+                        totalKw,
+                    )}{" "}
+                    * {totalKw} ={" "}
+                    {formatCurrency(
                       materialCost +
                         profitAfterDis +
                         dealerCost * totalKw -
                         subsidyAmount,
-                    ),
-                  )}
-                  readOnly
-                />
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
